@@ -26,3 +26,6 @@ Following features/ functionalities, I'm trying to provide.
   - learn and implement memory leaking concept
   - learn and implement memory management concept
   - try to use ng-graph-dependancy extension feature here directly.
+
+[See development progress] (https://github.com/rajexcited/AngularJS-Birbal/blob/master/developmentPhases)
+
