@@ -1,0 +1,38 @@
+{
+  "name": "AngularJS Birbal",
+  "version": "0.0.1",
+  "description": "Find and solve angular problems in Birbal ways. Initial Phase",
+
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["src/message.js", "src/basicMessageAction.js", "src/content-script/content-script.js"],
+    "run_at": "document_start"
+  }],
+
+  "permissions": [
+    "tabs",
+    "webNavigation",
+    "<all_urls>",
+    "alarms"
+  ],
+
+  "background": {
+    "scripts": ["src/message.js", "src/basicMessageAction.js", "src/background/background.js"],
+    "persistent": false
+  },
+
+  "page_action": {
+    "default_title": "AngularJS Birbal"
+  },
+
+  "devtools_page": "src/devtools/devToolsPage.html",
+
+  "content_security_policy": "default-src 'self'  chrome-extension-resource: ;   style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval';  connect-src *; frame-src *;",
+
+  "web_accessible_resources": [
+    "src/inject/injected.js"
+  ],
+
+  "manifest_version": 2
+
+}
