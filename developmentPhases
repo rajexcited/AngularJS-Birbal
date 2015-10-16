@@ -3,10 +3,10 @@
 ## Initial phase of developement
 
 ### Goal 1: start work
-Phase: 
+Phase:
   1. setup github project
   2. learn chrome extension development
-  
+
 ### Goal 2: Architect/Setup Chrome Extension (create a basic extension which logs each required actions)
 Phase:
   1. initial setup - manifest file
@@ -15,15 +15,15 @@ Phase:
   4. devtool inspect connect to background
   5. 'designing, and developing communication'
 
-Clear Picture:    
+Clear Picture:
   install extension >> see logs on background page
-  
-Scenario:   
-    open a new tab >>> 
-    load any link >>> 
-    open another tab with different link/same link >>> 
-    switch tabs couple times >>> 
-    inspect DOM for each >>> 
+
+Scenario:
+    open a new tab >>>
+    load any link >>>
+    open another tab with different link/same link >>>
+    switch tabs couple times >>>
+    inspect DOM for each >>>
     switch tabs >>>
     close tabs.
 
@@ -31,6 +31,8 @@ Scenario:
 Phase:
   1. init content script with onload event
   2. `detect angular page `
-  
-### Goal 4: Create devTool panel on conditions
-  
+
+### Goal 4: Create devtools panel
+Phase:
+  1. find bootstrap
+  2. create an index page
