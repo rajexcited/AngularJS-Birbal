@@ -102,7 +102,7 @@
 	// Add injected script to the page
 	var script = document.createElement('script');
 	// script.type = 'text/javascript';
-	script.src = chrome.extension.getURL('src/inject/injected.js');
+	script.src = chrome.extension.getURL('src/content-script/inject/injected.js');
 	var htmlRootNode = document.getElementsByTagName('html')[0];
 	htmlRootNode.appendChild(script);
 	/////////////////////////////////////////////////////////
