@@ -1,4 +1,26 @@
-<div id="first_page">
-  <p class="noNB">  No AngularJS app detected. Please open in a tab with AngularJS app. </p>
-  <p class="nb">              Detected AngularJS version $$PH_ngVersion$$            </p>
+<div id="initPage">
+  {{if tmplData.ngDetected}}
+  <p> Detected AngularJS version {{= tmplData.ngVersion.full}}({{= tmplData.ngVersion.codeName}}) </p>
+  <br> {{if tmplData.ngModule}}
+  <button type="button" class="btn btn-primary btn-lg">
+    <span>Open Module &quot; {{= tmplData.ngModule}} &quot;</span>
+  </button>
+  {{else}}
+  <div class="col-lg-3 col-md-4">
+    <p> We did not find <b>[ng-app]</b> tag.</p>
+  </div>
+  <div class="col-lg-4 col-md-4">
+    <label for="appInput">Please enter app name to start </label>
+    <span class="input-group input-group-sm">
+      <input type="text" class="form-control" id="appInput" placeholder="My App name..." value="" />
+      <span class="input-group-btn">
+        <button type="button" class="btn btn-primary btn-flat" onclick="tmplData.changebread();">
+          <span>Open Module</span>
+        </button>
+      </span>
+    </span>
+  </div>
+  {{/if}} {{else}}
+  <p> No AngularJS app detected. </p>
+  {{/if}}
 </div>

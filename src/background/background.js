@@ -69,26 +69,24 @@
 
 
 	/////////////////////////////////////////////////////////////////////////////////////
-	//            communication - content-script & devtools
+	//            communication - content-script & panel
 	/////////////////////////////////////////////////////////////////////////////////////
-	var devtoolsMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.BACKGROUND,
-		birbalJS.END_POINTS.DEVTOOLS);
-	var informDevtools = function (tabId, info, task) {
-		var tab = tabs.getPort(tabId, birbalJS.END_POINTS.DEVTOOLS);
-		var msg = new devtoolsMessage(info);
+	var panelMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.BACKGROUND, birbalJS.END_POINTS.PANEL);
+	var informPanel = function (tabId, info, task) {
+		var tab = tabs.getPort(tabId, birbalJS.END_POINTS.PANEL);
+		var msg = new panelMessage(info);
 		msg.task = task || msg.task;
 		if (tab) {
 			tab.postMessage(msg);
 		} else {
 			log(
-				'WARNING: devtools tab Connection doesnot exists. incorrect tabId or connection is closed. Retry later. message tried'
+				'WARNING: panel tab Connection doesnot exists. incorrect tabId or connection is closed. Retry later. message tried'
 			);
 			log(msg);
 		}
 	};
 
-	var contentMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.BACKGROUND,
-		birbalJS.END_POINTS.CONTENTSCRIPT);
+	var contentMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.BACKGROUND, birbalJS.END_POINTS.CONTENTSCRIPT);
 	/**
 		send information to content-script.
 		@param tabId{number} must
@@ -115,12 +113,12 @@
 	/////////////////////////////////////////////////////////
 	temp.csActions = {};
 	temp.csActions.ngDetect = function () {
-		var messageData = this.message.data;
-		tabs[this.tabId]['ngDetect'] = messageData;
+		var messageData = self.message.data;
+		tabs[self.tabId]['ngDetect'] = messageData;
 		// angular page >> add , not angular page >> remove
-		var taskForDevTools = messageData.ngDetected ? 'addPanel' : 'removePanel';
-		informDevtools(tabId, messageData, taskForPanel);
-		this.status = 'ngDetect/' + taskForDevTools;
+		var taskForpanel = messageData.ngDetected ? 'addPanel' : 'removePanel';
+		informPanel(self.tabId, messageData, taskForpanel);
+		this.status = 'ngDetect-' + taskForpanel;
 	};
 
 	var csBuilder = birbalJS.actionBuilder.build(temp.csActions);
@@ -128,31 +126,27 @@
 	delete temp.csActions;
 
 	/////////////////////////////////////////////////////////
-	//            devtools actionBuilder
+	//            panel actionBuilder
 	/////////////////////////////////////////////////////////
-	temp.dtActions = {};
-	temp.dtActions.init = function () {
+	temp.panelActions = {};
+	temp.panelActions.init = function () {
 		// run pending tasks
-		var ngDetect = tabs[this.tabId]['ngDetect'],
-			task;
-		if (ngDetect && ngDetect.ngDetected) {
-			// angular detected in content
-			task = 'addPanel';
-			informDevtools(tabId, ngDetect, task);
-		}
-		this.status = 'initialized/' + task;
+		var ngDetect = tabs[self.tabId]['ngDetect'];
+		var task = ngDetect && ngDetect.ngDetected ? 'addPanel' : 'removePanel';
+		informPanel(self.tabId, ngDetect, task);
+		this.status = 'initialized-' + task;
 	};
 
-	var dtBuilder = birbalJS.actionBuilder.build(temp.dtActions);
+	var panelBuilder = birbalJS.actionBuilder.build(temp.panelActions);
 	// deleting it as no longer needed.
-	delete temp.dtActions;
+	delete temp.panelActions;
 	/////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////
 
 	// Fired when the extension is first installed, when the extension is updated to a new version, and when Chrome is updated to a new version.
 	chrome.runtime.onInstalled.addListener(function onInstalledCallback(details) {
-		log('onInstalledCallback: ' + details.reason);
-		// log(details);
+		log('on' + details.reason + 'Callback: ');
+		log(details);
 		// on update or reload, cleanup and restart.
 	});
 
@@ -162,41 +156,34 @@
 	/////////////////////////////////////////////////////////
 	// Fired when a connection is made from either an extension process or a content script.
 	// on reload of page, reopen of page, new connection, etc.
-	chrome.runtime.onConnect.addListener(function onConnectCallback(
-		connectingPort) {
+	chrome.runtime.onConnect.addListener(function onConnectCallback(connectingPort) {
 		log('onConnectCallback, connectingPort-' + connectingPort.name);
+
 		var connectionName = connectingPort.name;
-		var devtoolsMsgListener = function (message, sender, sendResponse) {
-			log('devtoolsMsgListener');
-			var builder = new dtBuilder(message, connectingPort, birbalJS.END_POINTS
-				.BACKGROUND, sender, sendResponse);
-			// adding port if not exists
-			tabs.addPort(builder.tabId, connectingPort, connectionName);
-			builder.destPort = tabs.getPort(builder.tabId, message.destPort);
-			builder.takeAction();
-			log('devtools #' + builder.tabId + ' msg action status? ' + builder.status);
-		};
-		var contentScriptMsgListener = function (message, contentPort, sendResponse) {
-			log('contentScriptMsgListener');
-			var builder = new csBuilder(message, connectingPort, birbalJS.END_POINTS
-				.BACKGROUND, sender, sendResponse);
-			// adding port if not exists
-			tabs.addPort(builder.tabId, connectingPort, connectionName);
-			builder.destPort = tabs.getPort(builder.tabId, message.destPort);
-			builder.takeAction();
-			log('content-script #' + builder.tabId + ' msg action status? ' +
-				builder.status);
-		};
+
 		var panelMsgListener = function (message, sender, sendResponse) {
 			log('panelMsgListener');
-			// log(message);
-			// log(sender);
-			// log(sendResponse);
+			var builder = new panelBuilder(message, connectingPort, birbalJS.END_POINTS.BACKGROUND, sender, sendResponse);
+			// adding port if not exists
+			tabs.addPort(builder.tabId, connectingPort, connectionName);
+			builder.destPort = tabs.getPort(builder.tabId, message.dest);
+			builder.takeAction();
+			log('panel #' + builder.tabId + ' msg action status? ' + builder.status);
+		};
+
+		var contentScriptMsgListener = function (message, sender, sendResponse) {
+			log('contentScriptMsgListener');
+			var builder = new csBuilder(message, connectingPort, birbalJS.END_POINTS.BACKGROUND, sender, sendResponse);
+			// adding port if not exists
+			tabs.addPort(builder.tabId, connectingPort, connectionName);
+			builder.destPort = tabs.getPort(builder.tabId, message.dest);
+			builder.takeAction();
+			log('content-script #' + builder.tabId + ' msg action status? ' + builder.status);
 		};
 
 		var msgListener;
-		if (connectionName === birbalJS.END_POINTS.DEVTOOLS) {
-			msgListener = devtoolsMsgListener;
+		if (connectionName === birbalJS.END_POINTS.PANEL) {
+			msgListener = panelMsgListener;
 		} else if (connectionName === birbalJS.END_POINTS.CONTENTSCRIPT) {
 			msgListener = contentScriptMsgListener;
 		}
@@ -207,8 +194,7 @@
 			// notify other connections to same tab
 			// cleanup for disconnectingPort
 			disconnectingPort.onMessage.removeListener(msgListener);
-			log('After DisconnectCallback, removed tab #' + tabId + ': ' +
-				connectionName);
+			log('After DisconnectCallback, removed tab #' + tabId + ': ' + connectionName);
 		};
 
 		// Bind connection,  message, events

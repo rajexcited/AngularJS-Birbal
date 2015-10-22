@@ -92,7 +92,7 @@
 				// send message to BG to clean up resources and connections.
 				log('birbal says stop, It is empty.');
 			}
-			informBackground(winmessage.data);
+			informBackground(winmessage.data, winmessage.task);
 		}
 		///////////////
 	}, false);

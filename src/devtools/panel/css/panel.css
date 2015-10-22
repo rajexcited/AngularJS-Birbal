@@ -1,0 +1,48 @@
+/*  remove if not needed  */
+.no-pad-top-force {padding-top: 0!important;}
+.no-pad-bottom-force {padding-bottom: 0!important;}
+.no-pad-right-force {padding-right: 0!important;}
+.no-pad-left-force {padding-left: 0!important;}
+/****/
+
+@media (max-width: 767px) {
+  /*  remove if not needed  */
+  .no-pad-top-xs {padding-top: 0!important;}
+  .no-pad-top-force-xs {padding-top: 0!important;}
+  .no-pad-bottom-xs {padding-bottom: 0!important;}
+  .no-pad-bottom-force-xs {padding-bottom: 0!important;}
+  .no-pad-right-xs {padding-right: 0!important;}
+  .no-pad-right-force-xs {padding-right: 0!important;}
+  .no-pad-left-xs {padding-left: 0!important;}
+  .no-pad-left-force-xs {padding-left: 0!important;}
+  /********/
+  /* TODO remove from ADMINLTE.min.css*/
+  .main-sidebar {padding-top: 50px;}
+}
+
+@media (min-width: 768px) and (max-width:991px) {
+  /* remove if not needed*/
+  .no-pad-top-force-sm {padding-top: 0!important;}
+  .no-pad-bottom-force-sm {padding-bottom: 0!important;}
+  .no-pad-right-force-sm {padding-right: 0!important;}
+  .no-pad-left-force-sm {padding-left: 0!important;}
+  /***********/
+}
+
+@media (min-width: 992px) and (max-width:1199px) {
+  /*  remove if not needed  */
+  .no-pad-top-force-md {padding-top: 0!important;}
+  .no-pad-bottom-force-md {padding-bottom: 0!important;}
+  .no-pad-right-force-md {padding-right: 0!important;}
+  .no-pad-left-force-md {padding-left: 0!important;}
+  /***********/
+}
+
+@media (min-width: 1200px) {
+  /*  remove if not needed  */
+  .no-pad-top-force-lg {padding-top: 0!important;}
+  .no-pad-bottom-force-lg {padding-bottom: 0!important;}
+  .no-pad-right-force-lg {padding-right: 0!important;}
+  .no-pad-left-force-lg {padding-left: 0!important;}
+  /*************/
+}

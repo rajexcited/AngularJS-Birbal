@@ -19,8 +19,11 @@
 			var src = element.data(INCLUDE_HTML_DATA);
 			if (src) {
 				element.data('includeStatus', 'started');
-				element.load(src, function (responseText, textStatus) {
+				var htmlCaller = {};
+				$(htmlCaller).load(src, function (responseText, textStatus, jqXHR) {
 					element.data('includeStatus', textStatus);
+					$(responseText).render(element.data()).appendTo(element);
+					element.click();
 				});
 			}
 		} catch (e) {

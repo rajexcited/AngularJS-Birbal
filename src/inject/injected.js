@@ -23,52 +23,51 @@
 	/////////////////////////////////////////////////////////
 	//            Message setup
 	/////////////////////////////////////////////////////////
-	var messageImpl = function (msgDetails) {
-		// add details to data
-		this.data = msgDetails;
-		if (msgDetails) {
-			this.task = msgDetails.task;
-			delete msgDetails.task;
-		}
+	var birbalImpl = function () {};
+	birbalImpl.prototype.ngVersion = function () {
+		return window.angular && window.angular.version;
 	};
 
-	var getMessageBuilder = function (srcChannel, destEndPoint) {
+	birbalImpl.prototype.getMessageBuilder = function (srcChannel, destEndPoint) {
 		return function message(msgDetails) {
-			this.source = srcChannel;
-			this.dest = destEndPoint || 'content-script';
+			self = this;
+			self.source = srcChannel;
+			self.dest = destEndPoint || 'content-script';
 			// this.name = 'birbalMessage';
-			this.name = 'window-message';
-			this.app = 'ngBirbal'
-			messageImpl.call(this, msgDetails);
+			self.name = 'window-message';
+			self.app = 'ngBirbal'
+				// add details to data
+			self.data = msgDetails;
+			if (msgDetails) {
+				self.task = msgDetails.task;
+				delete msgDetails.task;
+			}
 		};
 	};
-	/////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////
 
-	var birbal = function () {};
-	birbal.prototype.ngVersion = function () {
-		return window.angular && window.angular.version;
-	}
-	log('injected.js loading\n\t- prepare for init message');
+	/////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////
+	var birbalJS = new birbalImpl();
+	locallog('injected.js loading\n\t- prepare for init message');
 
 	/////////////////////////////////////////////////////////
 	//            Communication
 	/////////////////////////////////////////////////////////
-	var contentMessage = getMessageBuilder('injected');
+	var contentMessage = birbalJS.getMessageBuilder('injected');
 	var broadcastMessage = function (info, task) {
 		var msg = new contentMessage(info);
-		window.postMessage(msg);
+		window.postMessage(msg, '*');
 	};
 
-	log('Now listen for win message.');
+	locallog('Now listen for win message.');
 	window.addEventListener('message', function contentMsgListener(event) {
 		// We only accept messages from ourselves
 		// We only accept message for our app and destination specified as this file.
 		if (event.source != window || !event.data || event.data.app !== 'ngBirbal' || event.data.dest !== 'injected') {
 			return;
 		}
-		log('in contentMsgListener');
-		log(event.data);
+		locallog('in contentMsgListener');
+		locallog(event.data);
 	}, false);
 	/////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////
@@ -80,7 +79,7 @@
 		window.setTimeout(initNgBirbal, 0);
 	} else {
 		window.addEventListener('load', function () {
-			log('onload called');
+			locallog('onload called');
 			window.setTimeout(initNgBirbal, 0);
 		}, false);
 	}
@@ -88,12 +87,44 @@
 	function initNgBirbal() {
 		var info = {
 			task: 'ngDetect',
-			ngVersion: birbal.ngVersion()
+			ngVersion: birbalJS.ngVersion(),
+			ngModule: getNgApp()
 		};
 
 		info.ngDetected = !!info.ngVersion;
-		//log(info);
+		//locallog(info);
 		broadcastMessage(info);
+	}
+
+	function getNgApp() {
+		var ngRootNode = birbalJS.angularRootNode = angular.element(document.querySelector('.ng-scope'));
+		birbalJS._angularInjector = ngRootNode.injector();
+		var appname, i,
+			attributes = ngRootNode[0].attributes,
+			len = attributes.length;
+		for (i = 0; i < len; i++) {
+			if (normalizeAngularAttr(attributes[i].name) === 'ngApp') {
+				appname = attributes[i].value;
+				break;
+			}
+		}
+		return appname;
+	}
+
+	var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i;
+	var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;
+	var MOZ_HACK_REGEXP = /^moz([A-Z])/;
+
+	/**
+	 * Converts all attributes format into proper angular name.
+	 * @param name Name to normalize
+	 */
+	function normalizeAngularAttr(name) {
+		return name.replace(PREFIX_REGEXP, '')
+			.replace(SPECIAL_CHARS_REGEXP, function (_, separator, letter, offset) {
+				return offset ? letter.toUpperCase() : letter;
+			})
+			.replace(MOZ_HACK_REGEXP, 'Moz$1');
 	}
 	/////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////
