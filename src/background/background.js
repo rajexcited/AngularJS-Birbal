@@ -7,23 +7,22 @@
 	//            LOGGER FOR DEVELOPMENT ONLY
 	/////////////////////////////////////////////////////////
 	// define 'noop' by default
-	var log = function () {};
+	var locallog = function () {};
 	if (birbalJS.debugMode) {
-		log = function (any) {
+		locallog = function (any) {
 			console.log(any);
 		};
-		birbalJS.proxylog = log;
 	}
 	/////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////
 	var temp = {};
-	log('background.js loading');
+	locallog('background.js loading');
 
 	/////////////////////////////////////////////////////////
 	//            TABS - CONNECTIONS and PROTOTYPE
 	/////////////////////////////////////////////////////////
 	var tabs = {};
-	// prototype for basic functionality
+	// tab prototype
 	tabs.__proto__ = {
 		getPort: function (tabId, portName) {
 			return portName && this[tabId] && this[tabId][portName];
@@ -79,10 +78,10 @@
 		if (tab) {
 			tab.postMessage(msg);
 		} else {
-			log(
-				'WARNING: panel tab Connection doesnot exists. incorrect tabId or connection is closed. Retry later. message tried'
+			locallog(
+				'WARNING: panel tab Connection doesnot exists. incorrect tabId or connection is closed. Retry later. message tried....'
 			);
-			log(msg);
+			locallog(msg);
 		}
 	};
 
@@ -101,10 +100,10 @@
 			tab.postMessage(msg);
 		} else {
 			tabs.removeTab(tabId);
-			log(
-				'SEVERE ERROR: content script tab Connection doesnot exists. incorrect tabId #' +
-				tabId + '. Connection is closed. Cleaning resource.');
-			log(msg);
+			locallog(
+				'SEVERE ERROR: content script tab Connection doesnot exists. incorrect tabId #' + tabId +
+				'. Connection is closed. Cleaning resource......');
+			locallog(msg);
 		}
 	};
 
@@ -145,8 +144,8 @@
 
 	// Fired when the extension is first installed, when the extension is updated to a new version, and when Chrome is updated to a new version.
 	chrome.runtime.onInstalled.addListener(function onInstalledCallback(details) {
-		log('on' + details.reason + 'Callback: ');
-		log(details);
+		locallog('on' + details.reason + 'Callback: ');
+		locallog(details);
 		// on update or reload, cleanup and restart.
 	});
 
@@ -157,44 +156,47 @@
 	// Fired when a connection is made from either an extension process or a content script.
 	// on reload of page, reopen of page, new connection, etc.
 	chrome.runtime.onConnect.addListener(function onConnectCallback(connectingPort) {
-		log('onConnectCallback, connectingPort-' + connectingPort.name);
-
+		locallog('onConnectCallback, connectingPort-' + connectingPort.name);
 		var connectionName = connectingPort.name;
 
-		var panelMsgListener = function (message, sender, sendResponse) {
-			log('panelMsgListener');
+		function panelMsgListener(message, sender, sendResponse) {
+			locallog('panelMsgListener');
 			var builder = new panelBuilder(message, connectingPort, birbalJS.END_POINTS.BACKGROUND, sender, sendResponse);
 			// adding port if not exists
 			tabs.addPort(builder.tabId, connectingPort, connectionName);
 			builder.destPort = tabs.getPort(builder.tabId, message.dest);
 			builder.takeAction();
-			log('panel #' + builder.tabId + ' msg action status? ' + builder.status);
-		};
+			locallog('panel #' + builder.tabId + ' msg action status? ' + builder.status);
+		}
 
-		var contentScriptMsgListener = function (message, sender, sendResponse) {
-			log('contentScriptMsgListener');
+		function contentScriptMsgListener(message, sender, sendResponse) {
+			locallog('contentScriptMsgListener');
 			var builder = new csBuilder(message, connectingPort, birbalJS.END_POINTS.BACKGROUND, sender, sendResponse);
 			// adding port if not exists
 			tabs.addPort(builder.tabId, connectingPort, connectionName);
 			builder.destPort = tabs.getPort(builder.tabId, message.dest);
 			builder.takeAction();
-			log('content-script #' + builder.tabId + ' msg action status? ' + builder.status);
-		};
+			locallog('content-script #' + builder.tabId + ' msg action status? ' + builder.status);
+		}
 
 		var msgListener;
 		if (connectionName === birbalJS.END_POINTS.PANEL) {
 			msgListener = panelMsgListener;
+			// deleting others to avoid memory leaks
+			// delete onportconn.contentScriptMsgListener;
 		} else if (connectionName === birbalJS.END_POINTS.CONTENTSCRIPT) {
 			msgListener = contentScriptMsgListener;
+			// deleting others to avoid memory leaks
+			// delete onportconn.panelMsgListener;
 		}
 
-		var onDisconnectCallback = function (disconnectingPort) {
-			log('onDisconnectCallback');
+		function onDisconnectCallback(disconnectingPort) {
+			locallog('onDisconnectCallback');
 			var tabId = tabs.removePort(disconnectingPort);
 			// notify other connections to same tab
 			// cleanup for disconnectingPort
 			disconnectingPort.onMessage.removeListener(msgListener);
-			log('After DisconnectCallback, removed tab #' + tabId + ': ' + connectionName);
+			locallog(tabs.length + 'After DisconnectCallback, removed tab #' + tabId + ': ' + connectionName);
 		};
 
 		// Bind connection,  message, events

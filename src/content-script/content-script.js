@@ -8,16 +8,21 @@
 	//            LOGGER FOR content-script
 	/////////////////////////////////////////////////////////
 	// define 'noop' by default
-	var log = proxylog = function () {};
+	var locallog = proxylog = function () {};
 	if (birbalJS.debugMode) {
 		// assign console.log or proxy logs
-		log = function (any) {
+		locallog = function (any) {
+			if (typeof any === 'string') {
+				any = 'content-script: ' + any;
+			} else {
+				console.log('content-script: ');
+			}
 			console.log(any);
 		};
 	}
 	/////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////
-	log('content-script.js loading');
+	locallog('content-script is loading. getting ready.....setup Background connection');
 
 	/////////////////////////////////////////////////////////
 	//            Background connection setup
@@ -27,7 +32,6 @@
 		name: birbalJS.END_POINTS.CONTENTSCRIPT
 	});
 
-	log('prepare for init message to BG');
 	var backgroundMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.CONTENTSCRIPT);
 	var informBackground = function (info, task) {
 		var msg = new backgroundMessage(info);
@@ -49,20 +53,18 @@
 	/////////////////////////////////////////////////////////
 	backgroundConnection.onMessage.addListener(function bgMsgListener(message, sender, sendResponse) {
 		// in background message listener
-		log('bgMsgListener');
 		var actionBuilder =
 			new csBuilder(message, backgroundConnection, birbalJS.END_POINTS.CONTENTSCRIPT, sender, sendResponse);
-		builder.takeAction();
-		log('background connection, msg action status? ' + builder.status);
+		actionBuilder.takeAction();
+		locallog('background connection, msg action status? ' + actionBuilder.status);
 	});
 	/////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////
 
-
-	log('setup for communication to Injected js.');
 	/////////////////////////////////////////////////////////
 	//            Inject Script Communication setup
 	/////////////////////////////////////////////////////////
+	locallog('setup for communication to all Injected files');
 	var injectedMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.CONTENTSCRIPT, 'injected');
 	var broadcastMessage = function (info) {
 		var msg = new injectedMessage(info);
@@ -80,32 +82,40 @@
 			return;
 		}
 
-		log('in injectedMsgListener');
+		locallog('in injectedMsgListener');
 		var winmessage = event.data;
-		// log(winmessage);
 		if (winmessage.task === 'ngDetect') {
+			// this is coming from angularDetect injector
 			if (winmessage.data.ngDetected) {
 				// send message to BG for connecting and inspecting app
-				// innject birbal file
-				log('birbal says you can start.');
+				locallog('birbal finds angular app in page');
+				injectScript('AngularStats');
 			} else {
 				// send message to BG to clean up resources and connections.
-				log('birbal says stop, It is empty.');
+				locallog('birbal doesnot find angular app. cleanup resources. Bye');
 			}
 			informBackground(winmessage.data, winmessage.task);
 		}
 		///////////////
 	}, false);
 
-	log('injecting script');
+	/////////////////////////////////////////////////////////
+	//            Inject Script Communication setup
+	/////////////////////////////////////////////////////////
 	// after all listeners
-	// Add injected script to the page
-	var script = document.createElement('script');
-	// script.type = 'text/javascript';
-	script.src = chrome.extension.getURL('src/content-script/inject/injected.js');
-	var htmlRootNode = document.getElementsByTagName('html')[0];
-	htmlRootNode.appendChild(script);
-	/////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////
+	locallog('injecting angularDetect script');
 
+	function injectScript(name) {
+		var htmlRootNode = document.getElementsByTagName('html')[0];
+		htmlRootNode.setAttribute('data-birbal-debug', birbalJS.debugMode);
+		// inject script to the page
+		var script = document.createElement('script');
+		script.id = 'birbal-' + name;
+		script.src = chrome.extension.getURL('src/content-script/inject/' + name + '.js');
+		htmlRootNode.appendChild(script);
+	}
+
+	injectScript('angularDetect');
+	/////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////
 })(chrome, birbalJS, window, document);
