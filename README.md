@@ -29,3 +29,4 @@ Following features/ functionalities, I'm trying to provide.
 
 [See development progress] (https://github.com/rajexcited/AngularJS-Birbal/blob/master/developmentPhases)
 
+Master is a development branch
