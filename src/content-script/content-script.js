@@ -45,7 +45,7 @@
 	var temp = {};
 	temp.csActions = {};
 	temp.csActions.runAnalysis = function () {
-		var appname = self.message.data.ngModule;
+		var appname = this.message.data.ngModule;
 		document.querySelector('.ng-scope').setAttribute('data-birbal-detected-app', appname);
 		injectScript('angularinspector');
 	};

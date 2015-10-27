@@ -45,9 +45,10 @@
   var temp = {};
   temp.panelActions = {};
   temp.panelActions.addPanel = function () {
+    var action = this;
     // initialize panel with graphs and information
     birbalJS.on('documentLoad', function (event) {
-      var messageData = self.message.data || {};
+      var messageData = action.message.data || {};
       var contentBody = $('#contentBody');
       contentBody.data({
         tmplData: messageData
@@ -73,19 +74,20 @@
       contentBody.attr('data-include-html', 'partials/initPage.html');
     });
 
-    self.status('panelAdded');
+    action.status('panelAdded');
   };
 
   temp.panelActions.removePanel = function () {
+    var action = this;
     // initialize panel with information and links to this project
     birbalJS.on('documentLoad', function (event) {
-      var messageData = self.message.data || {};
+      var messageData = action.message.data || {};
       $('#contentBody').data({
         tmplData: messageData
       });
       $('#contentBody').attr('data-include-html', 'partials/initPage.html');
     });
-    self.status('panelRemoved');
+    action.status('panelRemoved');
   };
 
   var panelBuilder = birbalJS.actionBuilder.build(temp.panelActions);

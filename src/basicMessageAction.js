@@ -16,14 +16,14 @@
   /////////////////////////////////////////////////////////
 
   var basicMessageExecutor = function (message, srcPort, destPort, sender, sendResponse) {
-    self.message = message;
-    self.srcPort = srcPort;
-    self.destPort = destPort;
-    self.sender = sender;
-    self.sendResponse = sendResponse;
-    self.tabId = self.message.tabId || (self.srcPort.sender && self.srcPort.sender.tab && self.srcPort.sender.tab.id);
+    this.message = message;
+    this.srcPort = srcPort;
+    this.destPort = destPort;
+    this.sender = sender;
+    this.sendResponse = sendResponse;
+    this.tabId = this.message.tabId || (this.srcPort.sender && this.srcPort.sender.tab && this.srcPort.sender.tab.id);
     // status is used to track actions
-    self._status = 'ready';
+    this._status = 'ready';
   };
 
   // priority to log message
@@ -32,9 +32,9 @@
   // 3. data
   // 4. message
   basicMessageExecutor.prototype.log = function (logMsg) {
-    logMsg = logMsg || (self.message.data && self.message.data.log) || self.message.data || self.message;
+    logMsg = logMsg || (this.message.data && this.message.data.log) || this.message.data || this.message;
     locallog(logMsg);
-    self.status('logged');
+    this.status('logged');
   };
 
   /**
@@ -42,23 +42,23 @@
   */
   basicMessageExecutor.prototype.status = function (_status) {
     if (_status) {
-      self._status.concat(', ' + _status);
+      this._status.concat(', ' + _status);
     }
-    return self._status;
+    return this._status;
   };
 
   basicMessageExecutor.prototype.takeAction = function () {
     // execute given message
     // this.status = 'takingAction';
-    if (!self.destPort || self.destPort === self.srcPort || self.destPort === self.srcPort.name) {
-      self.status('finish');
-      self[self.message.task]();
+    if (!this.destPort || this.destPort === this.srcPort || this.destPort === this.srcPort.name) {
+      this.status('finish');
+      this[this.message.task]();
     } else {
       locallog(
         'delegating message to correct destPort....here acting as a median'
       );
-      self.destPort.postMessage(self.message);
-      self.status('delegated');
+      this.destPort.postMessage(this.message);
+      this.status('delegated');
     }
   };
 
@@ -75,7 +75,6 @@
       newproto[action] = newActions[action];
     }
     var basicMessageExecutorImpl = function (message, srcPort, destPort, sender, sendResponse) {
-      basicMessageExecutor.prototype.self = this;
       basicMessageExecutor.call(this, message, srcPort, destPort, sender, sendResponse);
     };
     basicMessageExecutorImpl.prototype = newproto;

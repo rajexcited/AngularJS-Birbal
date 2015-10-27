@@ -17,22 +17,21 @@
   //            message constructor
   /////////////////////////////////////////////////////////
   var messageImpl = function (msgDetails) {
-    self.tabId = chrome.devtools && chrome.devtools.inspectedWindow && chrome.devtools.inspectedWindow.tabId;
+    this.tabId = chrome.devtools && chrome.devtools.inspectedWindow && chrome.devtools.inspectedWindow.tabId;
     // add details to data
-    self.data = msgDetails;
+    this.data = msgDetails;
     if (msgDetails) {
-      self.task = msgDetails.task;
+      this.task = msgDetails.task;
       delete msgDetails.task;
     }
   };
 
   var getMessageBuilder = function (srcChannel, destEndPoint) {
     return function message(msgDetails) {
-      self = this;
-      self.source = srcChannel;
-      self.dest = destEndPoint || endPoints.BACKGROUND;
-      self.name = 'birbalMessage';
-      messageImpl.call(self, msgDetails);
+      this.source = srcChannel;
+      this.dest = destEndPoint || endPoints.BACKGROUND;
+      this.name = 'birbalMessage';
+      messageImpl.call(this, msgDetails);
     };
   };
   /////////////////////////////////////////////////////////
@@ -44,7 +43,7 @@
   /////////////////////////////////////////////////////////
   // creating prototype
   var BirbalJS = function () {
-    self = this;
+    var self = this;
     self.END_POINTS = endPoints;
     // true for development only
     self.debugMode = true;

@@ -45,7 +45,7 @@
 	//            listener and communication
 	/////////////////////////////////////////////////////////
 	function message(msgDetails) {
-		self = this;
+		var self = this;
 		self.source = 'angularinspector';
 		self.dest = 'content-script';
 		self.name = 'window-message';
