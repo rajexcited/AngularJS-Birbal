@@ -19,11 +19,11 @@
 			var src = element.data(INCLUDE_HTML_DATA);
 			if (src) {
 				element.data('includeStatus', 'started');
-				var htmlCaller = {};
+				var htmlCaller = element.data();
 				$(htmlCaller).load(src, function (responseText, textStatus, jqXHR) {
 					element.data('includeStatus', textStatus);
 					$(responseText).render(element.data()).appendTo(element);
-					element.click();
+					element.trigger('afterload', textStatus);
 				});
 			}
 		} catch (e) {

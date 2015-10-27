@@ -44,6 +44,12 @@
 	/////////////////////////////////////////////////////////
 	var temp = {};
 	temp.csActions = {};
+	temp.csActions.runAnalysis = function () {
+		var appname = self.message.data.ngModule;
+		document.querySelector('.ng-scope').setAttribute('data-birbal-detected-app', appname);
+		injectScript('angularinspector');
+	};
+
 	var csBuilder = birbalJS.actionBuilder.build(temp.csActions);
 	// deleting it as no longer needed.
 	delete temp.csActions;
@@ -56,7 +62,7 @@
 		var actionBuilder =
 			new csBuilder(message, backgroundConnection, birbalJS.END_POINTS.CONTENTSCRIPT, sender, sendResponse);
 		actionBuilder.takeAction();
-		locallog('background connection, msg action status? ' + actionBuilder.status);
+		locallog('background connection, msg action status? ' + actionBuilder.status());
 	});
 	/////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////
@@ -65,7 +71,7 @@
 	//            Inject Script Communication setup
 	/////////////////////////////////////////////////////////
 	locallog('setup for communication to all Injected files');
-	var injectedMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.CONTENTSCRIPT, 'injected');
+	var injectedMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.CONTENTSCRIPT, 'angularinspector');
 	var broadcastMessage = function (info) {
 		var msg = new injectedMessage(info);
 		msg.app = 'ngBirbal';
@@ -89,7 +95,6 @@
 			if (winmessage.data.ngDetected) {
 				// send message to BG for connecting and inspecting app
 				locallog('birbal finds angular app in page');
-				injectScript('AngularStats');
 			} else {
 				// send message to BG to clean up resources and connections.
 				locallog('birbal doesnot find angular app. cleanup resources. Bye');

@@ -55,20 +55,27 @@
 
 	function getAngularApp() {
 		locallog('finding app name');
-		var ngRootNode = angular.element(document.querySelector('.ng-scope')),
-			attributes = ngRootNode[0].attributes,
+		var ngRootNode = document.querySelector('.ng-scope'),
+			attributes = ngRootNode.attributes,
 			appname,
 			attrName,
-			len = attributes.length;
+			len = attributes.length,
+			rr;
 		do {
 			len--;
 			attrName = attributes.item(len).name;
 			if (normalizeAngularAttr(attrName) === 'ngApp') {
 				appname = attributes.item(len).value;
-				ngRootNode.setAttribute('birbal-detected-app', appname);
+				ngRootNode.setAttribute('data-birbal-detected-app', appname);
 				break;
 			}
 		} while (len);
+
+		if (!appname) {
+			rr = RegExp('ng-app: (.*);');
+			appname = rr.test(ngRootNode.className) ? rr.exec(ngRootNode.className)[1] : appname;
+			ngRootNode.setAttribute('data-birbal-detected-app', appname);
+		}
 
 		return appname;
 	}

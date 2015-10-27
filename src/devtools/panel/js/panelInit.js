@@ -48,31 +48,32 @@
     // initialize panel with graphs and information
     birbalJS.on('documentLoad', function (event) {
       var messageData = self.message.data || {};
-      messageData.changebread = function (argument) {
-        alert('haha');
-      };
-      $('#contentBody').data({
+      var contentBody = $('#contentBody');
+      contentBody.data({
         tmplData: messageData
       });
-      /**
-      not working
-      */
-      $('#contentBody').on('click', function () {
-        console.log(click);
-      });
-      $('#contentBody').on('afterload', function () {
-        console.log('loaded');
-        // console.log(edata);
+
+      function onbuttonClickListener(event, a, b, c) {
+        var moduleName = messageData.ngModule || contentBody.find('INPUT#appInput').val();
+        if (moduleName.trim() === '') {
+          return;
+        }
+        locallog(moduleName);
+        // register/enable/refresh
+        informBackground({
+          ngModule: moduleName,
+          task: 'runAnalysis'
+        });
+      }
+
+      contentBody.on('afterload', function (event, status) {
         // 'includeStatus'
+        contentBody.find('BUTTON').on('click', onbuttonClickListener);
       });
-      // $('#contentBody').on('beforeunload', function afterLoadListener() {
-      //   console.log('unloading');
-      //   // console.log(edata);
-      //   // 'includeStatus'
-      // });
-      $('#contentBody').attr('data-include-html', 'initPage.html');
+      contentBody.attr('data-include-html', 'partials/initPage.html');
     });
-    self.status = 'panelAdded';
+
+    self.status('panelAdded');
   };
 
   temp.panelActions.removePanel = function () {
@@ -82,9 +83,9 @@
       $('#contentBody').data({
         tmplData: messageData
       });
-      $('#contentBody').attr('data-include-html', 'initPage.html');
+      $('#contentBody').attr('data-include-html', 'partials/initPage.html');
     });
-    self.status = 'panelRemoved';
+    self.status('panelRemoved');
   };
 
   var panelBuilder = birbalJS.actionBuilder.build(temp.panelActions);
@@ -101,7 +102,7 @@
     var actionBuilder =
       new panelBuilder(message, backgroundConnection, birbalJS.END_POINTS.PANEL, sender, sendResponse);
     actionBuilder.takeAction();
-    locallog('background connection, msg action status? ' + actionBuilder.status);
+    locallog('background connection, msg action status? ' + actionBuilder.status());
   });
 
   // default first message on inspect tab load, letting app know I'm ready
