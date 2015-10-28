@@ -34,6 +34,7 @@
 			// add connection to tabs
 			var tab = this[tabId] = (this[tabId] || {});
 			tab[portName] = port;
+			tab.info = (tab.info || {});
 		},
 
 		removePort: function (port, portName) {
@@ -93,6 +94,7 @@
 		var msg = new panelMessage(info);
 		msg.task = task || msg.task;
 		if (tab) {
+			locallog(msg);
 			tab.postMessage(msg);
 		} else {
 			locallog(
@@ -114,6 +116,7 @@
 		var msg = new contentMessage(info);
 		msg.task = task || msg.task;
 		if (tab) {
+			locallog(msg);
 			tab.postMessage(msg);
 		} else {
 			tabs.removeTab(tabId);
@@ -130,7 +133,7 @@
 	temp.csActions = {};
 	temp.csActions.ngDetect = function () {
 		var messageData = this.message.data;
-		tabs[this.tabId]['ngDetect'] = messageData;
+		tabs[this.tabId]['info']['ngDetect'] = messageData;
 		// angular page >> add , not angular page >> remove
 		var taskForpanel = messageData.ngDetected ? 'addPanel' : 'removePanel';
 		informPanel(this.tabId, messageData, taskForpanel);
@@ -147,14 +150,14 @@
 	temp.panelActions = {};
 	temp.panelActions.init = function () {
 		// run pending tasks
-		var ngDetect = tabs[this.tabId]['ngDetect'];
+		var ngDetect = tabs[this.tabId]['info']['ngDetect'];
 		var task = ngDetect && ngDetect.ngDetected ? 'addPanel' : 'removePanel';
 		informPanel(this.tabId, ngDetect, task);
 		this.status('initialized-' + task);
 	};
 
 	temp.panelActions.runAnalysis = function () {
-		var ngDetect = tabs[this.tabId]['ngDetect'];
+		var ngDetect = tabs[this.tabId]['info']['ngDetect'];
 		ngDetect.ngModule = ngDetect.ngModule || this.message.data.ngModule;
 		informContentScript(this.tabId, this.message.data, this.message.task);
 	};
@@ -213,6 +216,9 @@
 		function onDisconnectCallback(disconnectingPort) {
 			locallog('onDisconnectCallback');
 			var tabId = tabs.removePort(disconnectingPort, connectionName);
+			if (connectionName === birbalJS.END_POINTS.CONTENTSCRIPT) {
+				delete tabs[tabId]['info'];
+			}
 			// notify other connections to same tab
 			// cleanup for disconnectingPort
 			disconnectingPort.onMessage.removeListener(msgListener);

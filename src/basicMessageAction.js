@@ -52,6 +52,7 @@
     // this.status = 'takingAction';
     if (!this.destPort || this.destPort === this.srcPort || this.destPort === this.srcPort.name) {
       this.status('finish');
+      this.log(this.message);
       this[this.message.task]();
     } else {
       locallog(

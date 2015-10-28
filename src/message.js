@@ -60,14 +60,14 @@
       // on document or window load
       if (document.readyState === 'complete') {
         window.setTimeout(function () {
-          // console.log('dom ready');
+          console.log('dom ready');
           // console.time('dom');
           $(document).trigger(eventName);
         }, 0);
       } else {
         window.addEventListener('load', function () {
           window.setTimeout(function () {
-            // console.log('window load');
+            console.log('window load');
             // console.timeEnd('dom');
             $(document).trigger(eventName);
           }, 0);

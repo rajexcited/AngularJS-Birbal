@@ -7,6 +7,8 @@
 
 		ex.   <div data-include-html="htmlURL" >HTML will be added here.</div>
 
+		render template with element data by adding / updating attribute
+		NOTE: if template is same but data changed, update attribute with same template url to render 
 	*/
 	var INCLUDE_HTML_ATTR = 'data-include-html',
 		INCLUDE_HTML_DATA = 'includeHtml',
@@ -19,10 +21,10 @@
 			var src = element.data(INCLUDE_HTML_DATA);
 			if (src) {
 				element.data('includeStatus', 'started');
-				var htmlCaller = element.data();
-				$(htmlCaller).load(src, function (responseText, textStatus, jqXHR) {
+				var htmlCaller = $(element.data());
+				htmlCaller.load(src, function (responseText, textStatus, jqXHR) {
 					element.data('includeStatus', textStatus);
-					$(responseText).render(element.data()).appendTo(element);
+					element.html($(responseText).render(element.data()));
 					element.trigger('afterload', textStatus);
 				});
 			}

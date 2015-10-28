@@ -71,6 +71,7 @@
         // 'includeStatus'
         contentBody.find('BUTTON').on('click', onbuttonClickListener);
       });
+      // attribute update triggers template to render with new data
       contentBody.attr('data-include-html', 'partials/initPage.html');
     });
 
@@ -85,6 +86,7 @@
       $('#contentBody').data({
         tmplData: messageData
       });
+      // attribute update triggers template to render with new data
       $('#contentBody').attr('data-include-html', 'partials/initPage.html');
     });
     action.status('panelRemoved');
