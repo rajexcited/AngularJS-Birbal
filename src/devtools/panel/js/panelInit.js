@@ -32,10 +32,11 @@
   });
 
   locallog('prepare for init message to BG');
-  var backgroundMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.PANEL);
-  var informBackground = function (info, task) {
+  var backgroundMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.PANEL, birbalJS.END_POINTS.CONTENTSCRIPT);
+  var informBackground = function (info, task, newDest) {
     var msg = new backgroundMessage(info);
     msg.task = task || msg.task;
+    msg.dest = newDest || msg.dest;
     backgroundConnection.postMessage(msg);
   };
 
@@ -65,11 +66,14 @@
           ngModule: moduleName,
           task: 'runAnalysis'
         });
+
+        contentBody.attr('data-include-html', 'partials/dashboard.html');
       }
 
-      contentBody.on('afterload', function (event, status) {
-        // 'includeStatus'
-        contentBody.find('BUTTON').on('click', onbuttonClickListener);
+      contentBody.on('afterload', function (event, data) {
+        if (data.src.indexOf('initPage.html') !== -1) {
+          contentBody.find('BUTTON#openmodulebutton').on('click', onbuttonClickListener);
+        }
       });
       // attribute update triggers template to render with new data
       contentBody.attr('data-include-html', 'partials/initPage.html');
@@ -88,9 +92,40 @@
       });
       // attribute update triggers template to render with new data
       $('#contentBody').attr('data-include-html', 'partials/initPage.html');
+      // cleanup resources
+      clearResources();
     });
     action.status('panelRemoved');
   };
+
+  temp.panelActions.greeting = function () {
+    var messageData = this.message.data;
+    $.extend($('#contentBody').data('tmplData'), messageData);
+    locallog($('#contentBody').data('tmplData'));
+    locallog('in greeting');
+    var contentBody = $('#contentBody');
+    contentBody.on('afterload', function (event, data) {
+      // 'includeStatus'
+      contentBody.find('BUTTON#communication').on('click', function onClickCommun(e) {
+        informBackground({
+          acknowledge: 'Cya later.',
+          task: 'replyHi'
+        });
+      });
+    });
+  };
+
+  var digestMeasuresBox, digestTmplData;
+  temp.panelActions.digestMeasures = function () {
+    var messageData = this.message.data;
+    digestMeasuresBox = digestMeasuresBox || $('.digestMeasuresBox');
+    digestTmplData = digestTmplData || [];
+    digestTmplData.push(messageData);
+    digestMeasuresBox.data('tmplData', digestTmplData);
+    // attribute update triggers template to render with new data
+    digestMeasuresBox.attr('data-include-html', 'partials/digestMeasures.html');
+  };
+
 
   var panelBuilder = birbalJS.actionBuilder.build(temp.panelActions);
   // deleting it as no longer needed.
@@ -111,16 +146,24 @@
 
   // default first message on inspect tab load, letting app know I'm ready
   // send after listener setup
-  informBackground(null, 'init');
+  informBackground(null, 'init', birbalJS.END_POINTS.BACKGROUND);
   /////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////
+  $('LI A#disableplugin').on('click', function (event) {
+    clearResources();
+    informBackground(null, 'disableme', birbalJS.END_POINTS.BACKGROUND);
+  });
+
+  var clearResources = function () {
+    // digest records
+    digestMeasuresBox = digestTmplData = undefined;
+  };
 
   // proxy log to background
   birbalJS.proxylog = function (anymessage) {
     informBackground({
-      task: 'log',
       log: anymessage
-    });
+    }, 'log', birbalJS.END_POINTS.BACKGROUND);
   };
 
-})(chrome, birbalJS, window);
+}(chrome, birbalJS, window));

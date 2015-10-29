@@ -26,8 +26,10 @@
 	locallog('Birbal is inspecting page to find any sign of AngularJS');
 
 	function removeMyself() {
-		var script = document.querySelector('SCRIPT#birbal-angularDetect');
-		document.getElementsByTagName('html')[0].removeChild(script);
+		window.setTimeout(function () {
+			var script = document.querySelector('SCRIPT.birbal-angularDetect');
+			document.getElementsByTagName('html')[0].removeChild(script);
+		}, 50);
 		locallog('removed myself from document');
 	}
 	/////////////////////////////////////////////////////////

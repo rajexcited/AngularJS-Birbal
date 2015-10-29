@@ -162,6 +162,13 @@
 		informContentScript(this.tabId, this.message.data, this.message.task);
 	};
 
+	temp.panelActions.disableme = function () {
+		// init panel
+		this.init();
+		// stop analysis in Injected
+		informContentScript(this.tabId, null, 'disableme');
+	};
+
 	var panelActionBuilder = birbalJS.actionBuilder.build(temp.panelActions);
 	// deleting it as no longer needed.
 	delete temp.panelActions;
@@ -216,7 +223,7 @@
 		function onDisconnectCallback(disconnectingPort) {
 			locallog('onDisconnectCallback');
 			var tabId = tabs.removePort(disconnectingPort, connectionName);
-			if (connectionName === birbalJS.END_POINTS.CONTENTSCRIPT) {
+			if (connectionName === birbalJS.END_POINTS.CONTENTSCRIPT && tabs[tabId]) {
 				delete tabs[tabId]['info'];
 			}
 			// notify other connections to same tab

@@ -41,6 +41,17 @@
 		return appname;
 	}
 
+	function removeMyself() {
+		window.setTimeout(function () {
+			var script = document.querySelector('SCRIPT.birbal-angularinspector');
+			document.getElementsByTagName('html')[0].removeChild(script);
+		}, 50);
+		locallog('removed myself from document....clearing resources...');
+		var scopePrototype = Object.getPrototypeOf(getRootScope());
+		scopePrototype.$digest = _backUp.digest;
+		_backUp = undefined;
+		ngRootNode = undefined;
+	}
 	/////////////////////////////////////////////////////////
 	//            listener and communication
 	/////////////////////////////////////////////////////////
@@ -73,6 +84,19 @@
 		}
 		locallog('in contentMsgListener');
 		locallog(event.data);
+		var winmessage = event.data,
+			info, task;
+		if (winmessage.task === 'replyHi') {
+			info = {
+				greeting: 'Nice to talk to you finally.'
+			};
+			task = 'greeting';
+		} else if (winmessage.task === 'removeme') {
+			// do something
+			removeMyself();
+			return;
+		}
+		broadcastMessage(info, task);
 	}, false);
 
 	/////////////////////////////////////////////////////////
@@ -88,26 +112,25 @@
 	function instrumentDigest() {
 		var scopePrototype = Object.getPrototypeOf(getRootScope());
 		_backUp.digest = scopePrototype.$digest;
-		var index = 0,
-			THRESHOLD = 5;
+		var starttime, digesttime;
 		scopePrototype.$digest = function $digest() {
-			performance.mark('digestStart' + index);
+			starttime = performance.now();
 			_backUp.digest.apply(this, arguments);
-			performance.mark('digestEnd' + index);
-			performance.measure('digest' + index, 'digestStart' + index, 'digestEnd' + index);
+			digesttime = performance.now() - starttime;
 			// locallog('diegst time: ');
-			locallog(performance.getEntriesByName('digest' + index));
-			index++;
-			if (index === THRESHOLD) {
-				index = index % THRESHOLD;
-				broadcastMessage(performance.getEntriesByType('measure'), 'digestMeasures');
-				performance.clearMarks();
-				performance.clearMeasures();
-			}
+			// locallog(performance.getEntriesByName('digest' + index));
+			broadcastMessage({
+				startTime: starttime,
+				duration: digesttime
+			}, 'digestMeasures');
 		};
 	}
 
 	instrumentDigest();
+	// alert('angularinspector:test communication....say hi');
+	// broadcastMessage({
+	// 	greeting: 'Hello, How are you?'
+	// }, 'greeting');
 	/////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////
 

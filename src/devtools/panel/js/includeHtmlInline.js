@@ -8,7 +8,7 @@
 		ex.   <div data-include-html="htmlURL" >HTML will be added here.</div>
 
 		render template with element data by adding / updating attribute
-		NOTE: if template is same but data changed, update attribute with same template url to render 
+		NOTE: if template is same but data changed, update attribute with same template url to render
 	*/
 	var INCLUDE_HTML_ATTR = 'data-include-html',
 		INCLUDE_HTML_DATA = 'includeHtml',
@@ -18,14 +18,22 @@
 	function loadHtml(element) {
 		try {
 			element = element instanceof HTMLElement ? $(element) : element;
-			var src = element.data(INCLUDE_HTML_DATA);
+			var src = element.attr(INCLUDE_HTML_ATTR);
+			var templatesrc = src;
 			if (src) {
 				element.data('includeStatus', 'started');
-				var htmlCaller = $(element.data());
-				htmlCaller.load(src, function (responseText, textStatus, jqXHR) {
+				templatesrc = {
+					src: src
+				};
+				$(templatesrc).load(src, function (responseText, textStatus, jqXHR) {
 					element.data('includeStatus', textStatus);
-					element.html($(responseText).render(element.data()));
-					element.trigger('afterload', textStatus);
+					$.templates[templatesrc] = jQuery.tmpl(responseText);
+
+					element.html($(templatesrc).render(element.data()));
+					element.trigger('afterload', {
+						status: textStatus,
+						src: src
+					});
 				});
 			}
 		} catch (e) {

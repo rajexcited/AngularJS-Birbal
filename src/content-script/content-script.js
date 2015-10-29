@@ -32,10 +32,11 @@
 		name: birbalJS.END_POINTS.CONTENTSCRIPT
 	});
 
-	var backgroundMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.CONTENTSCRIPT);
-	var informBackground = function (info, task) {
+	var backgroundMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.CONTENTSCRIPT, birbalJS.END_POINTS.PANEL);
+	var informBackground = function (info, task, newDest) {
 		var msg = new backgroundMessage(info);
 		msg.task = task || msg.task;
+		msg.dest = newDest || msg.dest;
 		backgroundConnection.postMessage(msg);
 	};
 
@@ -50,6 +51,11 @@
 		injectScript('angularinspector');
 	};
 
+	temp.csActions.disableme = function () {
+		//removeInjection
+		broadcastMessage(null, 'removeme');
+	};
+
 	var csBuilder = birbalJS.actionBuilder.build(temp.csActions);
 	// deleting it as no longer needed.
 	delete temp.csActions;
@@ -59,10 +65,17 @@
 	/////////////////////////////////////////////////////////
 	backgroundConnection.onMessage.addListener(function bgMsgListener(message, sender, sendResponse) {
 		// in background message listener
-		var actionBuilder =
-			new csBuilder(message, backgroundConnection, birbalJS.END_POINTS.CONTENTSCRIPT, sender, sendResponse);
-		actionBuilder.takeAction();
-		locallog('background connection, msg action status? ' + actionBuilder.status());
+		locallog(message);
+		if (message.task in csBuilder.prototype) {
+			var actionBuilder =
+				new csBuilder(message, backgroundConnection, birbalJS.END_POINTS.CONTENTSCRIPT, sender, sendResponse);
+			actionBuilder.takeAction();
+			locallog('background connection, msg action status? ' + actionBuilder.status());
+		} else {
+			broadcastMessage(message.data, message.task);
+			locallog('background connection, msg action status? broadcasted');
+		}
+
 	});
 	/////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////
@@ -72,11 +85,12 @@
 	/////////////////////////////////////////////////////////
 	locallog('setup for communication to all Injected files');
 	var injectedMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.CONTENTSCRIPT, 'angularinspector');
-	var broadcastMessage = function (info) {
+	var broadcastMessage = function (info, task) {
 		var msg = new injectedMessage(info);
+		msg.task = task || msg.task;
 		msg.app = 'ngBirbal';
 		msg.name = "window-message";
-		window.postMessage(msg);
+		window.postMessage(msg, '*');
 	};
 
 	// Listen for messages from the current page and send then to the background script for dispatch
@@ -90,6 +104,7 @@
 
 		locallog('in injectedMsgListener');
 		var winmessage = event.data;
+		locallog(winmessage);
 		if (winmessage.task === 'ngDetect') {
 			// this is coming from angularDetect injector
 			if (winmessage.data.ngDetected) {
@@ -99,8 +114,12 @@
 				// send message to BG to clean up resources and connections.
 				locallog('birbal doesnot find angular app. cleanup resources. Bye');
 			}
-			informBackground(winmessage.data, winmessage.task);
+			informBackground(winmessage.data, winmessage.task, birbalJS.END_POINTS.BACKGROUND);
+			return;
 		}
+
+		// all others are from angularinspector.js which communicates to panel
+		informBackground(winmessage.data, winmessage.task);
 		///////////////
 	}, false);
 
@@ -115,7 +134,7 @@
 		htmlRootNode.setAttribute('data-birbal-debug', birbalJS.debugMode);
 		// inject script to the page
 		var script = document.createElement('script');
-		script.id = 'birbal-' + name;
+		script.className = 'birbal-' + name;
 		script.src = chrome.extension.getURL('src/content-script/inject/' + name + '.js');
 		htmlRootNode.appendChild(script);
 	}

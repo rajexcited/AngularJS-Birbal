@@ -2,7 +2,7 @@
   {{if tmplData.ngDetected}}
   <p> Detected AngularJS version {{= tmplData.ngVersion.full}}({{= tmplData.ngVersion.codeName}}) </p>
   <br> {{if tmplData.ngModule}}
-  <button type="button" class="btn btn-primary btn-lg">
+  <button type="button" class="btn btn-primary btn-lg" id="openmodulebutton">
     <span>Open Module &quot; {{= tmplData.ngModule}} &quot;</span>
   </button>
   {{else}}
@@ -14,7 +14,7 @@
     <span class="input-group input-group-sm">
       <input type="text" class="form-control" id="appInput" placeholder="My App name..." value="" />
       <span class="input-group-btn">
-        <button type="button" class="btn btn-primary btn-flat">
+        <button type="button" class="btn btn-primary btn-flat" id="openmodulebutton">
           <span>Open Module</span>
         </button>
       </span>
@@ -22,5 +22,13 @@
   </div>
   {{/if}} {{else}}
   <p> No AngularJS app detected. </p>
+
+  {{/if}} {{if !!tmplData.greeting}}
+  <p>
+    angularinspector says: {{= tmplData.greeting}}
+    <button type="button" class="btn btn-primary btn-flat" id="communication">
+      <span>Reply</span>
+    </button>
+  </p>
   {{/if}}
 </div>

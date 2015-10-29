@@ -1,0 +1,25 @@
+<div class="box">
+  <div class="box-header">
+    <h3 class="box-title">Digest Measure Table</h3>
+  </div>
+  <!-- /.box-header -->
+  <div class="box-body no-padding">
+    <table class="table table-striped">
+      <tbody>
+        <tr>
+          <th style="width: 10px">#</th>
+          <th>start time (ms)</th>
+          <th>duration (ms)</th>
+        </tr>
+        {{each(ind,measure) tmplData}}
+        <tr>
+          <td>{{= (ind+1)}}</td>
+          <td>{{= measure.startTime}}</td>
+          <td> {{= measure.duration}} </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  <!-- /.box-body -->
+</div>
