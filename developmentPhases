@@ -48,7 +48,13 @@ Phase:
   2. inform panel for each digest with time data
 
 ### Goal 6: allow to be disabled
+Phase:
   1. panel disables and clear resources
   2. inform background to clean up and re-initialize
   3. remove inspector file and clear resources.
   4. init panel with angular app info
+
+### Goal 7: refactor panel setup using angular (for better templating)
+Phase:
+  1. index page for ng-app
+  2. 
