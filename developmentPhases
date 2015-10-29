@@ -31,8 +31,24 @@ Scenario:
 Phase:
   1. init content script with onload event
   2. `detect angular page `
+  3. notify panel with angular app info
 
 ### Goal 4: Create devtools panel
 Phase:
-  1. find bootstrap
+  1. find bootstrap - AdminLTE
   2. create an index page
+  3. initialize panel with angular info on connect
+  4. open button to start analysis and inform content to load injection
+  5. display dashboard
+  6. display digest list with duration in dashboard
+
+### Goal 5: injector to run analysis
+Phase:
+  1. instrument digest
+  2. inform panel for each digest with time data
+
+### Goal 6: allow to be disabled
+  1. panel disables and clear resources
+  2. inform background to clean up and re-initialize
+  3. remove inspector file and clear resources.
+  4. init panel with angular app info
