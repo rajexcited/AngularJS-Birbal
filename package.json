@@ -1,0 +1,23 @@
+{
+  "name": "angularjs-birbal",
+  "version": "0.0.1",
+  "description": "chrome extension for inspecting angular apps",
+  "dependencies": {
+    "angular": "^1.4.7",
+	"jquery": "^2.1.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rajexcited/AngularJS-Birbal.git"
+  },
+  "keywords": [
+    "angular",
+    "angularjs",
+    "chrome",
+    "extension",
+	"performance"
+  ],
+  "author": "Raj <rajexcited@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/rajexcited/AngularJS-Birbal"
+}
