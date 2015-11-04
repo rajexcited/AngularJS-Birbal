@@ -10,6 +10,9 @@
           <th style="width: 10px">#</th>
           <th>start time (ms)</th>
           <th>duration (ms)</th>
+          <th> watch count (dirty / total) </th>
+          <th> TTL errors </th>
+          <th> unCompleted digest errors </th>
         </tr>
       </thead>
       <tbody>
@@ -17,6 +20,9 @@
           <td>{{:: $index}}</td>
           <td>{{:: measure.startTime}}</td>
           <td> {{:: measure.duration}} </td>
+          <td> {{:: measure.watcherMeasures.counts.dirty}} / {{:: measure.watcherMeasures.counts.total}}</td>
+          <td>{{:: measure.watcherMeasures.ttlErrors.length}} </td>
+          <td>{{:: measure.watcherMeasures.digestError.message}} </td>
         </tr>
 
       </tbody>

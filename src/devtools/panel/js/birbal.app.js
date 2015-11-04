@@ -36,9 +36,10 @@
         $scope.$applyAsync(function () {
           $scope.view = '';
           delete $scope.csInfo;
-          // $scope.digestMeasures = {
-          //   performanceTime: []
-          // };
+          $scope.enabled = false;
+          $scope.digestMeasures = {
+            performanceTime: []
+          };
         });
       };
 
@@ -58,7 +59,7 @@
       };
 
       sidebar.changePanelView = function (viewName) {
-        if ($scope.view === 'initPage' && $scope.csInfo.ngModule) {
+        if (!$scope.enabled && $scope.csInfo.ngModule) {
           // register/enable/refresh
           backgroundService.informBackground({
             ngModule: $scope.csInfo.ngModule,
@@ -76,10 +77,12 @@
       $scope.initpage = {};
       $scope.initpage.enableMe = function () {
         // register/enable/refresh
+        $scope.csInfo.ngModule = $scope.csInfo.ngModule || $scope.csInfo.ngModuleInput;
         backgroundService.informBackground({
           ngModule: $scope.csInfo.ngModule,
           task: 'runAnalysis'
         });
+        $scope.enabled = true;
         sidebar.changePanelView('dashboard');
       };
       /////////////////////////////////////////////////////////

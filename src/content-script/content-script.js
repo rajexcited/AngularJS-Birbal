@@ -117,11 +117,11 @@
 				locallog('birbal doesnot find angular app. cleanup resources. Bye');
 			}
 			informBackground(winmessage.data, winmessage.task, birbalJS.END_POINTS.BACKGROUND);
-			return;
+		} else {
+			// all others are from angularinspector.js which communicates to panel
+			informBackground(winmessage.data, winmessage.task);
 		}
 
-		// all others are from angularinspector.js which communicates to panel
-		informBackground(winmessage.data, winmessage.task);
 		///////////////
 	}
 

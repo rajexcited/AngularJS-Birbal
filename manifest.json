@@ -6,7 +6,7 @@
   "content_scripts": [{
     "matches": ["<all_urls>"],
     "js": ["src/message.js", "src/basicMessageAction.js", "src/content-script/content-script.js"],
-    "run_at": "document_end"
+    "run_at": "document_start"
   }],
 
   "permissions": [

@@ -3,9 +3,9 @@
     <p> Detected AngularJS version {{ csInfo.ngVersion.full}}({{ csInfo.ngVersion.codeName}}) </p>
     <br>
     <button type="button" class="btn btn-primary btn-lg" ng-if=":: csInfo.ngModule" ng-click="initpage.enableMe();">
-      <span>Open Module &quot; {{:: csInfo.ngModule}} &quot;</span>
+      <span>Open Module &quot; {{csInfo.ngModule}} &quot;</span>
     </button>
-    <span ng-if=":: !csInfo.ngModule">
+    <span ng-if="!csInfo.ngModule">
       <div class="col-lg-3 col-md-4">
         <p> We did not find <b>[ng-app]</b>. </p>
       </div>
@@ -13,7 +13,7 @@
         <form name="askNgAppNameForm">
           <label for="appInput">Please enter app name to start </label>
           <span class="input-group input-group-sm">
-            <input type="text" class="form-control" id="appInput" placeholder="My App name..." required ng-model="csInfo.ngModule" />
+            <input type="text" class="form-control" id="appInput" placeholder="My App name..." required ng-model="csInfo.ngModuleInput" />
             <span class="input-group-btn">
               <button type="submit" class="btn btn-primary btn-flat" ng-click="initpage.enableMe();">
                 <span>Open Module</span>
