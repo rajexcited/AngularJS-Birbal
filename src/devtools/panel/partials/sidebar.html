@@ -1,35 +1,30 @@
 <!-- Left side column. contains the logo and sidebar -->
-<aside class="main-sidebar" style="padding-top:0px;" >
-        <!-- sidebar: style can be found in sidebar.less -->
-        <section class="sidebar">
-          <!-- Sidebar Logo -->
-          <div class="main-header">
+<aside class="main-sidebar">
+  <!-- sidebar: style can be found in sidebar.less -->
+  <section class="sidebar">
 
-            <!-- Logo -->
-            <a href="#" class="logo" data-toggle="offcanvas" role="button">
-              <!-- mini logo for sidebar mini 50x50 pixels -->
-              <span class="logo-mini">nb</span>
-              <!-- logo for regular state and mobile devices -->
-              <span class="logo-lg">AngularJS <b>Birbal</b> </span>
-            </a>
-          </div>
+    <!-- Sidebar user panel - required for sidebar-menu -->
+    <div class="user-panel">
+      <!-- empty -->
+    </div>
 
-          <!-- Sidebar user panel - required for menu -->
-          <div class="user-panel"> </div>
-
-          <!-- Sidebar Menu -->
-          <ul class="sidebar-menu">
-            <!-- Optionally, you can add icons to the links -->
-            <li class="active"><a href="#"><i class="fa fa-link"></i> <span>Link</span></a></li>
-            <li><a href="#"><i class="fa fa-link"></i> <span>Another Link</span></a></li>
-            <li class="treeview">
-              <a href="#"><i class="fa fa-link"></i> <span>Multilevel</span> <i class="fa fa-angle-left pull-right"></i></a>
-              <ul class="treeview-menu">
-                <li><a href="#">Link in level 2</a></li>
-                <li><a href="#">Link in level 2</a></li>
-              </ul>
-            </li>
-          </ul><!-- /.sidebar-menu -->
-        </section>
-        <!-- /.sidebar -->
-      </aside>
+    <!-- Sidebar Menu -->
+    <ul class="sidebar-menu">
+      <!-- Optionally, you can add icons to the links -->
+      <li ng-class="{'active': view==='dashboard'}">
+        <a href="#" ng-click="sidebar.changePanelView('dashboard');"><i class="fa fa-link"></i> <span>Dashboard</span></a></li>
+      <li ng-class="{'active': view==='testlink'}"><a href="#"><i class="fa fa-link"></i> <span>test link</span></a></li>
+      <li class="treeview">
+        <a href="#"><i class="fa fa-link"></i> <span>Multilevel</span> <i class="fa fa-angle-left pull-right"></i></a>
+        <ul class="treeview-menu">
+          <li ng-class="{'active': view==='testlevel2.1'}"><a href="#">test Link in level 2</a></li>
+          <li ng-class="{'active': view==='testlevel2.2'}"><a href="#">test Link in level 2</a></li>
+        </ul>
+      </li>
+      <li ng-class="{'active': view==='settings'}"><a href="#" ng-href="sidebar.changePanelView('settings');"><i class="fa fa-link"></i> <span>Settings</span></a></li>
+      <li><a href="#" ng-click="sidebar.disableme();"><i class="fa fa-link"></i> <span>Disable Plugin</span></a></li>
+    </ul>
+    <!-- /.sidebar-menu -->
+  </section>
+  <!-- /.sidebar -->
+</aside>

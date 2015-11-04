@@ -12,7 +12,9 @@
       console.log(any);
     }
   }
+
   /////////////////////////////////////////////////////////
+  //          message constructor
   /////////////////////////////////////////////////////////
 
   var basicMessageExecutor = function (message, srcPort, destPort, sender, sendResponse) {
@@ -26,6 +28,9 @@
     this._status = 'ready';
   };
 
+  /////////////////////////////////////////////////////////
+  //          message common prototype
+  /////////////////////////////////////////////////////////
   // priority to log message
   // 1. logMsg
   // 2. data log
@@ -63,6 +68,9 @@
     }
   };
 
+  /////////////////////////////////////////////////////////
+  //          extending message prototype
+  /////////////////////////////////////////////////////////
   // to build new prototype with additional actions
   basicMessageExecutor.__proto__ = function basicMessageProto() {};
   basicMessageExecutor.__proto__.build = function (newActions) {
@@ -83,5 +91,7 @@
   };
 
   birbalJS.actionBuilder = basicMessageExecutor;
+  /////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
 
 })(chrome, birbalJS);

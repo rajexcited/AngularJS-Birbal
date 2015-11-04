@@ -5,19 +5,20 @@
   <!-- /.box-header -->
   <div class="box-body no-padding">
     <table class="table table-striped">
-      <tbody>
+      <thead>
         <tr>
           <th style="width: 10px">#</th>
           <th>start time (ms)</th>
           <th>duration (ms)</th>
         </tr>
-        {{each(ind,measure) tmplData}}
-        <tr>
-          <td>{{= (ind+1)}}</td>
-          <td>{{= measure.startTime}}</td>
-          <td> {{= measure.duration}} </td>
+      </thead>
+      <tbody>
+        <tr ng-repeat="measure in digestMeasures.performanceTime">
+          <td>{{:: $index}}</td>
+          <td>{{:: measure.startTime}}</td>
+          <td> {{:: measure.duration}} </td>
         </tr>
-        {{/each}}
+
       </tbody>
     </table>
   </div>
