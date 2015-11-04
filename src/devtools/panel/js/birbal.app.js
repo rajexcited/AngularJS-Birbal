@@ -58,6 +58,13 @@
       };
 
       sidebar.changePanelView = function (viewName) {
+        if ($scope.view === 'initPage' && $scope.csInfo.ngModule) {
+          // register/enable/refresh
+          backgroundService.informBackground({
+            ngModule: $scope.csInfo.ngModule,
+            task: 'runAnalysis'
+          });
+        }
         actionList.changePanelView(viewName);
       };
 
