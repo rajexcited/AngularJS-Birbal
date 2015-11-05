@@ -2,13 +2,11 @@
   'use strict';
 
   angular.module('birbal-app', ['background-service-app', 'panel-view-app'])
-    .controller('panelViewController', ['$scope', 'backgroundService', function ($scope, backgroundService) {
+    .controller('panelViewController', ['$scope', 'backgroundService', '$timeout', function ($scope,
+      backgroundService, $timeout) {
       // default first message on inspect tab load, letting app know I'm ready
       // send after listener setup
       backgroundService.informBackground(null, 'init', birbalJS.END_POINTS.BACKGROUND);
-      $scope.digestMeasures = {
-        performanceTime: []
-      };
       var actionList = [];
       /////////////////////////////////////////////////////////
       //            background action listener
@@ -38,10 +36,14 @@
           delete $scope.csInfo;
           $scope.enabled = false;
           $scope.digestMeasures = {
-            performanceTime: []
+            performanceTime: [],
+            max: {},
+            debounceTime: 100
           };
         });
       };
+      // first timeinitialization
+      actionList.clearResources();
 
       actionList.digestMeasures = function (timeMeasure) {
         // initialize time measures for first time
@@ -84,10 +86,95 @@
         });
         $scope.enabled = true;
         sidebar.changePanelView('dashboard');
+        analyzeDigestMeasures();
       };
+
+      /////////////////////////////////////////////////////////
+      //            analysis on data
+      /////////////////////////////////////////////////////////
+      var lastMesuredIndex = 0;
+
+      function analyzeDigestMeasures() {
+        // create summary for digest
+        // expensive
+        var longest = $scope.digestMeasures.max.duration || 0;
+        // throttle digestMeasures.throttle.total}} / {{digestMeasures.throttle.duration
+        // each item value will be {startind:0, n:0}
+        var throttles = [];
+        // var throttles = [{
+        //   startTime: $scope.digestMeasures.performanceTime[lastMesuredIndex].startTime,
+        //   endTime: $scope.digestMeasures.performanceTime[lastMesuredIndex].startTime +
+        //     $scope.digestMeasures.performanceTime[lastMesuredIndex].duration,
+        //   n: 0,
+        //   finished: false
+        // }];
+        var debounceTime = $scope.digestMeasures.debounceTime,
+          endtime = throttle.endTime,
+          tind = 0;
+        // continue from where we left - do it only for new added ones
+        $scope.digestMeasures.performanceTime.slice(lastMesuredIndex).forEach(function (aDigest, ind, list) {
+          longest = longest < aDigest.duration ? aDigest.duration : longest;
+          // not debounce = throttle
+          aDigest.endTime = aDigest.startTime + aDigest.duration;
+          endtime = $scope.digestMeasures.performanceTime[ind + lastMesuredIndex - 1].endTime || aDigest.endTime;
+          if ((aDigest.startTime - endtime) > debounceTime) {
+            // record to throttle
+            throttles[tind].n = lastMesuredIndex + ind;
+            //   throttles[tind].finished = true;
+            //   throttles[tind].endTime = endtime;
+            //   tind++;
+            //   throttles[tind] = {startTime:aDigest.startTime,n=0};
+          } else {
+            throttles[tind] = throttles[tind] || {
+              startind: lastMesuredIndex + ind
+            };
+          }
+          // throttles[tind].n++;
+          // // for next iteration
+          // endtime = aDigest.startTime + aDigest.duration;
+        });
+        // if (!throttles[tind].finished) {
+        //   throttles[tind].finished = true;
+        //   throttles[tind].endTime = endtime;
+        // }
+        // $scope.digestMeasures.throttle = throttles.concat($scope.digestMeasures.throttle);
+        lastMesuredIndex = $scope.digestMeasures.performanceTime.length;
+        $scope.digestMeasures.max.duration =
+          Math.round(longest);
+        $timeout(analyzeDigestMeasures, 500);
+      }
       /////////////////////////////////////////////////////////
       /////////////////////////////////////////////////////////
 
     }]);
+
+
+  /////////////////////////////////////////////////////////
+  //            AdminLTE boorstrap options setup
+  /////////////////////////////////////////////////////////
+  // slimscroll not needed here
+  $.AdminLTE.options.sidebarSlimScroll = false;
+  $.fn.slimScroll = $.noop;
+  //////
+  // sidebar collapse/expand on responsive
+  var mediaWidth = $.AdminLTE.options.screenSizes.md,
+    mq = matchMedia('(max-width: ' + mediaWidth + 'px)');
+
+  function mqListener(mql) {
+    var sidebar_collapse = $('body').hasClass('sidebar-collapse');
+    if (mql.matches && !sidebar_collapse) {
+      // collapse on med
+      $($.AdminLTE.options.sidebarToggleSelector).trigger('click');
+    } else if (!mql.matches && sidebar_collapse) {
+      // expand on large
+      $($.AdminLTE.options.sidebarToggleSelector).trigger('click');
+    }
+  }
+  mq.addListener(mqListener);
+  window.setTimeout(function () {
+    mqListener(mq);
+  }, 250);
+  /////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
 
 }(angular, birbalJS));

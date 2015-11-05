@@ -4,7 +4,10 @@
 .no-pad-right-force {padding-right: 0!important;}
 .no-pad-left-force {padding-left: 0!important;}
 /****/
-
+/*  overriding boorstrap styles  */
+.fixed .content-wrapper {
+  padding-top: 10px;
+}
 @media (max-width: 767px) {
   /*  remove if not needed  */
   .no-pad-top-xs {padding-top: 0!important;}
@@ -18,6 +21,10 @@
   /********/
   /* TODO remove from ADMINLTE.min.css*/
   .main-sidebar {padding-top: 50px;}
+  /*  overriding boorstrap styles  */
+  .fixed .content-wrapper {
+    padding-top: 60px;
+  }
 }
 
 @media (min-width: 768px) and (max-width:991px) {

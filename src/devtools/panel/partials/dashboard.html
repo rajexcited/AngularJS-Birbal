@@ -2,9 +2,58 @@
 
   <p> Detected AngularJS version {{:: csInfo.ngVersion.full}}({{:: csInfo.ngVersion.codeName}}) </p>
   <br>
-    <span> <b> {{:: csInfo.ngModule}} </b></span>
-    <br><br>
-    <div ng-include="'digestMeasures.html'">
-      <span> Test digest</span>
+  <span> <b> {{:: csInfo.ngModule}} </b></span>
+  <br>
+  <br>
+  <div class="row">
+    <div class="col-md-4 col-sm-6">
+      <!-- Widget: user widget style 1 -->
+      <div class="box box-widget widget-user">
+        <!-- Add the bg color to the header using any of the bg-* classes -->
+        <div class="widget-user-header bg-aqua-active">
+          <h3 class="widget-user-username">Digest Cycles</h3>
+          <h5 class="widget-user-desc">Summary</h5>
+        </div>
+        <div class="widget-user-image">
+          <img class="img-circle" src="/img/digest_measures.jpg" alt="digestMeasures">
+        </div>
+        <div class="box-footer">
+          <div class="row">
+            <div class="col-sm-4 border-right">
+              <div class="description-block">
+                <h5 class="description-header">{{digestMeasures.performanceTime.length}}</h5>
+                <span class="description-text">Total</span>
+              </div>
+              <!-- /.description-block -->
+            </div>
+            <!-- /.col -->
+            <div class="col-sm-4 border-right">
+              <div class="description-block">
+                <h5 class="description-header">{{digestMeasures.max.duration}}</h5>
+                <span class="description-text">expensive (ms)</span>
+              </div>
+              <!-- /.description-block -->
+            </div>
+            <!-- /.col -->
+            <div class="col-sm-4">
+              <div class="description-block">
+                <h5 class="description-header">{{digestMeasures.throttle.total}} / {{digestMeasures.throttle.duration}}</h5>
+                <span class="description-text">throttle (n/ms)</span>
+              </div>
+              <!-- /.description-block -->
+            </div>
+            <!-- /.col -->
+          </div>
+          <!-- /.row -->
+        </div>
+      </div>
+      <!-- /.widget-user -->
     </div>
+    <!-- /.col -->
   </div>
+
+
+  <div ng-include="'digestMeasures.html'">
+    <span> Test digest</span>
+  </div>
+</div>
