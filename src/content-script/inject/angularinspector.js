@@ -226,12 +226,15 @@
 			dirtyCount, total, recordLog, newErrorLog,
 			derror = {},
 			errorLog = [],
-			dirtyWatch = [];
+			dirtyWatch = [],
+			dirtyScopes = {},
+			nscopes;
 
 		// default values
 		ttl = 10;
 		dirtyCount = 0;
 		total = 0;
+		nscopes = 0;
 		lastDirtyWatch = null;
 		try {
 			do { // "while dirty" loop
@@ -244,6 +247,7 @@
 							// process our watches
 							length = watchers.length;
 							total += length;
+							nscopes++;
 							while (length--) {
 								try {
 									watch = watchers[length];
@@ -254,6 +258,7 @@
 										if (((value = watch.get(current)) !== last) &&
 											!(watch.eq ? angular.equals(value, last) : (typeof value == 'number' && typeof last == 'number' && isNaN(
 												value) && isNaN(last)))) {
+											dirtyScopes[current.$id] = dirtyScopes[current.$id] + 1 || 0;
 											dirty = true;
 											watch.perflast = watch.eq ? angular.copy(value) : value;
 											lastDirtyWatch = watch;
@@ -326,7 +331,11 @@
 			},
 			expForDirty: dirtyWatch,
 			ttlErrors: errorLog,
-			digestError: derror
+			digestError: derror,
+			scopes: {
+				total: nscopes,
+				dirty: dirtyScopes
+			}
 		};
 
 		return recordLog;

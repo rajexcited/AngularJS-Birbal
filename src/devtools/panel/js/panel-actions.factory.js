@@ -13,6 +13,8 @@
       panelActions.addPanel = function () {
         // only one action to init
         $rootScope.$broadcast('panelActions', [{
+          action: 'clearResources'
+        }, {
           action: 'changePanelView',
           args: ['initPage', this.message.data]
         }]);

@@ -35,9 +35,15 @@
           $scope.view = '';
           delete $scope.csInfo;
           $scope.enabled = false;
+          $timeout.cancel(timeoutpromise);
+          timeoutpromise = undefined;
           $scope.digestMeasures = {
             performanceTime: [],
-            max: {},
+            max: {
+              watcherMeasures: {
+                scopes: {}
+              }
+            },
             debounceTime: 100
           };
         });
@@ -48,6 +54,8 @@
       actionList.digestMeasures = function (timeMeasure) {
         // initialize time measures for first time
         $scope.$applyAsync(function () {
+          timeMeasure.startTime = Math.round(timeMeasure.startTime);
+          timeMeasure.duration = Math.round(timeMeasure.duration);
           $scope.digestMeasures.performanceTime.push(timeMeasure);
         });
       };
@@ -92,56 +100,98 @@
       /////////////////////////////////////////////////////////
       //            analysis on data
       /////////////////////////////////////////////////////////
-      var lastMesuredIndex = 0;
+      var lastMesuredIndex = 0,
+        timeoutpromise;
 
       function analyzeDigestMeasures() {
         // create summary for digest
         // expensive
         var longest = $scope.digestMeasures.max.duration || 0;
-        // throttle digestMeasures.throttle.total}} / {{digestMeasures.throttle.duration
-        // each item value will be {startind:0, n:0}
-        var throttles = [];
-        // var throttles = [{
-        //   startTime: $scope.digestMeasures.performanceTime[lastMesuredIndex].startTime,
-        //   endTime: $scope.digestMeasures.performanceTime[lastMesuredIndex].startTime +
-        //     $scope.digestMeasures.performanceTime[lastMesuredIndex].duration,
-        //   n: 0,
-        //   finished: false
-        // }];
+        // create array of digest rates with help of debounce range - find max for summary
+        // each array item value will be {startind:0, n:0}
+        var effectiveDRates = $scope.digestMeasures.edr = $scope.digestMeasures.edr || [];
+        // edr range : curr start - prev end < debounceTime
+        // ideally each digest cycle should debounce time with one another to have better performance - SIMPLE PAGE can achieve as no user inter-action
         var debounceTime = $scope.digestMeasures.debounceTime,
-          endtime = throttle.endTime,
-          tind = 0;
+          prevEndtime = $scope.digestMeasures.performanceTime[lastMesuredIndex - 1] && $scope.digestMeasures.performanceTime[
+            lastMesuredIndex - 1].endTime,
+          // prev or 0
+          edrind = effectiveDRates.length ? effectiveDRates.length - 1 : 0;
+        // watchers max computations
+        var watchmax = $scope.digestMeasures.max.watcherMeasures.counts = $scope.digestMeasures.max.watcherMeasures
+          .counts || {
+            dirty: 0,
+            total: 0,
+            dirtyexpensive: false,
+            totalexpensive: false
+          };
+        // scopes max computations
+        var maxnScopes = $scope.digestMeasures.max.watcherMeasures.scopes.total || 0;
+        var maxndirtyscopes = $scope.digestMeasures.max.watcherMeasures.scopes.dirty || 0;
         // continue from where we left - do it only for new added ones
         $scope.digestMeasures.performanceTime.slice(lastMesuredIndex).forEach(function (aDigest, ind, list) {
           longest = longest < aDigest.duration ? aDigest.duration : longest;
-          // not debounce = throttle
+          // find prev end time
           aDigest.endTime = aDigest.startTime + aDigest.duration;
-          endtime = $scope.digestMeasures.performanceTime[ind + lastMesuredIndex - 1].endTime || aDigest.endTime;
-          if ((aDigest.startTime - endtime) > debounceTime) {
-            // record to throttle
-            throttles[tind].n = lastMesuredIndex + ind;
-            //   throttles[tind].finished = true;
-            //   throttles[tind].endTime = endtime;
-            //   tind++;
-            //   throttles[tind] = {startTime:aDigest.startTime,n=0};
+          prevEndtime = prevEndtime || aDigest.endTime;
+          if ((aDigest.startTime - prevEndtime) > debounceTime) {
+            // finish recording current and start new one
+            effectiveDRates[edrind].n = lastMesuredIndex + ind - effectiveDRates[edrind].startind;
+            effectiveDRates[edrind].endTime = prevEndtime;
+            edrind++;
+            effectiveDRates[edrind] = {
+              startind: lastMesuredIndex + ind,
+              startTime: aDigest.startTime
+            };
           } else {
-            throttles[tind] = throttles[tind] || {
-              startind: lastMesuredIndex + ind
+            effectiveDRates[edrind] = effectiveDRates[edrind] || {
+              startind: lastMesuredIndex + ind,
+              startTime: aDigest.startTime
             };
           }
-          // throttles[tind].n++;
-          // // for next iteration
-          // endtime = aDigest.startTime + aDigest.duration;
+          prevEndtime = aDigest.endTime;
+          ///////////////////////////////////// end of digest
+          ///////// watch measures
+          if (watchmax.dirty < aDigest.watcherMeasures.counts.dirty) {
+            watchmax.dirty = aDigest.watcherMeasures.counts.dirty;
+            watchmax.dirtyexpensive = longest === aDigest.duration
+          }
+          if (watchmax.total < aDigest.watcherMeasures.counts.total) {
+            watchmax.total = aDigest.watcherMeasures.counts.total;
+            watchmax.totalexpensive = longest === aDigest.duration
+          }
+          /////////////////////////////////////////// end of watch
+          /////scopes
+          maxnScopes = maxnScopes > aDigest.watcherMeasures.scopes.total ? maxnScopes : aDigest.watcherMeasures
+            .scopes.total;
+          var dsids = Object.keys(aDigest.watcherMeasures.scopes.dirty).length;
+          maxndirtyscopes = maxndirtyscopes > dsids ? maxndirtyscopes : dsids;
+          /////////////////////////////////////////////////////////////////////////////////////////////
+          ////////////////end of foreach
         });
-        // if (!throttles[tind].finished) {
-        //   throttles[tind].finished = true;
-        //   throttles[tind].endTime = endtime;
-        // }
-        // $scope.digestMeasures.throttle = throttles.concat($scope.digestMeasures.throttle);
         lastMesuredIndex = $scope.digestMeasures.performanceTime.length;
-        $scope.digestMeasures.max.duration =
-          Math.round(longest);
-        $timeout(analyzeDigestMeasures, 500);
+        $scope.digestMeasures.max.duration = longest;
+        $scope.digestMeasures.max.watcherMeasures.scopes.total = maxnScopes;
+        $scope.digestMeasures.max.watcherMeasures.scopes.dirty = maxndirtyscopes;
+        var maxedr = $scope.digestMeasures.max.edr || {
+          duration: 0,
+          n: 0
+        };
+
+        if (edrind) {
+          effectiveDRates[edrind].n = lastMesuredIndex - effectiveDRates[edrind].startind;
+          effectiveDRates[edrind].endTime = prevEndtime;
+          // find max time range
+          effectiveDRates.forEach(function (edr, ei) {
+            edr.duration = edr.endTime - edr.startTime;
+            maxedr = (maxedr.duration > edr.duration) ? maxedr :
+              ((edr.n > 1) ? edr :
+                (maxedr.n > 1 ? maxedr : edr));
+          });
+        }
+        // effective digest rate:  digestMeasures.max.edr.n / digestMeasures.max.edr.duration
+        $scope.digestMeasures.max.edr = maxedr;
+        timeoutpromise = $timeout(analyzeDigestMeasures, 500);
       }
       /////////////////////////////////////////////////////////
       /////////////////////////////////////////////////////////
