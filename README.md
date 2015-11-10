@@ -2,6 +2,7 @@
 Birbal advice for AngularJS app. Chrome Extension for developers
 
 It is in initial phase of developement.
+[Webstore link](https://chrome.google.com/webstore/detail/angularjs-birbal/lpgcgfldhlpcekibknamgefpbifakkai?utm_source=chrome-app-launcher-info-dialog)
 
 Goal is to provide angular developers more run-time information of the application.
 Provide performance statistics.
