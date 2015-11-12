@@ -1,5 +1,6 @@
 (function (chrome, birbalJS, window) {
   'use strict';
+
   angular.module('background-service-app', ['panel-actions-app'])
     .service('backgroundService', ['panelActions', function (panelActions) {
       /////////////////////////////////////////////////////////

@@ -8,6 +8,7 @@
       // send after listener setup
       backgroundService.informBackground(null, 'init', birbalJS.END_POINTS.BACKGROUND);
       var actionList = [];
+      $scope.settings = {};
       /////////////////////////////////////////////////////////
       //            background action listener
       /////////////////////////////////////////////////////////
@@ -34,7 +35,7 @@
         $scope.$applyAsync(function () {
           $scope.view = '';
           delete $scope.csInfo;
-          $scope.enabled = false;
+          actionList.enabled = false;
           $timeout.cancel(timeoutpromise);
           timeoutpromise = undefined;
           $scope.digestMeasures = {
@@ -69,12 +70,14 @@
       };
 
       sidebar.changePanelView = function (viewName) {
-        if (!$scope.enabled && $scope.csInfo.ngModule) {
+        if (!actionList.enabled && $scope.csInfo.ngModule) {
           // register/enable/refresh
           backgroundService.informBackground({
             ngModule: $scope.csInfo.ngModule,
             task: 'runAnalysis'
           });
+          actionList.enabled = true;
+          analyzeDigestMeasures();
         }
         actionList.changePanelView(viewName);
       };
@@ -82,20 +85,22 @@
       //sidebar for html use
       $scope.sidebar = sidebar;
       /////////////////////////////////////////////////////////
-      //            initpage actions
+      //            initpage view
       /////////////////////////////////////////////////////////
       $scope.initpage = {};
       $scope.initpage.enableMe = function () {
         // register/enable/refresh
         $scope.csInfo.ngModule = $scope.csInfo.ngModule || $scope.csInfo.ngModuleInput;
-        backgroundService.informBackground({
-          ngModule: $scope.csInfo.ngModule,
-          task: 'runAnalysis'
-        });
-        $scope.enabled = true;
         sidebar.changePanelView('dashboard');
-        analyzeDigestMeasures();
       };
+
+      /////////////////////////////////////////////////////////
+      //            settings view
+      /////////////////////////////////////////////////////////
+      $scope.$watch('settings.properties', function scopePropSettingsHandler(newval) {
+        var sidebarAction = actionList.enabled && newval ? 'addSidebar' : 'removeSidebar';
+        birbalJS.setElementPanelAction(sidebarAction);
+      });
 
       /////////////////////////////////////////////////////////
       //            analysis on data

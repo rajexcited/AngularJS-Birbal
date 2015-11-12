@@ -266,7 +266,10 @@
 
 											logMsg = (angular.isFunction(watch.exp)) ? 'fn: ' + (watch.exp.name || watch.exp.toString()) : watch.exp;
 											logMsg += '; newVal: ' + angular.toJson(value) + '; oldVal: ' + angular.toJson(last);
-											dirtyWatch.push(logMsg);
+											dirtyWatch.push({
+												exp: logMsg,
+												expTime: performance.now()
+											});
 
 											// used for error log - helpful for closure investigation
 											if (ttl < 5) {
@@ -357,6 +360,7 @@
 		message.ngDetected = !!message.ngVersion;
 		if (message.ngDetected) {
 			message.ngModule = getAngularApp();
+			message.rootScope = getRootScope().$id;
 		}
 		// send inspection data
 		broadcastMessage(message);
