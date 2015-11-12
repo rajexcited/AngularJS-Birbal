@@ -9,8 +9,11 @@
   padding-top: 10px;
 }
 LABEL.normalWeight {font-weight: normal;}
+INPUT[type=checkbox] {vertical-align:top;}
 /****/
-
+/*  common spacing  */
+.tabPad{padding-left: 15px;}
+/******/
 @media (max-width: 767px) {
   /* xtra small */
   /*  remove if not needed  */
