@@ -19,8 +19,11 @@
       });
 
       actionList.changePanelView = function (viewName, viewData) {
-        // default is dashboard
         // viewname is html file in partials
+        // activate viewname in sidebar if exists
+        $('li[view-name]').removeClass('active');
+        $('li[view-name="' + viewName + '"]').addClass('active');
+
         $scope.$applyAsync(function () {
           $scope.view = viewName;
           //initializing csInfo for template data for first time or after cleanup
@@ -70,7 +73,7 @@
       };
 
       sidebar.changePanelView = function (viewName) {
-        if (!actionList.enabled && $scope.csInfo.ngModule) {
+        if (!actionList.enabled && $scope.csInfo.ngModule && viewName !== 'settings') {
           // register/enable/refresh
           backgroundService.informBackground({
             ngModule: $scope.csInfo.ngModule,

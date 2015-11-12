@@ -11,17 +11,17 @@
     <!-- Sidebar Menu -->
     <ul class="sidebar-menu">
       <!-- Optionally, you can add icons to the links -->
-      <li ng-class="{'active': view==='dashboard'}">
+      <li view-name="dashboard">
         <a href="#" ng-click="sidebar.changePanelView('dashboard');"><i class="fa fa-link"></i> <span>Dashboard</span></a></li>
-      <li ng-class="{'active': view==='testlink'}"><a href="#"><i class="fa fa-link"></i> <span>test link</span></a></li>
+      <li view-name="testlink"><a href="#"><i class="fa fa-link"></i> <span>test link</span></a></li>
       <li class="treeview">
         <a href="#"><i class="fa fa-link"></i> <span>Multilevel</span> <i class="fa fa-angle-left pull-right"></i></a>
         <ul class="treeview-menu">
-          <li ng-class="{'active': view==='testlevel2.1'}"><a href="#">test Link in level 2</a></li>
-          <li ng-class="{'active': view==='testlevel2.2'}"><a href="#">test Link in level 2</a></li>
+          <li view-name="testlevel2.1"><a href="#">test Link in level 2</a></li>
+          <li view-name="testlevel2.2"><a href="#">test Link in level 2</a></li>
         </ul>
       </li>
-      <li ng-class="{'active': view==='settings'}"><a href="#" ng-click="sidebar.changePanelView('settings');"><i class="fa fa-link"></i> <span>Settings</span></a></li>
+      <li view-name="settings"><a href="#" ng-click="sidebar.changePanelView('settings');"><i class="fa fa-link"></i> <span>Settings</span></a></li>
       <li><a href="#" ng-click="sidebar.disableme();"><i class="fa fa-link"></i> <span>Disable Plugin</span></a></li>
     </ul>
     <!-- /.sidebar-menu -->
