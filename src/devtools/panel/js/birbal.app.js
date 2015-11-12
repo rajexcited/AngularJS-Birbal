@@ -21,8 +21,8 @@
       actionList.changePanelView = function (viewName, viewData) {
         // viewname is html file in partials
         // activate viewname in sidebar if exists
-        $('li[view-name]').removeClass('active');
-        $('li[view-name="' + viewName + '"]').addClass('active');
+        $('li[select-view]').removeClass('active');
+        $('li[select-view="' + viewName + '"]').addClass('active');
 
         $scope.$applyAsync(function () {
           $scope.view = viewName;
