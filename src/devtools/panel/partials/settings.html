@@ -1,16 +1,19 @@
 <div>
-  <span><b>Sidebar Option:</b></span>
-  <br>
-  <div class="tabPad">
-    <input type="checkbox" id="settings-properties" ng-model="settings.properties">
-    <label for="settings-properties" class="normalWeight">Show ng properties in Element Panel</label>
-  </div>
 
-  <br><br>
-  <span><b>digest Cycle related Option:</b></span>
-  <br>
-  <div class="tabPad">
-    <label for="settings-digest-debounce" class="normalWeight">debounce time between digest cycles(in ms)</label>
-    <input type="number" id="settings-digest-debounce" ng-model="settings.digestDebounce" ng-blur="settings.reCalculateMeasures();">
-  </div>
+    <span><b>Sidebar Option:</b></span>
+    <br>
+
+    <div class="checkbox">
+        <label> <input type="checkbox" ng-model="settings.properties"> Show ng properties in Element Panel </label>
+    </div>
+    <br>
+    <span><b>digest Cycle related Option:</b></span>
+    <br>
+
+    <div class="checkbox">
+        <label> debounce time between digest cycles(in ms)
+            <input type="number" ng-model="settings.digestDebounce" ng-blur="settings.reCalculateMeasures();">
+        </label>
+    </div>
+
 </div>

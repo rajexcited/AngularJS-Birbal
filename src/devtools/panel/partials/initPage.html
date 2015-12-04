@@ -1,29 +1,30 @@
 <div ng-switch="csInfo.ngDetected">
-  <span ng-switch-when="true">
-    <p> Detected AngularJS version {{ csInfo.ngVersion.full}}({{ csInfo.ngVersion.codeName}}) </p>
-    <br>
-    <button type="button" class="btn btn-primary btn-lg" ng-if=":: csInfo.ngModule" ng-click="initpage.enableMe();">
-      <span>Open Module &quot; {{csInfo.ngModule}} &quot;</span>
-    </button>
-    <span ng-if="!csInfo.ngModule">
-      <div class="col-lg-3 col-md-4">
-        <p> We did not find <b>[ng-app]</b>. </p>
-      </div>
-      <div class="col-lg-4 col-md-4">
-        <form name="askNgAppNameForm">
-          <label for="appInput">Please enter app name to start </label>
-          <span class="input-group input-group-sm">
-            <input type="text" class="form-control" id="appInput" placeholder="My App name..." required ng-model="csInfo.ngModuleInput" />
-            <span class="input-group-btn">
-              <button type="submit" class="btn btn-primary btn-flat" ng-click="initpage.enableMe();">
-                <span>Open Module</span>
-              </button>
-            </span>
-          </span>
-        </form>
-      </div>
+    <span ng-switch-when="true">
+        <p> Detected AngularJS version {{ csInfo.ngVersion.full}}({{ csInfo.ngVersion.codeName}}) </p>
+        <br>
+        <button type="button" class="btn btn-primary btn-lg" ng-if="csInfo.ngModule" ng-click="initpage.enableMe();">
+            <span>Open Module &quot; {{csInfo.ngModule}} &quot;</span>
+        </button>
+        <span ng-if="!csInfo.ngModule">
+            <div class="col-lg-3 col-md-4">
+                <p> We did not find <b>[ng-app]</b>. </p>
+            </div>
+            <div class="col-lg-4 col-md-4">
+                <form name="askNgAppNameForm">
+                    <label for="initpage-appInput">Please enter app name to start </label>
+                    <span class="input-group input-group-sm">
+                        <input type="text" class="form-control" id="initpage-appInput" placeholder="My App name..."
+                               ng-required ng-model="csInfo.ngModuleInput">
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-primary btn-flat" ng-click="initpage.enableMe();">
+                                <span>Open Module</span>
+                            </button>
+                        </span>
+                    </span>
+                </form>
+            </div>
+        </span>
     </span>
-  </span>
 
-  <p ng-switch-default> No AngularJS app detected. </p>
+    <p ng-switch-default> No AngularJS app detected. </p>
 </div>

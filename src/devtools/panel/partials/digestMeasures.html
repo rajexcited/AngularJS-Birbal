@@ -1,32 +1,71 @@
 <div class="box">
-  <div class="box-header">
-    <h3 class="box-title">Digest Measure Table</h3>
-  </div>
-  <!-- /.box-header -->
-  <div class="box-body no-padding">
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th style="width: 10px">#</th>
-          <th>start time (ms)</th>
-          <th>duration (ms)</th>
-          <th> watch count (dirty / total) </th>
-          <th> TTL errors </th>
-          <th> unCompleted digest errors </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr ng-repeat="measure in digestMeasures.performanceTime">
-          <td>{{:: $index}}</td>
-          <td>{{:: measure.startTime}}</td>
-          <td> {{:: measure.duration}} </td>
-          <td> {{:: measure.watcherMeasures.counts.dirty}} / {{:: measure.watcherMeasures.counts.total}}</td>
-          <td>{{:: measure.watcherMeasures.ttlErrors.length}} </td>
-          <td>{{:: measure.watcherMeasures.digestError.message}} </td>
-        </tr>
-
-      </tbody>
-    </table>
-  </div>
-  <!-- /.box-body -->
+    <div class="box-header">
+        <h3 class="box-title">Digest Measure Table</h3>
+    </div>
+    <!-- /.box-header -->
+    <div class="box-body no-padding">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th style="width: 10px;">#</th>
+                <th>start time (ms)</th>
+                <th>duration (ms)</th>
+                <th> watch count <br> (dirty / total)</th>
+                <th> watch expression <br> time (ms)</th>
+                <th> asyncQueue and <br>postDigestQueue (n)</th>
+                <th> TTL errors</th>
+                <th> unCompleted digest errors</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat-start="measure in digestMeasures.performanceTime">
+                <td>{{:: $index}}</td>
+                <td>{{:: measure.startTime}}</td>
+                <td> {{:: measure.duration}}</td>
+                <td> {{:: measure.watcherMeasures.counts.dirty}} / {{:: measure.watcherMeasures.counts.total}}</td>
+                <td>{{:: (measure.watcherMeasures.dirtyMaxTime)}}</td>
+                <td>
+                    <a ng-click="digestMeasures.toggleMeasureDetail($event,this,'measure.watcherMeasures.asyncQueueLog');"
+                       href="#">
+                        <span title="" class="badge"
+                              ng-class="{'bg-red' : !!measure.watcherMeasures.asyncQueueLog.length}"> {{:: measure.watcherMeasures.asyncQueueLog.length}}</span>
+                    </a>
+                    and
+                    <a ng-click="digestMeasures.toggleMeasureDetail($event,this,'measure.watcherMeasures.postDigestQueueLog');"
+                       href="#">
+                        <span title="" class="badge"
+                              ng-class="{'bg-red' : !!measure.watcherMeasures.postDigestQueueLog.length}"> {{:: measure.watcherMeasures.postDigestQueueLog.length}} </span>
+                    </a>
+                </td>
+                <td>{{:: measure.watcherMeasures.ttlErrors.length}}</td>
+                <td>{{:: measure.watcherMeasures.digestError.message}}</td>
+            </tr>
+            <tr ng-repeat-end ng-if="measure.showMeasureDetail" class="measure-detail animate-if">
+                <td colspan="8" class="box box-solid box-success">
+                    <div class="box-body">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th class="text-center"> scope</th>
+                                <th class="text-center"> expression</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="detail in measure.boxDetails">
+                                <td class="text-center"> {{detail.scope}}</td>
+                                <td class="text-center">
+                                    <div class="col-xs-offset-1">
+                                        {{detail.exp | removeNewLine}}
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- /.box-body -->
 </div>

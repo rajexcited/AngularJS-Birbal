@@ -2,111 +2,76 @@
 <html ng-app="birbal-app">
 
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>AngularJS Birbal</title>
-  <!-- Tell the browser to be responsive to screen width -->
-  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-  <!-- Bootstrap 3.3.5 -->
-  <link rel="stylesheet" href="../vendor/AdminLTE/css/bootstrap.min.css">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="../vendor/AdminLTE/css/font-awesome.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="../vendor/AdminLTE/css/ionicons.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="../vendor/AdminLTE/css/AdminLTE.min.css">
-  <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
-          page. However, you can choose any other skin. Make sure you
-          apply the skin class to the body tag so the changes take effect.
-    -->
-  <link rel="stylesheet" href="../vendor/AdminLTE/css/skin-blue.min.css">
-  <!--  Custom styles  -->
-  <link rel="stylesheet" href="../css/panel.css">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>AngularJS Birbal</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!--bootstrap-->
+    <link rel="stylesheet" href="../vendor/AdminLTE/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../vendor/AdminLTE/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../vendor/AdminLTE/css/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="../vendor/AdminLTE/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../vendor/AdminLTE/css/skin-blue.min.css">
+    <!--  Custom styles  -->
+    <link rel="stylesheet" href="../css/panel.css">
 </head>
-<!--
-  BODY TAG OPTIONS:
-  =================
-  Apply one or more of the following classes to get the
-  desired effect
-  |---------------------------------------------------------|
-  | SKINS         | skin-blue                               |
-  |               | skin-black                              |
-  |               | skin-purple                             |
-  |               | skin-yellow                             |
-  |               | skin-red                                |
-  |               | skin-green                              |
-  |---------------------------------------------------------|
-  |LAYOUT OPTIONS | fixed                                   |
-  |               | layout-boxed                            |
-  |               | layout-top-nav                          |
-  |               | sidebar-collapse                        |
-  |               | sidebar-mini                            |
-  |---------------------------------------------------------|
-  -->
 
 <body class="hold-transition skin-blue sidebar-mini fixed" ng-controller="panelViewController">
-  <!-- wrapper -->
-  <div class="wrapper">
-
+<!-- wrapper -->
+<div class="wrapper">
     <!-- main header -->
     <div class="main-header">
-      <a href="#" class="logo" data-toggle="offcanvas" role="button">
-        <span class="sidebar-toggle visible-xs no-pad-top-force"></span>
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="logo-lg">AngularJS <b>Birbal</b> </span>
-        <span class="logo-mini">nb</span>
-      </a>
-      <!-- ./main header -->
+        <a href="#" class="logo" data-toggle="offcanvas" role="button">
+            <span class="sidebar-toggle visible-xs no-pad-top-force"></span>
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="logo-lg">AngularJS <b>Birbal</b> </span>
+            <span class="logo-mini">nb</span>
+        </a>
+        <!-- ./main header -->
     </div>
-
-    <div ng-include="'sidebar.html'"> </div>
+    <div ng-include="'sidebar.html'"></div>
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
-      <!-- Content Header (Page header) -->
-      <section class="content-header">
-        <h1>
-          AngularJS App Stats from Birbal's view
-        </h1>
-        <ol class="breadcrumb">
-          <li><a href="#" ng-click="sidebar.changePanelView('dashboard');"><i class="fa fa-dashboard"></i> Dashboard</a></li>
-          <li class="active">{{view}}</li>
-        </ol>
-      </section>
-
-      <!-- Main content -->
-      <section class="content">
-        <!-- Your Page Content Here -->
-        <span nb-panel-view view-name="view">No AngularJS app detected Test.</span>
-      </section>
-      <!-- /.content -->
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1> AngularJS App Stats from Birbal's view </h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="#" ng-click="sidebar.changePanelView('dashboard');">
+                        <i class="fa fa-dashboard"></i> Dashboard
+                    </a>
+                </li>
+                <li class="active">{{view}}</li>
+            </ol>
+        </section>
+        <!-- Main content -->
+        <section class="content">
+            <span nb-panel-view view-name="view">No AngularJS app detected Test.</span>
+        </section>
+        <!-- /.content -->
     </div>
     <!-- /.content-wrapper -->
+</div>
+<!-- ./wrapper -->
 
-  </div>
-  <!-- ./wrapper -->
-
-  <!-- REQUIRED JS SCRIPTS -->
-  <!-- jQuery latest 2.x.x -->
-  <script src="/node_modules/jquery/dist/jQuery.js"></script>
-  <!-- AngularJS latest 1.4.7 -->
-  <script src="/node_modules/angular/angular.js"></script>
-  <!-- Birbal communication -->
-  <script src="/src/message.js"></script>
-  <script src="/src/basicMessageAction.js"></script>
-  <!-- Bootstrap 3.3.5 -->
-  <script src="../vendor/AdminLTE/js/bootstrap.min.js"></script>
-  <!-- AdminLTE App -->
-  <script src="../vendor/AdminLTE/js/app.min.js"></script>
-  <!-- My panel App -->
-  <script src="../js/devtoolsExtended.js"></script>
-  <script src="../js/birbal.app.js"></script>
-  <script src="../js/background.service.js"></script>
-  <script src="../js/panel-actions.factory.js"></script>
-  <script src="../js/panel-view.directive.js"></script>
-
+<!-- REQUIRED JS SCRIPTS -->
+<script src="/node_modules/jquery/dist/jQuery.js"></script>
+<script src="/node_modules/angular/angular.js"></script>
+<!-- Birbal communication -->
+<script src="/src/message.js"></script>
+<script src="/src/basicMessageAction.js"></script>
+<script src="../vendor/AdminLTE/js/bootstrap.min.js"></script>
+<script src="../vendor/AdminLTE/js/app.min.js"></script>
+<!-- communication and tab evals -->
+<script src="../js/devtoolsExtended.js"></script>
+<script src="../js/birbalJSInit.js"></script>
+<!-- panel view scripts -->
+<script src="../js/birbal.app.js"></script>
+<script src="../js/background.service.js"></script>
+<script src="../js/panel-view.directive.js"></script>
 </body>
-
 </html>

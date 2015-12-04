@@ -1,14 +1,9 @@
 <div id="dashboard">
-  <p> Detected AngularJS version {{:: csInfo.ngVersion.full}}({{:: csInfo.ngVersion.codeName}}) </p>
-  <span> ng-app = <b> {{:: csInfo.ngModule}} </b></span>
-  <br>
-  <br>
 
-  <span ng-include="'dashcards.html'">
-    <span> Test dashcards</span>
-  </span>
+    <p> Detected AngularJS version {{:: csInfo.ngVersion.full}}({{:: csInfo.ngVersion.codeName}}) </p>
+    <span> ng-app = <b> {{:: csInfo.ngModule}} </b></span>
+    <br> <br>
 
-  <div ng-include="'digestMeasures.html'">
-    <span> Test digest measures</span>
-  </div>
+    <div ng-include="'dashcards.html'"></div>
+    <div ng-include="'digestMeasures.html'"></div>
 </div>

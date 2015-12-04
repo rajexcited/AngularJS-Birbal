@@ -1,6 +1,8 @@
 <div>
-  <span>
-    <input type="checkbox" id="onwinload-analyze" ng-model="onwinload.analyze">
-    <label for="settings-properties" class="normalWeight">Analyze on window load</label>
-  </span>
+    <div class="checkbox checkbox-inline">
+        <label> <input type="checkbox" ng-model="onwinload.analyze"> Analyze on page load next time </label>
+    </div>
+    <button type="button" class="btn btn-primary btn-md col-xs-offset-1" ng-click="onwinload.reloadPage();">
+        <span>Reload Page</span>
+    </button>
 </div>
