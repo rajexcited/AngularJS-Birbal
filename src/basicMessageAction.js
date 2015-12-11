@@ -42,8 +42,9 @@
     // 3. data
     // 4. message
     basicMessageExecutor.prototype.log = function (logMsg) {
-        logMsg = logMsg || (this.message.data && this.message.data.log) || this.message.data || this.message;
-        logger.log(logMsg);
+        logMsg = logMsg || (this.message.data && (this.message.data.message || this.message.data.log)) || this.message.data || this.message;
+        var type = (this.message.data && this.message.data.type) || 'log';
+        logger[type].apply(logger, [logMsg]);
         this.status('logged');
     };
 
@@ -65,9 +66,7 @@
             this.log(this.message);
             this[this.message.task]();
         } else {
-            logger.log(
-                'delegating message to correct destPort....here acting as a median'
-            );
+            logger.log('delegating message to correct destPort....here acting as a median');
             this.destPort.postMessage(this.message);
             this.status('delegated');
         }

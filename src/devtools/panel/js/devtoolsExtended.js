@@ -47,10 +47,10 @@
         });
 
     birbalJS.setElementPanelAction = function (_action) {
-        if (_action === 'addSidebar') {
+        if (_action === 'addScopeToElementPanel') {
             chrome.devtools.panels.elements.onSelectionChanged.addListener(updateElementProperties);
             updateElementProperties();
-        } else if (_action === 'removeSidebar' && setDefault) {
+        } else if (_action === 'removeScopeToElementPanel' && setDefault) {
             chrome.devtools.panels.elements.onSelectionChanged.removeListener(updateElementProperties);
             setDefault();
         }

@@ -11,18 +11,18 @@
             var logger,
                 serviceInstance = this;
 
-            function noop() {
-            }
-
             if (birbalJS.debugMode) {
                 logger = window.console;
             } else {
                 // mock logger with noop()
+                var noop = function () {
+                };
                 logger = {};
                 ['log', 'warn', 'info', 'error', 'debug'].forEach(function (prop) {
                     logger[prop] = noop;
                 });
             }
+            // register logger service
             serviceInstance.logger = birbalJS.logger = logger;
             /////////////////////////////////////////////////////////
             //            Background connection setup
@@ -32,7 +32,7 @@
                 name: birbalJS.END_POINTS.PANEL
             });
 
-            logger.log('prepare for init message to BG');
+            logger.log('message constructor to content script');
             var BackgroundMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.PANEL, birbalJS.END_POINTS.CONTENTSCRIPT);
             serviceInstance.informBackground = function (info, task, newDest) {
                 var msg = new BackgroundMessage(info);
@@ -41,7 +41,7 @@
                 if (msg.task) {
                     backgroundConnection.postMessage(msg);
                 } else {
-                    logger.error('task is not defined.');
+                    birbalJS.proxylogger.error('task is not defined.');
                 }
             };
             /////////////////////////////////////////////////////////
@@ -105,9 +105,18 @@
             });
 
             // proxy log to background
-            serviceInstance.proxylog = birbalJS.proxylog = function (anymessage) {
-                serviceInstance.informBackground({log: anymessage}, 'log', birbalJS.END_POINTS.BACKGROUND);
+            serviceInstance.proxylogger = birbalJS.proxylogger = {
+                send: function (messageType, message) {
+                    serviceInstance.informBackground({
+                        'type': messageType,
+                        'message': message
+                    }, 'log', birbalJS.END_POINTS.BACKGROUND);
+                }
             };
+
+            ['log', 'warn', 'info', 'error', 'debug'].forEach(function (prop) {
+                logger[prop] = noop;
+            });
             /////////////////////////////////////////////////////////
             /////////////////////////////////////////////////////////
         }]);

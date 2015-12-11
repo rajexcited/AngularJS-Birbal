@@ -176,14 +176,14 @@
         this.status(task);
     };
 
-    temp.panelActions.stopAnalysis = function () {
-        // disable further analysis
-        this.doAnalysis();
-        // init panel
-        this.init();
-        // stop analysis in Injected
-        informContentScript(this.tabId, null, 'stopAnalysis');
-    };
+    //temp.panelActions.stopAnalysis = function () {
+    //    // disable further analysis
+    //    this.doAnalysis();
+    //    // init panel
+    //    this.init();
+    //    // stop analysis in Injected
+    //    informContentScript(this.tabId, null, 'stopAnalysis');
+    //};
 
     temp.panelActions.doAnalysis = function () {
         var tab = tabs[this.tabId];
