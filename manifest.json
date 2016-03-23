@@ -1,11 +1,11 @@
 {
   "name": "AngularJS Birbal",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Find and solve angular problems in Birbal ways. Initial Phase",
 
   "content_scripts": [{
     "matches": ["<all_urls>"],
-    "js": ["src/message.js", "src/basicMessageAction.js", "src/content-script/content-script.js"],
+    "js": ["src/message.js", "src/content-script/content-script.js"],
     "run_at": "document_start"
   }],
 
@@ -17,7 +17,7 @@
   ],
 
   "background": {
-    "scripts": ["src/message.js", "src/basicMessageAction.js", "src/background/background.js"],
+    "scripts": ["src/message.js", "src/background/background.js"],
     "persistent": false
   },
 

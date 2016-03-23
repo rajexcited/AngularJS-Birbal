@@ -4,7 +4,9 @@
   "description": "chrome extension for inspecting angular apps",
   "dependencies": {
     "angular": "^1.4.7",
-	"jquery": "^2.1.4"
+    "jquery": "^2.1.4",
+    "floatthead": "",
+    "ion-rangeslider":""
   },
   "repository": {
     "type": "git",
@@ -15,7 +17,7 @@
     "angularjs",
     "chrome",
     "extension",
-	"performance"
+    "performance"
   ],
   "author": "Raj <rajexcited@gmail.com>",
   "license": "MIT",

@@ -1,8 +1,7 @@
-/*global chrome, birbalJS, require*/
+/*global chrome, birbalJS, $*/
 (function (chrome, birbalJS) {
     'use strict';
 
-    var $ = require('jquery');
     /////////////////////////////////////////////////////////
     //            AdminLTE boorstrap options setup
     /////////////////////////////////////////////////////////

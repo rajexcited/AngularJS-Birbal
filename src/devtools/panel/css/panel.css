@@ -18,7 +18,7 @@
 .measure-detail.animate-if.ng-enter,
 .animate-if.ng-leave.ng-leave-active {
     opacity: 0;
-    font-size: 0px;
+    font-size: 0;
     padding: 0;
 }
 

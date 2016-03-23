@@ -1,8 +1,9 @@
 <div ng-switch="csInfo.ngDetected">
     <span ng-switch-when="true">
-        <p> Detected AngularJS version {{ csInfo.ngVersion.full}}({{ csInfo.ngVersion.codeName}}) </p>
+        <p> Detected AngularJS version {{ csInfo.ngVersion.full}} ({{ csInfo.ngVersion.codeName}}) </p>
         <br>
-        <button type="button" class="btn btn-primary btn-lg" ng-if="csInfo.ngModule" ng-click="initpage.enableMe();">
+        <button type="button" class="btn btn-primary btn-lg" ng-if="csInfo.ngModule"
+                ng-click="sidebarActions.enableMe();">
             <span>Open Module &quot; {{csInfo.ngModule}} &quot;</span>
         </button>
         <span ng-if="!csInfo.ngModule">
@@ -16,7 +17,7 @@
                         <input type="text" class="form-control" id="initpage-appInput" placeholder="My App name..."
                                ng-required ng-model="csInfo.ngModuleInput">
                         <span class="input-group-btn">
-                            <button type="submit" class="btn btn-primary btn-flat" ng-click="initpage.enableMe();">
+                            <button type="submit" class="btn btn-primary btn-flat" ng-click="sidebarActions.enableMe();">
                                 <span>Open Module</span>
                             </button>
                         </span>

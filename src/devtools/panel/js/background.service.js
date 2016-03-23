@@ -1,124 +1,99 @@
-/*global angular, chrome, birbalJS*/
+/*global angular, chrome, birbalJS, window*/
 (function (chrome, birbalJS, window, angular) {
     'use strict';
 
-    angular.module('background-service-app', [])
-        .service('backgroundService', ['$rootScope', function ($rootScope) {
+    var backgroundConnection;
+    angular.module('background-service-app', ['measure.digest.app', 'measure.http.app'])
+        .service('backgroundService', ['$rootScope', 'digestDataFactory', 'httpRecordFactory', function ($rootScope, digestDataFactory, httpRecordFactory) {
             /////////////////////////////////////////////////////////
             //            LOGGER FOR DEVELOPMENT ONLY
             /////////////////////////////////////////////////////////
-            // define 'noop' by default
-            var logger,
+            var receiver, logger,
                 serviceInstance = this;
 
             if (birbalJS.debugMode) {
                 logger = window.console;
             } else {
                 // mock logger with noop()
-                var noop = function () {
-                };
                 logger = {};
                 ['log', 'warn', 'info', 'error', 'debug'].forEach(function (prop) {
-                    logger[prop] = noop;
+                    logger[prop] = angular.noop();
                 });
             }
             // register logger service
             serviceInstance.logger = birbalJS.logger = logger;
-            /////////////////////////////////////////////////////////
-            //            Background connection setup
-            /////////////////////////////////////////////////////////
-            // Create a connection to the background page
-            var backgroundConnection = chrome.runtime.connect({
-                name: birbalJS.END_POINTS.PANEL
-            });
 
+            // register send message
             logger.log('message constructor to content script');
-            var BackgroundMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.PANEL, birbalJS.END_POINTS.CONTENTSCRIPT);
             serviceInstance.informBackground = function (info, task, newDest) {
-                var msg = new BackgroundMessage(info);
-                msg.task = task || msg.task;
-                msg.dest = newDest || msg.dest;
-                if (msg.task) {
-                    backgroundConnection.postMessage(msg);
-                } else {
-                    birbalJS.proxylogger.error('task is not defined.');
-                }
+                newDest = newDest || birbalJS.END_POINTS.CONTENTSCRIPT;
+                var msg = new birbalJS.Message(info, birbalJS.END_POINTS.PANEL, newDest, task);
+                backgroundConnection.postMessage(msg);
             };
             /////////////////////////////////////////////////////////
             //            panel actionBuilder
             /////////////////////////////////////////////////////////
-            var panelActions = {};
-            panelActions.addPanel = function () {
+            receiver = new birbalJS.Receiver(birbalJS.END_POINTS.PANEL);
+
+            function panelInitialize(message) {
                 // action list - cleanup and init
-                $rootScope.$emit('panelAction', {action: 'clearResources'});
-                $rootScope.$emit('panelAction', {
-                    action: 'changePanelView',
-                    args: {
-                        page: 'initPage',
-                        data: this.message.data
-                    }
-                });
-                this.status('panelAdded');
-            };
+                $rootScope.$emit('clearResources', message.task);
+                $rootScope.$emit('changePanelView', 'nbEnable', message.msgDetails);
+            }
 
-            panelActions.removePanel = function () {
-                // two actions - cleanup and init
-                $rootScope.$emit('panelAction', {action: 'clearResources'});
-                $rootScope.$emit('panelAction', {
-                    action: 'changePanelView',
-                    args: {
-                        page: 'initPage',
-                        data: this.message.data
-                    }
-                });
-                this.status('panelRemoved');
-            };
+            receiver.actionOnTask('addPanel', panelInitialize);
+            receiver.actionOnTask('removePanel', panelInitialize);
 
-            panelActions.digestMeasures = function () {
-                $rootScope.$emit('panelAction', {
-                    action: 'digestMeasure',
-                    args: this.message.data
-                });
-                this.status('digestMeasure');
-            };
+            receiver.actionOnTask('digestMeasures', function (message) {
+                digestDataFactory.addDigestMeasure(message.msgDetails);
+            });
 
-            panelActions.httpMeasures = function () {
-                $rootScope.$emit('panelAction', {
-                    action: 'httpMeasure',
-                    args: this.message.data
-                });
-                this.status('httpMeasure');
-            };
-
-            var PanelBuilder = birbalJS.actionBuilder.build(panelActions);
-            // releasing resource as it has added to panelBuilder and panelActions not needed
-            panelActions = undefined;
+            receiver.actionOnTask('httpMeasures', function (message) {
+                httpRecordFactory.addHttpMeasure(message.msgDetails);
+            });
             /////////////////////////////////////////////////////////
             //            BG message listener
             /////////////////////////////////////////////////////////
-            backgroundConnection.onMessage.addListener(function bgMsgListener(message, sender, sendResponse) {
+            backgroundConnection.onMessage.addListener(function bgMsgListener(message, sender) {
                 // in background message listener
                 logger.log('in bgMsgListener');
-                var actionBuilder = new PanelBuilder(message, backgroundConnection, birbalJS.END_POINTS.PANEL, sender, sendResponse);
-                actionBuilder.takeAction();
-                logger.log('background msg listener, msg action status? ' + actionBuilder.status());
+                receiver.answerCall(message, sender, backgroundConnection, birbalJS.END_POINTS.PANEL);
             });
 
-            // proxy log to background
+            //qq: where do i need this?
+            // register proxy logger
             serviceInstance.proxylogger = birbalJS.proxylogger = {
                 send: function (messageType, message) {
-                    serviceInstance.informBackground({
+                    var data = {
                         'type': messageType,
                         'message': message
-                    }, 'log', birbalJS.END_POINTS.BACKGROUND);
+                    };
+                    serviceInstance.informBackground(data, 'log', birbalJS.END_POINTS.BACKGROUND);
+                },
+                log: function (msg) {
+                    serviceInstance.proxylogger.send('log', msg);
+                },
+                warn: function (msg) {
+                    serviceInstance.proxylogger.send('warn', msg);
+                },
+                info: function (msg) {
+                    serviceInstance.proxylogger.send('info', msg);
+                },
+                error: function (msg) {
+                    serviceInstance.proxylogger.send('error', msg);
+                },
+                debug: function (msg) {
+                    serviceInstance.proxylogger.send('debug', msg);
                 }
             };
-
-            ['log', 'warn', 'info', 'error', 'debug'].forEach(function (prop) {
-                logger[prop] = noop;
+            /////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////
+        }])
+        .run(function () {
+            // Create a connection to the background page
+            backgroundConnection = chrome.runtime.connect({
+                name: birbalJS.END_POINTS.PANEL
             });
-            /////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////
-        }]);
+        });
 
 }(chrome, birbalJS, window, angular));

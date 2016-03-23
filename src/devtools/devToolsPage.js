@@ -1,8 +1,8 @@
-/*global chrome*/
+/*global chrome,console*/
 (function (chrome) {
     'use strict';
 
-    window.console.log('devtoolsPage.js is loading.');
+    console.log('devtoolsPage.js is loading.');
     /////////////////////////////////////////////////////////
     //            Create Panel
     /////////////////////////////////////////////////////////
@@ -13,4 +13,4 @@
         null // no callback needed
     );
 
-})(chrome);
+}(chrome));

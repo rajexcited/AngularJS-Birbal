@@ -1,11 +1,12 @@
-/*global angular*/
+/*global $,angular*/
 (function (angular) {
     'use strict';
 
     angular.module('panel-view-app', [])
         .directive('nbPanelView', ['$compile', '$animate', function ($compile, $animate) {
-            var viewList = [];
-            var newviewTemplate = '<ng-include class="PH_SRC-view" src="\'../partials/PH_SRC.html\'" />';
+            var defaultHtml,
+                viewList = [],
+                newviewTemplate = '<ng-include class="PH_SRC-view" src="\'../partials/PH_SRC.html\'" />';
 
             return {
                 restrict: 'AE',
@@ -13,16 +14,29 @@
                     scope.$watch(attrs.viewName, function (newView, oldView) {
                         if (newView === '') {
                             // cleanup all views
-                            element.empty();
+                            if (defaultHtml) {
+                                element.html(defaultHtml);
+                            } else {
+                                defaultHtml = element.html();
+                                element.empty();
+                            }
                             viewList.length = 0;
-                        }
-                        else if (newView && viewList.indexOf(newView) === -1) {
+                        } else if (newView && viewList.indexOf(newView) === -1) {
                             // first time loading
+                            if (!viewList.length) {
+                                // no view loaded
+                                defaultHtml = defaultHtml || element.html();
+                                element.empty();
+                            }
                             viewList.push(newView);
                             var viewHtml = newviewTemplate.replace(/PH_SRC/g, newView);
                             var viewNode = $compile(angular.element(viewHtml))(scope);
                             $animate.enter(viewNode, element);
                         }
+                        // side bar item
+                        $('li[select-view]').removeClass('active');
+                        $('li[select-view="' + newView + '"]').addClass('active');
+
                         // show existing view
                         element.find('ng-include.' + newView + '-view').show();
                         // hide old view if exists any

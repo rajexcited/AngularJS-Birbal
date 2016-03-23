@@ -1,67 +1,69 @@
 <div class="box">
     <div class="box-header">
-        <h3 class="box-title">Digest Measure Table</h3>
+        <h3 class="box-title">
+            Digest Measure Table <i data-toggle="tooltip" data-original-title="clear sort options"
+                                    ng-click="sortByExpression()" class="fa fa-fw fa-reorder"></i>
+        </h3>
+
+        <div class="box-tools pull-right">
+            <button class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+        </div><!-- /.box-tools -->
     </div>
     <!-- /.box-header -->
     <div class="box-body no-padding">
-        <table class="table table-striped">
-            <thead>
+        <table class="table table-striped" id="digestCycleDataTable">
+            <thead style="background-color: white;">
             <tr>
                 <th style="width: 10px;">#</th>
-                <th>start time (ms)</th>
-                <th>duration (ms)</th>
-                <th> watch count <br> (dirty / total)</th>
-                <th> watch expression <br> time (ms)</th>
-                <th> asyncQueue and <br>postDigestQueue (n)</th>
-                <th> TTL errors</th>
-                <th> unCompleted digest errors</th>
+                <th>
+                    <div data-toggle="tooltip" data-original-title="digest start time after page load"
+                         ng-click="sortByExpression('startTime', $event)">
+                        start time (sec)<i class="fa fa-fw fa-unsorted"></i>
+                    </div>
+                </th>
+                <th><span ng-click="sortByExpression('runtime', $event)">duration (ms) <i
+                        class="fa fa-fw fa-unsorted"></i></span></th>
+                <th>
+                    <div data-toggle="tooltip"
+                         data-original-title="If these consumes more time and makes digest cycle slow or increase effective digest rate, try to manage watchers.">
+                        watch count <br> (
+                        <span ng-click="sortByExpression('nDirtyWatchers', $event)">dirty<i
+                                class="fa fa-fw fa-unsorted"></i></span> /
+                        <span ng-click="sortByExpression('nWatchers', $event)">total<i
+                                class="fa fa-fw fa-unsorted"></i></span> )
+                    </div>
+                </th>
+                <th>
+                    <div data-toggle="tooltip"
+                         data-original-title="watch time in % of digest time. Gives idea of watch impact on digest cycle.
+                        digest performance issue due to watch if total is > 75%.  try to reduce wasted watch time.">
+                        watch time of digest for <br>
+                        <span ng-click="sortByExpression('nWasteWatchersTime', $event)">wasted <i
+                                class="fa fa-fw fa-unsorted"></i></span> |
+                        <span ng-click="sortByExpression('nWatchersRuntime', $event)">total <i
+                                class="fa fa-fw fa-unsorted"></i></span>
+                    </div>
+                </th>
+                <th>
+                    <div data-toggle="tooltip"
+                         data-original-title="this is non-watcher time. includes async, postDigest, DOM updates due to watcher or async, etc.">
+                        <span ng-click="sortByExpression('otherRuntime', $event)">asyncQueue and <br>postDigestQueue (n in % time) <i
+                                class="fa fa-fw fa-unsorted"></i></span>
+                    </div>
+                </th>
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat-start="measure in digestMeasures.performanceTime">
+            <tr ng-repeat="aMeasure in digestCycle.measures | orderBy: digestExpression">
                 <td>{{:: $index}}</td>
-                <td>{{:: measure.startTime}}</td>
-                <td> {{:: measure.duration}}</td>
-                <td> {{:: measure.watcherMeasures.counts.dirty}} / {{:: measure.watcherMeasures.counts.total}}</td>
-                <td>{{:: (measure.watcherMeasures.dirtyMaxTime)}}</td>
-                <td>
-                    <a ng-click="digestMeasures.toggleMeasureDetail($event,this,'measure.watcherMeasures.asyncQueueLog');"
-                       href="#">
-                        <span title="" class="badge"
-                              ng-class="{'bg-red' : !!measure.watcherMeasures.asyncQueueLog.length}"> {{:: measure.watcherMeasures.asyncQueueLog.length}}</span>
-                    </a>
-                    and
-                    <a ng-click="digestMeasures.toggleMeasureDetail($event,this,'measure.watcherMeasures.postDigestQueueLog');"
-                       href="#">
-                        <span title="" class="badge"
-                              ng-class="{'bg-red' : !!measure.watcherMeasures.postDigestQueueLog.length}"> {{:: measure.watcherMeasures.postDigestQueueLog.length}} </span>
-                    </a>
+                <td>{{:: aMeasure.startTime/1000 | number : 3}} sec</td>
+                <td> {{:: aMeasure.runtime | number :2}} ms</td>
+                <td> {{:: aMeasure.nDirtyWatchers}} / {{:: aMeasure.nWatchers}}</td>
+                <td> wasted {{:: aMeasure.nWasteWatchersTime | percentage : aMeasure.runtime}}
+                    <br> total {{:: aMeasure.nWatchersRuntime | percentage : aMeasure.runtime}}
                 </td>
-                <td>{{:: measure.watcherMeasures.ttlErrors.length}}</td>
-                <td>{{:: measure.watcherMeasures.digestError.message}}</td>
-            </tr>
-            <tr ng-repeat-end ng-if="measure.showMeasureDetail" class="measure-detail animate-if">
-                <td colspan="8" class="box box-solid box-success">
-                    <div class="box-body">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                <th class="text-center"> scope</th>
-                                <th class="text-center"> expression</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr ng-repeat="detail in measure.boxDetails">
-                                <td class="text-center"> {{detail.scope}}</td>
-                                <td class="text-center">
-                                    <div class="col-xs-offset-1">
-                                        {{detail.exp | removeNewLine}}
-                                    </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <td> {{:: aMeasure.postDigestQueue.length + aMeasure.asyncQueue.length }} in
+                    {{:: aMeasure.otherRuntime | percentage : aMeasure.runtime}}
                 </td>
             </tr>
             </tbody>

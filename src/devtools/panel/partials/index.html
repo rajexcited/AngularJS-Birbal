@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="birbal-app">
+<html>
 
 <head>
     <meta charset="utf-8">
@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="../vendor/AdminLTE/css/bootstrap.min.css">
     <link rel="stylesheet" href="../vendor/AdminLTE/css/font-awesome.min.css">
     <link rel="stylesheet" href="../vendor/AdminLTE/css/ionicons.min.css">
+    <link rel="stylesheet" href="/node_modules/ion-rangeslider/css/ion.rangeSlider.skinNice.css">
+    <link rel="stylesheet" href="/node_modules/ion-rangeslider/css/ion.rangeSlider.css">
+    <link rel="stylesheet" href="/node_modules/ion-rangeslider/css/normalize.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="../vendor/AdminLTE/css/AdminLTE.min.css">
     <link rel="stylesheet" href="../vendor/AdminLTE/css/skin-blue.min.css">
@@ -17,7 +20,7 @@
     <link rel="stylesheet" href="../css/panel.css">
 </head>
 
-<body class="hold-transition skin-blue sidebar-mini fixed" ng-controller="panelViewController">
+<body class="hold-transition skin-blue sidebar-mini fixed" ng-app="birbal-app" ng-controller="panelViewController">
 <!-- wrapper -->
 <div class="wrapper">
     <!-- main header -->
@@ -59,13 +62,17 @@
 <!-- ./wrapper -->
 
 <!-- REQUIRED JS SCRIPTS -->
-<script src="/node_modules/jquery/dist/jQuery.js"></script>
+<script src="/node_modules/jquery/dist/jquery.js"></script>
 <script src="/node_modules/angular/angular.js"></script>
+<script src="/node_modules/floatthead/dist/jquery.floatThead.js"></script>
+<script src="/node_modules/ion-rangeslider/js/ion.rangeSlider.js"></script>
 <!-- Birbal communication -->
 <script src="/src/message.js"></script>
-<script src="/src/basicMessageAction.js"></script>
+<!-- Vendor lib -->
 <script src="../vendor/AdminLTE/js/bootstrap.min.js"></script>
 <script src="../vendor/AdminLTE/js/app.min.js"></script>
+<script src="../vendor/angular-floatHead.js"></script>
+<script src="../vendor/jquery.sparkline.js"></script>
 <!-- communication and tab evals -->
 <script src="../js/devtoolsExtended.js"></script>
 <script src="../js/birbalJSInit.js"></script>
@@ -73,5 +80,9 @@
 <script src="../js/birbal.app.js"></script>
 <script src="../js/background.service.js"></script>
 <script src="../js/panel-view.directive.js"></script>
+<script src="../js/birbalFilters.filter.js"></script>
+<script src="../js/digestDataFactory.factory.js"></script>
+<script src="../js/httpRecordFactory.factory.js"></script>
+<script src="../js/rangeSlider.directive.js"></script>
 </body>
 </html>

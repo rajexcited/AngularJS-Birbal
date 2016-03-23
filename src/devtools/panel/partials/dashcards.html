@@ -1,5 +1,20 @@
 <div class="row">
-    <div class="col-md-4 col-sm-6">
+    <div class="box box-primary">
+        <div class="box-header">
+            <h3 class="box-title">Digest range Slider</h3>
+            <span>select time range to filter digest result and inline chart shows the frequency of digest cycle over the time scale.</span>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+            <div class="row margin">
+                <span id="digestRangeSlider" range-slider="" slider-config="rangeSlider.config.digest"
+                      measures="digestCycle.measures"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-6">
         <!-- Widget: user widget style 1 -DIGEST card -->
         <div class="box box-widget widget-user">
             <div class="widget-user-header bg-aqua-active">
@@ -11,29 +26,34 @@
             </div>
             <div class="box-footer">
                 <div class="row">
-                    <div class="col-sm-3 border-right">
-                        <div class="description-block" data-toggle="tooltip"
-                             data-original-title="since {{digestMeasures.performanceTime[0].startTime/1000}} sec of page ready">
-                            <h5 class="description-header">{{digestMeasures.performanceTime.length}}</h5>
-                            <span class="description-text">Total</span>
+                    <div class="col-sm-5 border-right">
+                        <div class="description-block" data-toggle="tooltip" data-original-title="Longest ever">
+                            <span class="description-text">Longest </span>
+                            <h5 class="description-header">{{digestCycle.highlights.longestDigestTime | number:2}}
+                                ms</h5>
                         </div>
                         <!-- /.description-block -->
                     </div>
                     <!-- /.col -->
-                    <div class="col-sm-4 border-right">
-                        <div class="description-block" data-toggle="tooltip" data-original-title="one Longest">
-                            <h5 class="description-header">{{digestMeasures.max.duration}}</h5>
-                            <span class="description-text">expensive (ms)</span>
+                    <div class="col-sm-7">
+                        <div class="description-block" data-toggle="tooltip"
+                             data-original-title="Effective digest rate based on debounce time defined in settings view">
+                            <span class="description-text">Effective digest rate: </span>
+                            <h5 class="description-header"> {{digestCycle.highlights.edr.nDigest}} cycles in
+                                {{digestCycle.highlights.edr.runtime|number:2}} ms </h5>
                         </div>
                         <!-- /.description-block -->
                     </div>
                     <!-- /.col -->
-                    <div class="col-sm-5">
-                        <div class="description-block" data-toggle="tooltip"
-                             data-original-title="n continuous cycles / total time (see more in settings view)">
-                            <h5 class="description-header">{{digestMeasures.max.edr.n}} /
-                                {{digestMeasures.max.edr.duration}}</h5>
-                            <span class="description-text">digest rate (n/ms)</span>
+                </div>
+                <!-- /.row -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="description-block">
+                            <span>???  For chosen time range, digest rate: {{digestCycle.selectedRange.edr.nDigest}} cycles in
+                                {{digestCycle.selectedRange.edr.runtime|number:2}} ms</span>
+                            <h5 class="description-header">longest cycle:
+                                {{digestCycle.selectedRange.longestDigestTime|number:2}} ms</h5>
                         </div>
                         <!-- /.description-block -->
                     </div>
@@ -45,7 +65,7 @@
         <!-- /.widget-user -->
     </div>
     <!-- /.col Digest card-->
-    <div class="col-md-4 col-sm-6">
+    <div class="col-sm-6">
         <!-- Widget: user widget style 1 -WATCH card -->
         <div class="box box-widget widget-user">
             <div class="widget-user-header bg-lime-active">
@@ -55,28 +75,29 @@
             <div class="widget-user-image">
                 <img class="img-circle" src="/img/digest_measures.jpg" alt="watchMeasures">
             </div>
-            <div class="box-footer">
-                <div class="row">
-                    <div class="col-sm-6 border-right">
-                        <div class="description-block" data-toggle="tooltip" data-original-title="in any digest cycle">
-                            <h5 class="description-header">
-                                <span class="badge bg-red"
-                                      ng-class="{'bg-green':!digestMeasures.max.watcherMeasures.counts.dirtyexpensive}">
-                                    {{digestMeasures.max.watcherMeasures.counts.total}}</span>
-                            </h5>
-                            <span class="description-text">max total count</span>
+            <div class="box-footer" ng-class="{'bg-red-gradient':!!digestCycle.highlights.redLightWatchMsg}">
+                <div class="row" data-toggle="tooltip"
+                     data-original-title="{{digestCycle.highlights.redLightWatchMsg}}">
+                    <div class="col-sm-4 border-right">
+                        <div class="description-block">
+                            <span class="description-text">max total count in cycle</span>
+                            <h5 class="description-header">{{digestCycle.highlights.nWatchers}}</h5>
                         </div>
                         <!-- /.description-block -->
                     </div>
                     <!-- /.col -->
-                    <div class="col-sm-6">
-                        <div class="description-block" data-toggle="tooltip" data-original-title="in any digest cycle">
-                            <h5 class="description-header">
-                                <span class="badge bg-red"
-                                      ng-class="{'bg-green':!digestMeasures.max.watcherMeasures.counts.dirtyexpensive}">
-                                    {{digestMeasures.max.watcherMeasures.counts.dirty}}</span>
-                            </h5>
-                            <span class="description-text">max dirty counts</span>
+                    <div class="col-sm-4">
+                        <div class="description-block" data-toggle="tooltip" data-original-title="in one digest cycle">
+                            <span class="description-text">max dirty count in cycle</span>
+                            <h5 class="description-header">{{digestCycle.highlights.dirtyWatchers }}</h5>
+                        </div>
+                        <!-- /.description-block -->
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-sm-4">
+                        <div class="description-block">
+                            <h5 class="description-header"> ?? </h5>
+                            <span class="description-text"> watchers yet never run</span>
                         </div>
                         <!-- /.description-block -->
                     </div>
@@ -88,41 +109,4 @@
         <!-- /.widget-user -->
     </div>
     <!-- /.col Watch card-->
-    <div class="col-md-4 col-sm-6">
-        <!-- Widget: user widget style 1 -SCOPE card -->
-        <div class="box box-widget widget-user">
-            <div class="widget-user-header bg-yellow-active">
-                <h3 class="widget-user-username">Scope Measures</h3>
-                <h5 class="widget-user-desc">Summary used in digest cycle</h5>
-            </div>
-            <div class="widget-user-image">
-                <img class="img-circle" src="/img/digest_measures.jpg" alt="scopeMeasures">
-            </div>
-            <div class="box-footer">
-                <div class="row">
-                    <div class="col-sm-6 border-right">
-                        <div class="description-block" data-toggle="tooltip"
-                             data-original-title="max in one digest cycle">
-                            <h5 class="description-header">{{digestMeasures.max.watcherMeasures.scopes.total}}</h5>
-                            <span class="description-text">Total</span>
-                        </div>
-                        <!-- /.description-block -->
-                    </div>
-                    <!-- /.col -->
-                    <div class="col-sm-6">
-                        <div class="description-block" data-toggle="tooltip"
-                             data-original-title="How many participated in digest dirty">
-                            <h5 class="description-header">{{digestMeasures.max.watcherMeasures.scopes.dirty}}</h5>
-                            <span class="description-text">max participation</span>
-                        </div>
-                        <!-- /.description-block -->
-                    </div>
-                    <!-- /.col -->
-                </div>
-                <!-- /.row -->
-            </div>
-        </div>
-        <!-- /.widget-user -->
-    </div>
-    <!-- /.col scope card-->
 </div>

@@ -1,16 +1,17 @@
-/*global angular*/
+/*global angular, BirbalMessage, window, document*/
 (function (window, document) {
     'use strict';
 
     /**
      Birbal detects angular page, and notify with basic informations
      */
-    var logger, contentMessageActions;
+    var logger, contentMessageActions = {}, receiver, annotate;
     /////////////////////////////////////////////////////////
     //            LOGGER FOR DEVELOPMENT ONLY
     /////////////////////////////////////////////////////////
     // get flag value set by birbal
     function noop() {
+        return;
     }
 
     if (document.getElementsByTagName('html')[0].getAttribute('birbal-debug') === 'true') {
@@ -30,107 +31,89 @@
     //            BIRBAL SETUP
     /////////////////////////////////////////////////////////
     // listener and communication
-    var Message = function (msgDetails, task) {
-        this.source = 'angularinspector';
-        this.dest = 'content-script';
-        this.name = 'window-message';
-        this.app = 'ngBirbal';
-        // add details to data
-        this.data = msgDetails;
-        this.task = task || msgDetails.task;
-        if (msgDetails) {
-            delete msgDetails.task;
-        }
-    };
-
-    var broadcastMessage = function (info, task) {
-        var msg = new Message(info, task);
-        if (msg.task) {
-            window.postMessage(msg, '*');
-        } else {
-            logger.error('Error: task in undefined.');
-        }
-    };
+    function broadcastMessage(info, task) {
+        var msg = new BirbalMessage(info, 'angular-inspector', 'content-script', task);
+        window.postMessage(msg, '*');
+    }
 
     function contentMsgListener(event) {
         // We only accept messages from ourselves
         // We only accept message for our app and destination specified as this file.
         /* jshint -W116 */
-        if (event.source != window || !event.data || event.data.app !== 'ngBirbal' || event.data.dest !== 'angularinspector') {
+        /*jslint eqeq: true*/
+        if (event.source != window || !event.data || event.data.app !== 'birbal' || event.data.receiverId !== 'angular-inspector') {
             return;
         }
+        /*jslint eqeq: false*/
         /* jshint +W116 */
-        logger.log('in contentMsgListener-angular birbal');
+        logger.log('in contentMsgListener-angular birbal ' + performance.now());
         logger.log(event.data);
-        var messageActions = contentMessageActions(event.data);
-        messageActions.takeAction();
-        logger.log('msg action status? ' + messageActions.status());
+        receiver.answerCall(event.data);
     }
 
     window.addEventListener('message', contentMsgListener, false);
-    // letting birbal app know that I'm ready
-    broadcastMessage(null,'init');
 
     // actions defined for given message task
-    contentMessageActions = function (contentMessage) {
-        var actions = {},
-            status = ['ready'];
-        /**
-         * disable plugin
-         */
-        actions.pauseAnalysis = function () {
-            contentMessageActions.pause = true;
-            status.push('paused');
-        };
-        /**
-         * disconnect page or devtools or user stopped
-         */
-        actions.stopAnalysis = function () {
-            contentMessageActions.stop = true;
-            window.removeEventListener('message', contentMsgListener);
-            cleanup();
-            status.push('analysisStopped');
-        };
-        /**
-         * detect angular loaded and run analysis
-         */
-        actions.startAnalysis = function () {
-            // inject to ngmodule to get onload data
-            if (contentMessageActions.pause === undefined) {
-                document.addEventListener('DOMContentLoaded', angularLoaded);
-            } else {
-                contentMessageActions.pause = false;
+    function ReceiverImpl() {
+        var receiverSelf = this,
+            taskCallBackList = {};
+
+        receiverSelf.answerCall = function (contentMessage) {
+            var taskName, callback;
+
+            contentMessage.status = 'connecting';
+            taskName = contentMessage.task;
+            callback = taskCallBackList[taskName];
+            if (!callback) {
+                throw new Error('given task:"' + taskName + '" is not registered with action callback.');
             }
-            status.push('analysisStarted');
+            callback.apply(null, arguments);
+            contentMessage.status = 'answered';
         };
 
-        // start regular analysis
-        function angularLoaded() {
-            try {
-                //logger.log(document.readyState + ',  angular loaded? ' + !!window.angular);
-                angular.module('ng');
-                cleanup();
-                instrumentAngular();
-            } catch (err) {
-                setTimeout(angularLoaded, 50);
+        receiverSelf.actionOnTask = function (task, actionCallBack) {
+            if (typeof task !== 'string' && typeof actionCallBack !== 'function') {
+                throw new Error('arguments(task, actionCallBack) are not matching');
             }
-        }
-
-        function takeAction() {
-            status.push('actionStart');
-            actions[contentMessage.task]();
-            status.push('actionEnd');
-        }
-
-        function _status() {
-            return status.join(',');
-        }
-
-        return {
-            takeAction: takeAction,
-            status: _status
+            taskCallBackList[task] = actionCallBack;
         };
-    };
+    }
+
+    receiver = new ReceiverImpl();
+
+    // #9
+    /**
+     * detect angular loaded and run analysis
+     */
+    receiver.actionOnTask('startAnalysis', function (message) {
+        // inject to ngmodule to get onload data
+        // qq: why these conditions?
+        if (contentMessageActions.pause === undefined) {
+            //contentMessageActions.ngRootNode = message.msgDetails.ngRootNode;
+            //contentMessageActions.ngModule = message.msgDetails.ngModule;
+            //logger.info(performance.now() + ' ai');
+            //startInstrumentation();
+        } else {
+            contentMessageActions.pause = false;
+        }
+    });
+
+    /**
+     * disable plugin
+     */
+        // qq: when do i need this?
+    receiver.actionOnTask('pauseAnalysis', function () {
+        contentMessageActions.pause = true;
+    });
+
+    /**
+     * disconnect page or devtools or user stopped
+     */
+        // qq: when do i need this?
+    receiver.actionOnTask('stopAnalysis', function () {
+        contentMessageActions.stop = true;
+        //window.location.reload();
+    });
 
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
@@ -138,57 +121,43 @@
     /////////////////////////////////////////////////////////
     //            Angular Informations
     /////////////////////////////////////////////////////////
-    var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i;
-    var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;
-    var MOZ_HACK_REGEXP = /^moz([A-Z])/;
-
     /**
-     * Converts all attributes format into proper angular name.
-     * @param name Name to normalize
+     * @returns ngApp name {string}
      */
-    function normalizeAngularAttr(name) {
-        return name.replace(PREFIX_REGEXP, '')
-            .replace(SPECIAL_CHARS_REGEXP, function (_, separator, letter, offset) {
-                return offset ? letter.toUpperCase() : letter;
-            })
-            .replace(MOZ_HACK_REGEXP, 'Moz$1');
-    }
-
     function getAngularApp() {
         logger.log('finding app name');
         var ngRootNode = document.querySelector('.ng-scope'),
             attributes = ngRootNode.attributes,
-            appname = ngRootNode.getAttribute('birbal-detected-app'),
+            appname,
             attrName,
-            len = attributes.length,
-            rr;
-
-        if (appname) {
-            return appname;
-        }
+            len = attributes.length;
 
         do {
             len--;
             attrName = attributes.item(len).name;
             if (normalizeAngularAttr(attrName) === 'ngApp') {
                 appname = attributes.item(len).value;
-                ngRootNode.setAttribute('birbal-detected-app', appname);
                 break;
             }
         } while (len);
 
-        if (!appname) {
-            // ??????  through classname ??? is it supported?
-            rr = new RegExp('ng-app: (.*);');
-            appname = rr.test(ngRootNode.className) ? rr.exec(ngRootNode.className)[1] : appname;
-            ngRootNode.setAttribute('birbal-detected-app', appname);
-        }
-
         return appname;
-    }
 
-    function cleanup() {
-        // clean all resources
+        /**
+         * Converts all attributes format into proper angular name.
+         * @param name Name to normalize
+         */
+        function normalizeAngularAttr(name) {
+            var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i,
+                SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g,
+                MOZ_HACK_REGEXP = /^moz([A-Z])/;
+
+            return name.replace(PREFIX_REGEXP, '')
+                .replace(SPECIAL_CHARS_REGEXP, function (_, separator, letter, offset) {
+                    return offset ? letter.toUpperCase() : letter;
+                })
+                .replace(MOZ_HACK_REGEXP, 'Moz$1');
+        }
     }
 
     /////////////////////////////////////////////////////////////////
@@ -212,188 +181,198 @@
                 }
 
                 // initialize nb to send measures
-                var nb = {
+                var nb,
+                    perf = window.performance;
+                nb = {
                     digest: {
                         scope: {},
                         asyncQueue: [],
                         postDigestQueue: ''
                     },
-                    destroy: [],
                     events: {
                         emit: [],
                         broadcast: []
                     },
                     http: {}
                 };
+
                 // instrument scope/rootScope
                 $provide.decorator('$rootScope', function ($delegate) {
-                    var scopePrototype,
-                        _watch, _destroy, _digest, _apply, _emit, _broadcast;
+                    var scopePrototype, ngWatch, ngWatchCollection, ngDigest, ngApply, ngEmit, ngBroadcast,
+                        watchCollectionExp;
 
                     /* $rootScope prototype initial reference version 1.2.4
                      https://github.com/angular/angular.js/blob/v1.2.4/src/ng/rootScope.js
                      supports: v1.2.4
                      */
                     scopePrototype = Object.getPrototypeOf($delegate);
-                    _watch = scopePrototype.$watch;
+                    // add watch collection here
+                    ngWatch = scopePrototype.$watch;
                     scopePrototype.$watch = function (watchExp) {
-                        var start,
-                            _get, _fn,
-                            _getret,
-                            watcher, _eq,
-                            watchret, wlen, watchstr,
+                        var start, runtime,
+                            ngWatchGet, ngWatchFn, ngWatchEq, ngWatchret,
+                            addedWatcher, watchstr,
+                            indRvs, wInd,
+                            _watchers, _getret,
                             scope = this;
-                        // get watch setup
-                        watchret = _watch.apply(scope, arguments);
+                        // watch setup
+                        ngWatchret = ngWatch.apply(scope, arguments);
                         // last is current
-                        wlen = scope.$$watchers.length - 1;
-                        watcher = scope.$$watchers[0];
-                        watchstr = toStringForm(watchExp);
+                        indRvs = scope.$$watchers.length;
+                        addedWatcher = scope.$$watchers[0];
+                        watchstr = toStringForm(watchCollectionExp || watchExp);
                         // patch get and fn to trace
-                        _get = watcher.get;
-                        _fn = watcher.fn;
-                        _eq = !!watcher.eq;
-                        watcher.get = function () {
-                            var _watchers;
+                        ngWatchGet = addedWatcher.get;
+                        ngWatchFn = addedWatcher.fn;
+                        ngWatchEq = !!addedWatcher.eq;
+
+                        addedWatcher.get = function () {
                             if (nb.pause) {
-                                return _get.apply(null, arguments);
-                            } else if (nb.stop) {
-                                watcher.get = _get;
-                                return watcher.get.apply(null, arguments);
+                                //clear
+                                return ngWatchGet.apply(null, arguments);
                             }
-                            _watchers = (_watchers = (nb.digest.scope[scope.$id] = nb.digest.scope[scope.$id] || {
-                                        watchers: []
-                                    }).watchers) && (_watchers[wlen] = _watchers[wlen] || []);
-                            start = window.performance.now();
-                            _getret = _get.apply(null, arguments);
-                            _watchers.push({
-                                get: (window.performance.now() - start),
-                                eq: _eq
-                            });
+                            try {
+                                wInd = scope.$$watchers.length - indRvs;
+                                _watchers = nb.digest.scope[scope.$id].watchers[wInd] || [];
+                            } catch (e) {
+                                _watchers = nb.digest.scope[scope.$id] = nb.digest.scope[scope.$id] ||
+                                    {
+                                        watchers: [],
+                                        parent: scope.$parent && scope.$parent.$id
+                                    };
+                                _watchers = _watchers.watchers[wInd] = _watchers.watchers[wInd] || [];
+                            }
+                            start = perf.now();
+                            _getret = ngWatchGet.apply(null, arguments);
+                            runtime = perf.now() - start;
+                            if (_watchers.length === 0) {
+                                _watchers.push({
+                                    'get': runtime,
+                                    'exp': watchstr,
+                                    'eq': ngWatchEq
+                                });
+                            } else {
+                                _watchers.push(runtime);
+                            }
                             return _getret;
                         };
 
-                        watcher.fn = function () {
-                            var _watcher;
+                        addedWatcher.fn = function () {
                             if (nb.pause) {
-                                _fn.apply(null, arguments);
-                            } else if (nb.stop) {
-                                watcher.fn = _fn;
-                                watcher.fn.apply(null, arguments);
+                                ngWatchFn.apply(null, arguments);
+                            } else {
+                                //try {
+                                var len = _watchers.length, _w;
+                                if (len === 1) {
+                                    _w = _watchers[0];
+                                } else {
+                                    runtime = _watchers[len - 1];
+                                    _w = _watchers[len - 1] = {'get': runtime};
+                                }
+
+                                start = perf.now();
+                                ngWatchFn.apply(null, arguments);
+                                _w.fn = perf.now() - start;
                             }
-                            _watcher = (_watcher = nb.digest.scope[scope.$id].watchers[wlen]) && _watcher[_watcher.length - 1];
-                            _watcher.exp = watchstr;
-                            start = window.performance.now();
-                            _fn.apply(null, arguments);
-                            _watcher.fn = window.performance.now() - start;
                         };
 
-                        // cleaning as not needed in future
-                        watcher = start = _getret = undefined;
                         // returning removal with cleanup
-                        return function () {
-                            watchret.apply(null, arguments);
-                            watchret = wlen = watchstr = _get = _fn = scope = undefined;
+                        return function removeWatcher() {
+                            // clear
+                            addedWatcher.get = ngWatchGet;
+                            addedWatcher.fn = ngWatchFn;
+                            ngWatchret.apply(null, arguments);
+                            ngWatchret = runtime = addedWatcher = start = _getret = _watchers = wInd = indRvs = watchstr = ngWatchEq = ngWatchFn = ngWatchGet = scope = undefined;
                         };
                     };
-                    _destroy = scopePrototype.$destroy;
-                    scopePrototype.$destroy = function () {
-                        if (!nb.pause || !nb.stop || !this.$$destroyed) {
-                            nb.destroy = nb.destroy || [];
-                            nb.destroy.push({
-                                id: this.$id,
-                                time: window.performance.now()
-                            });
-                        }
-                        _destroy.apply(this, arguments);
-                        _watch = _destroy = _digest = _apply = _emit = _broadcast = null;
+                    ngWatchCollection = scopePrototype.$watchCollection;
+                    scopePrototype.$watchCollection = function (obj) {
+                        // here, we want to use obj as watch expression for better debug and analysis purpose
+                        var collectionRemoval;
+                        watchCollectionExp = obj;
+                        collectionRemoval = ngWatchCollection.apply(this, arguments);
+                        watchCollectionExp = undefined;
+                        return collectionRemoval;
                     };
-                    _digest = scopePrototype.$digest;
+                    ngDigest = scopePrototype.$digest;
                     scopePrototype.$digest = function () {
+                        var scope = this;
                         nb.pause = contentMessageActions.pause;
-                        nb.stop = contentMessageActions.stop;
                         if (nb.pause) {
-                            // for fail safe
-                            nb.digest = {
-                                scope: {}
-                            };
-                            _digest.apply(this, arguments);
-                            return;
-                        } else if (nb.stop) {
-                            _digest.apply(this, arguments);
-                            scopePrototype.$digest = _digest;
+                            ngDigest.apply(scope, arguments);
                             return;
                         }
                         try {
                             nb.digest = {
                                 scope: {},
-                                asyncQueue: [],
-                                postDigestQueue: toStringForm(this.$$postDigestQueue)
+                                asyncQueue: '',
+                                postDigestQueue: toStringForm(scope.$$postDigestQueue)
                             };
-                            this.$$asyncQueue.forEach(function (asyncTask) {
-                                nb.digest.asyncQueue.push({
-                                    scope: asyncTask.scope.$id,
-                                    expression: toStringForm(asyncTask.expression)
-                                });
+                            nb.digest.asyncQueue = scope.$$asyncQueue.map(function (a) {
+                                var m = a;
+                                if (typeof a === 'object') {
+                                    m = {};
+                                    m.expression = a.expression;
+                                    m.scope = a.scope.$id;
+                                }
+                                return toStringForm(m);
                             });
-                            nb.digest.startTime = window.performance.now();
-                            _digest.apply(this, arguments);
+                            nb.digest.startTime = perf.now();
+                            ngDigest.apply(scope, arguments);
                         } catch (e) {
                             nb.digest.error = {
                                 message: e.message,
                                 logs: e.stack
                             };
-                            throw (e);
+                            throw e;
                         } finally {
-                            if (!contentMessageActions.pause || !contentMessageActions.stop) {
-                                nb.digest.endTime = window.performance.now();
-                                nb.digest.destroy = nb.destory;
-                                nb.digest.prevApplyEnd = nb.prevApplyEnd;
-                                nb.digest.events=nb.events;
-                                broadcastMessage(nb.digest, 'digestMeasures');
-                                nb.prevApplyEnd = null;
-                                nb.destroy.length = 0;
-                                nb.events.emit.length = 0;
-                                nb.events.broadcast.length = 0;
-                            }
+                            nb.digest.endTime = perf.now();
+                            nb.digest.applyStartTime = nb.applyStartTime;
+                            nb.digest.applyEndTime = nb.applyEndTime;
+                            nb.digest.events = nb.events;
+                            broadcastMessage(nb.digest, 'digestMeasures');
+                            nb.applyStartTime = nb.applyEndTime = undefined;
+                            nb.events.emit.length = 0;
+                            nb.events.broadcast.length = 0;
                         }
                     };
-                    _apply = scopePrototype.$apply;
+                    ngApply = scopePrototype.$apply;
                     scopePrototype.$apply = function () {
-                        _apply.apply(this, arguments);
-                        nb.prevApplyEnd = window.performance.now();
+                        nb.applyStartTime = perf.now();
+                        ngApply.apply(this, arguments);
+                        nb.applyEndTime = perf.now();
                     };
-                    _emit = scopePrototype.$emit;
-                    scopePrototype.$emit = function () {
+                    ngEmit = scopePrototype.$emit;
+                    scopePrototype.$emit = function (name) {
                         if (nb.pause) {
-                            return _emit.apply(this, arguments);
-                        } else if (nb.stop) {
-                            scopePrototype.$emit = _emit;
-                            return scopePrototype.$emit.apply(this, arguments);
+                            return ngEmit.apply(this, arguments);
                         }
-                        var event = {
-                            start: window.performance.now()
-                        };
-                        var emitret = _emit.apply(this, arguments);
-                        event.end = window.performance.now();
-                        event.duration = event.end - event.start;
+                        var emitret,
+                            event = {
+                                start: perf.now(),
+                                name: name,
+                                fromScope: this.$id
+                            };
+                        emitret = ngEmit.apply(this, arguments);
+                        event.end = perf.now();
+                        event.runtime = event.end - event.start;
                         nb.events.emit.push(event);
                         return emitret;
                     };
-                    _broadcast = scopePrototype.$broadcast;
-                    scopePrototype.$broadcast = function () {
+                    ngBroadcast = scopePrototype.$broadcast;
+                    scopePrototype.$broadcast = function (name) {
+                        var event, broadcastret;
                         if (nb.pause) {
-                            return _broadcast.apply(this, arguments);
-                        } else if (nb.stop) {
-                            scopePrototype.$broadcast = _broadcast;
-                            return scopePrototype.$broadcast.apply(this, arguments);
+                            return ngBroadcast.apply(this, arguments);
                         }
-                        var event = {
-                            start: window.performance.now()
+                        event = {
+                            start: perf.now(),
+                            name: name,
+                            fromScope: this.$id
                         };
-                        var broadcastret = _broadcast.apply(this, arguments);
-                        event.end = window.performance.now();
-                        event.duration = event.end - event.start;
+                        broadcastret = ngBroadcast.apply(this, arguments);
+                        event.end = perf.now();
+                        event.runtime = event.end - event.start;
                         nb.events.broadcast.push(event);
                         return broadcastret;
                     };
@@ -401,78 +380,49 @@
                     return $delegate;
                 });
 
+                //qq: how can i analyze http with my digest cycle
                 // register the interceptor as a service
                 $httpProvider.interceptors.push(function () {
-                    var cc = {};
 
-                    function ccClean() {
-                        angular.forEach(cc, function (value, key) {
-                            delete cc[key];
-                        });
+                    function collectHttpData(config) {
+                        var httpCall = {
+                            url: config.url,
+                            method: config.method,
+                            req: config.nbTime.req,
+                            reqErr: config.nbTime.reqErr,
+                            resp: config.nbTime.resp,
+                            respErr: config.nbTime.respErr
+                        };
+                        broadcastMessage(httpCall, 'httpMeasures');
                     }
 
                     return {
-                        // optional method
                         'request': function (config) {
-                            // do something on success
-                            if (!nb.pause || !nb.stop) {
-                                cc[config.url] = cc[config.url] || [];
-                                cc[config.url].push({
-                                    request: window.performance.now(),
-                                    url: config.url,
-                                    headers: config.headers,
-                                    method: config.method
-                                });
-                            } else {
-                                ccClean();
+                            if (!nb.pause) {
+                                config.nbTime = {'req': perf.now()};
                             }
                             return config;
                         },
-
-                        // optional method
                         'requestError': function (rejection) {
-                            // do something on error
-                            if (!nb.pause || !nb.stop) {
-                                cc[rejection.config.url].forEach(function (httpCall) {
-                                    if (httpCall.method === rejection.config.method && httpCall.headers === rejection.config.headers) {
-                                        httpCall.requestError = window.performance.now();
-                                    }
-                                });
+                            if (rejection.nbTime) {
+                                rejection.nbTime.reqErr = perf.now();
+                                collectHttpData(rejection);
                             }
                             return rejection;
                         },
-
-
-                        // optional method
                         'response': function (response) {
                             // do something on success
-                            if (!nb.pause || !nb.stop) {
-                                cc[response.config.url].forEach(function (httpCall, ind, list) {
-                                    if (httpCall.method === response.config.method && httpCall.headers === response.config.headers) {
-                                        httpCall.response = window.performance.now();
-                                        broadcastMessage(httpCall, 'httpMeasures');
-                                        list.splice(ind, 1);
-                                    }
-                                });
-                            } else {
-                                ccClean();
+                            if (response.nbTime) {
+                                response.nbTime.resp = perf.now();
+                                collectHttpData(response);
                             }
                             return response;
                         },
-
-                        // optional method
                         'responseError': function (rejection) {
                             // do something on error
-                            if (!nb.pause || !nb.stop) {
-                                cc[rejection.config.url].forEach(function (httpCall, ind, list) {
-                                    if (httpCall.method === rejection.config.method && httpCall.headers === rejection.config.headers) {
-                                        httpCall.reponseError = window.performance.now();
-                                        broadcastMessage(httpCall, 'httpMeasures');
-                                        list.splice(ind, 1);
-                                    }
-                                });
-                            } else {
-                                ccClean();
+                            if (rejection.nbTime) {
+                                rejection.nbTime.respErr = perf.now();
+                                collectHttpData(rejection);
                             }
                             return rejection;
                         }
@@ -483,13 +433,11 @@
     }
 
     ////////////////////////////////////////////////////////////////////
-    // 			START INSPECTING PAGE FOR ANGULAR - onload, beforeunload
+    //  START INSPECTING PAGE FOR ANGULAR - onload, beforeunload
+    //  annotate is use for angular providers
     /////////////////////////////////////////////////////////////////////
-    var annotate;
-
     function annotateFinder() {
-
-        annotate = annotate || window.angular.injector().annotate;
+        annotate = angular.injector().annotate;
         if (annotate) {
             // defined
             return;
@@ -497,15 +445,15 @@
 
         // annotate not exists - define same as angular
         // https://github.com/angular/angular.js/blob/v1.2.4/src/auto/injector.js
-        var ARROW_ARG = /^([^\(]+?)=>/;
-        var FN_ARGS = /^[^\(]*\(\s*([^\)]*)\)/m;
-        var FN_ARG_SPLIT = /,/;
-        var FN_ARG = /^\s*(_?)(\S+?)\1\s*$/;
-        var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+        var ARROW_ARG = /^([^\(]+?)=>/,
+            FN_ARGS = /^[^\(]*\(\s*([^\)]*)\)/m,
+            FN_ARG_SPLIT = /,/,
+            FN_ARG = /^\s*(_?)(\S+?)\1\s*$/,
+            STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 
         function assertArg(arg, name, reason) {
             if (!arg) {
-                throw Error('areq Argument "{0}" is {1} (' + name + ' || "?"), (' + reason + ' || "required")');
+                throw new Error('areq Argument "{0}" is {1} (' + name + ' || "?"), (' + reason + ' || "required")');
             }
             return arg;
         }
@@ -572,50 +520,115 @@
     }
 
     ////////////////////////////////////////////////////////////////////
-    // 			START INSPECTING PAGE FOR ANGULAR - onload
+    //      START INSPECTING PAGE FOR ANGULAR - onload
     /////////////////////////////////////////////////////////////////////
-    function startInspection() {
-        logger.log('starting inspection');
+    function generateXPath(element) {
+        if (element.id === undefined) {
+            return;
+        }
+        if (element.id !== '') {
+            return 'id("' + element.id + '")';
+        }
+        if (element === document.body || element.parentNode === null) {
+            return element.tagName;
+        }
+
+        var ix = 0;
+        var siblings = element.parentNode.childNodes;
+
+        for (var i = 0; i < siblings.length; i++) {
+            var sibling = siblings[i];
+            if (sibling === element) {
+                var parentX = generateXPath(element.parentNode);
+                if (!parentX) {
+                    parentX = '';
+                } else {
+                    parentX = parentX + '/';
+                }
+                return parentX + element.tagName + '[' + (ix + 1) + ']';
+            }
+            if (sibling.nodeType === 1 && sibling.tagName === element.tagName) {
+                ix++;
+            }
+        }
+    }
+
+    function inspectAngular() {
+        logger.log('starting inspection ' + performance.now());
         if (annotate) {
             // angular has been instrumented
             return;
         }
+        contentMessageActions.angularDetected = true;
         // quick messaging
-        var msg = {
-            task: 'ngDetect'
-        };
-
+        var msg = {};
         // get ANGULAR basic details
         msg.ngVersion = window.angular && window.angular.version;
         msg.ngDetected = !!msg.ngVersion;
-        msg.ngModule = msg.ngDetected && getAngularApp() || null;
+        msg.ngModule = msg.ngDetected && getAngularApp();
+        msg.ngRootNode = msg.ngDetected && generateXPath(document.querySelector('.ng-scope'));
         // send inspection data
-        broadcastMessage(msg);
-        if (!msg.ngDetected) {
-            // disconnect plugin
-            contentMessageActions({task: 'stopAnalysis'}).takeAction();
-        }
+        broadcastMessage(msg, 'ngDetect');
+        // qq: do i need this?
+        //if (!msg.ngDetected) {
+        // disconnect plugin
+        //receiver.answerCall({task: 'stopAnalysis'});
+        //}
         logger.log('ngDetect message or cleanup');
     }
 
     /////////
-    function onwinload() {
-        //logger.log('window onload');
-        window.setTimeout(startInspection, 0);
+    if (document.readyState === 'complete') {
+        window.setTimeout(inspectAngular, 1);
+    } else {
+        window.addEventListener('load', function onwinload() {
+            window.setTimeout(inspectAngular, 1);
+        }, false);
     }
 
-    if (document.readyState === 'complete') {
-        //logger.log('doc ready');
-        window.setTimeout(startInspection, 0);
-    } else {
-        window.addEventListener('load', onwinload, false);
+    // #1 ,use for #9 & #10
+    // letting birbal app know that I'm ready
+    broadcastMessage(null, 'csInit');
+    // start angular analysis
+    function waitForAngularLoad(callback) {
+        contentMessageActions.angularDetected = false;
+        var isAngularLoaded = function () {
+                if (window.angular && !contentMessageActions.angularDetected) {
+                    try {
+                        angular.module('ng');
+                        contentMessageActions.angularDetected = true;
+                        document.removeEventListener('DOMNodeInserted', areWeThereYet);
+                        callback();
+                        return true;
+                    } catch (e) {
+                        // not ready
+                    }
+                }
+                return false;
+            },
+            areWeThereYet = function (event) {
+                if (!isAngularLoaded() && event.srcElement.tagName === 'SCRIPT') {
+                    event.srcElement.addEventListener('load', isAngularLoaded);
+                }
+            };
+        document.addEventListener('DOMNodeInserted', areWeThereYet);
     }
+
+    // wait and call instrumentation or detection
+    contentMessageActions.angularDetected = false;
+    waitForAngularLoad(function () {
+        if (document.getElementsByTagName('html')[0].getAttribute('birbal-ng-start') === 'true') {
+            instrumentAngular();
+        }
+    });
 
     window.addEventListener('beforeunload', function () {
-        // disconnect plugin
-        contentMessageActions.disconnect();
+        // release resources
+        receiver = undefined;
+        contentMessageActions=undefined;
+        window.removeEventListener('message', contentMsgListener);
     });
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
 
-})(window, document);
+}(window, document));

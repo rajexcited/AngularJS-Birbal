@@ -1,13 +1,14 @@
-/*global chrome,birbalJS*/
+/*global chrome,birbalJS, window*/
 (function (chrome, birbalJS) {
     'use strict';
 
     // all scripts gets reloaded after long inactive state
-    var logger, temp = {};
+    var logger, tabs, receiver;
     /////////////////////////////////////////////////////////
     //            LOGGER FOR DEVELOPMENT ONLY
     /////////////////////////////////////////////////////////
     function noop() {
+        return;
     }
 
     if (birbalJS.debugMode) {
@@ -26,173 +27,149 @@
     /////////////////////////////////////////////////////////
     //            TABS - CONNECTIONS and PROTOTYPE
     /////////////////////////////////////////////////////////
-    var tabs,
-        TabsProto = function () {
+    function TabsImpl() {
+        var tabself = this, tabHolder = {};
+
+        Object.defineProperty(tabself, 'length', {
+            get: function () {
+                return Object.keys(tabHolder).length;
+            }
+        });
+
+        tabself.getTabInfo = function (tabId) {
+            return tabHolder[tabId] && tabHolder[tabId].info;
         };
-    // tab prototype
-    TabsProto.prototype = {
 
-        getPort: function (tabId, portName) {
-            return portName && this[tabId] && this[tabId][portName];
-        },
+        tabself.getPort = function (tabId, portName) {
+            return portName && tabHolder[tabId] && tabHolder[tabId][portName];
+        };
 
-        addPort: function (tabId, port, portName) {
+        tabself.addPort = function (tabId, port, portName) {
             // add connection to tabs
-            var tab = this[tabId] = this[tabId] ? (this.length && this[tabId]) : (this.length++ && {});
-            tab[portName] = port;
-            tab.info = (tab.info || {});
-        },
+            tabHolder[tabId] = tabHolder[tabId] || {info: {}};
+            tabHolder[tabId][portName] = port;
+        };
 
-        removePort: function (port, portName) {
-            var tabId = port.sender.tab && port.sender.tab.id;
+        tabself.removePort = function (port, portName) {
+            var tabId = port.sender.tab && port.sender.tab.id,
+                tab;
 
             // delete connection
-            if (tabId in this) {
-                delete this[tabId][portName];
+            if (tabId && tabHolder[tabId]) {
+                delete tabHolder[tabId][portName];
             } else {
+                // qq: do i need this?
                 // tabId is not available
                 // iterate through and delete
-                var allTabIds = Object.keys(this),
-                    len = allTabIds.length,
-                    i;
-
-                for (i = 0; i < len; i++) {
-                    tabId = allTabIds[i];
-                    if (this[tabId][portName] === port) {
-                        delete this[tabId][portName];
+                for (tab in tabHolder) {
+                    if (tabHolder.hasOwnProperty(tab) && tabHolder[tab][portName] === port) {
+                        tabId = tab;
+                        delete tabHolder[tab][portName];
                         break;
                     }
                 }
-                if (i === len) {
-                    tabId = undefined;
-                }
             }
-            if (!this[tabId][birbalJS.END_POINTS.PANEL] && !this[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
-                // clean up tab resource
-                this.removeTab(tabId);
-            }
-            // removed
-            return tabId;
-        },
-        /////////////////////
-        removeTab: function (tabId) {
-            delete this[tabId];
-            this.length--;
-            return this.length;
-            // notify others and cleanup connection
-        },
 
-        length: 0
-    };
-    tabs = new TabsProto();
+            if (!tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
+                // clean up tab resource
+                delete tabHolder[tabId];
+            }
+            // removed tabId
+            return tabId;
+        };
+    }
+
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////////////////////
     //            communication - content-script & panel
     /////////////////////////////////////////////////////////////////////////////////////
-    var PanelMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.BACKGROUND, birbalJS.END_POINTS.PANEL);
-    var informPanel = function (tabId, info, task) {
-        var tab = tabs.getPort(tabId, birbalJS.END_POINTS.PANEL);
-        var msg = new PanelMessage(info);
-        msg.task = task || msg.task;
-        if (tab) {
-            logger.log(msg);
-            tab.postMessage(msg);
-        } else {
-            logger.warn(
-                'WARNING: panel tab Connection doesnot exists. incorrect tabId or connection is closed. Retry later. message tried....'
-            );
-            logger.log(msg);
-        }
-    };
-
-    var ContentMessage = birbalJS.messageBuilder(birbalJS.END_POINTS.BACKGROUND, birbalJS.END_POINTS.CONTENTSCRIPT);
     /**
-     send information to content-script.
-     @param tabId{number} must
-     @param info{object} must
-     @param task{string} optional
+     * sends call message to devtool panel
+     * @param tabId{number} must
+     * @param info{object} must
+     * @param task{string} optional
      */
-    var informContentScript = function (tabId, info, task) {
-        var tab = tabs.getPort(tabId, birbalJS.END_POINTS.CONTENTSCRIPT);
-        var msg = new ContentMessage(info);
-        msg.task = task || msg.task;
-        if (tab) {
-            logger.log(msg);
-            tab.postMessage(msg);
+    function informPanel(tabId, info, task) {
+        var panelPort, msg;
+
+        panelPort = tabs.getPort(tabId, birbalJS.END_POINTS.PANEL);
+        msg = new birbalJS.Message(info, birbalJS.END_POINTS.BACKGROUND, birbalJS.END_POINTS.PANEL, task);
+        if (panelPort) {
+            panelPort.postMessage(msg);
         } else {
-            tabs.removeTab(tabId);
-            logger.error(
-                'SEVERE ERROR: content script tab Connection doesnot exists. incorrect tabId #' + tabId +
-                '. Connection is closed. Cleaning resource......');
-            logger.log(msg);
+            logger.warn('WARNING: panel tab Connection doesnot exists. incorrect tabId or connection is closed. Retry later. message tried....');
         }
-    };
+        logger.log(msg);
+    }
+
+    /**
+     * sends call message to content-script
+     * @param tabId{number} must
+     * @param info{object} must
+     * @param task{string} optional
+     */
+    function informContentScript(tabId, info, task) {
+        var csPort, msg;
+
+        csPort = tabs.getPort(tabId, birbalJS.END_POINTS.CONTENTSCRIPT);
+        msg = new birbalJS.Message(info, birbalJS.END_POINTS.BACKGROUND, birbalJS.END_POINTS.CONTENTSCRIPT, task);
+        if (csPort) {
+            csPort.postMessage(msg);
+        } else {
+            logger.error('SEVERE ERROR: content script tab Connection doesnot exists. incorrect tabId #' + tabId + '. Connection is closed. Cleaning resource......');
+        }
+        logger.log(msg);
+    }
 
     /////////////////////////////////////////////////////////
-    //            content-script actionBuilder
+    //            receiver action listener for task
     /////////////////////////////////////////////////////////
-    temp.csActions = {};
-    temp.csActions.init = function () {
+    receiver = new birbalJS.Receiver(birbalJS.END_POINTS.BACKGROUND);
+    // for content-script
+    // #9
+    receiver.actionOnTask('csInit', function (message) {
         // if page refresh is mark, start analysis
-        this.status('csinit');
-        var tab = tabs[this.tabId];
-        if (tab.info.doAnalysis) {
-            informContentScript(this.tabId, tab.info.ngDetect, 'startAnalysis');
-            this.status('calling startAnalysis');
-            // ignore this message now
-            //informPanel(this.tabId, null, 'refresh');
-            //this.status('');
+        var tabInfo = tabs.getTabInfo(message.tabId);
+        if (tabInfo.doAnalysis) {
+            //informContentScript(message.tabId, tabInfo.ngDetect, 'startAnalysis');
+            informPanel(message.tabId, tabInfo.ngDetect, 'addPanel');
         }
-    };
+    });
+    // #6
+    receiver.actionOnTask('ngDetect', function (message) {
+        var msgDetails, tabInfo, taskForpanel;
 
-    temp.csActions.ngDetect = function () {
-        var messageData = this.message.data,
-            tab = tabs[this.tabId];
-        this.status('ngDetect');
-        tab.info.ngDetect = messageData;
+        // qq: what about other tabInfo of old tab?
+        msgDetails = message.msgDetails;
+        tabInfo = tabs.getTabInfo(message.tabId);
+        tabInfo.ngDetect = msgDetails;
         // angular page >> add , not angular page >> remove
-        var taskForpanel = messageData.ngDetected ? 'addPanel' : 'removePanel';
-        informPanel(this.tabId, messageData, taskForpanel);
-        this.status(taskForpanel);
-    };
+        taskForpanel = msgDetails.ngDetected ? 'addPanel' : 'removePanel';
+        informPanel(message.tabId, msgDetails, taskForpanel);
+    });
 
-    var CsActionBuilder = birbalJS.actionBuilder.build(temp.csActions);
-    // deleting it as no longer needed.
-    delete temp.csActions;
-
-    /////////////////////////////////////////////////////////
-    //            panel actionBuilder
-    /////////////////////////////////////////////////////////
-    temp.panelActions = {};
-    temp.panelActions.init = function () {
+    // for devtools panel
+    // #7
+    receiver.actionOnTask('panelInit', function (message) {
         // run pending tasks
-        var tab = tabs[this.tabId],
-            ngDetect = tab.info.ngDetect;
-        this.status('panel-init');
-        var task = ngDetect && ngDetect.ngDetected ? 'addPanel' : 'removePanel';
-        informPanel(this.tabId, ngDetect, task);
-        this.status(task);
-    };
+        var tabInfo, taskForPanel;
 
-    //temp.panelActions.stopAnalysis = function () {
-    //    // disable further analysis
-    //    this.doAnalysis();
-    //    // init panel
-    //    this.init();
-    //    // stop analysis in Injected
-    //    informContentScript(this.tabId, null, 'stopAnalysis');
-    //};
+        tabInfo = tabs.getTabInfo(message.tabId);
+        // addPanel >> show angular detection and allow to start
+        // removePanel >> reset panel
+        taskForPanel = tabInfo.ngDetect && tabInfo.ngDetect.ngDetected ? 'addPanel' : 'removePanel';
+        informPanel(message.tabId, tabInfo.ngDetect, taskForPanel);
+    });
 
-    temp.panelActions.doAnalysis = function () {
-        var tab = tabs[this.tabId];
-        tab.info.doAnalysis = this.message.data.doAnalysis;
-    };
-
-    var PanelActionBuilder = birbalJS.actionBuilder.build(temp.panelActions);
-    // deleting it as no longer needed.
-    delete temp.panelActions;
+    // #8
+    receiver.actionOnTask('doAnalysis', function (message) {
+        // enable or disable
+        var tabInfo = tabs.getTabInfo(message.tabId);
+        tabInfo.doAnalysis = message.msgDetails.doAnalysis;
+        informContentScript(message.tabId, tabInfo.doAnalysis, 'instrumentNg');
+    });
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
 
@@ -201,65 +178,56 @@
         logger.log('on' + details.reason + 'Callback: ');
         logger.log(details);
         // on update or reload, cleanup and restart.
+        tabs = new TabsImpl();
     });
 
     /////////////////////////////////////////////////////////
     //            On port connection
     /////////////////////////////////////////////////////////
-    function panelMsgListener(connectingPort, message, sender, sendResponse) {
-        // logger.log('panelMsgListener');
-        var builder = new PanelActionBuilder(message, connectingPort, birbalJS.END_POINTS.BACKGROUND, sender, sendResponse);
-        // adding port if not exists
-        tabs.addPort(builder.tabId, connectingPort, birbalJS.END_POINTS.PANEL);
-        builder.destPort = tabs.getPort(builder.tabId, message.dest);
-        builder.takeAction();
-        logger.log('panel #' + builder.tabId + ' msg action status? ' + builder.status());
+    /*jslint unparam: true*/
+    function destinationPortFinder(message, sender, srcPort) {
+        tabs.addPort(message.tabId, srcPort, message.callerId);
+        return tabs.getPort(message.tabId, message.receiverId);
     }
 
-    function contentScriptMsgListener(message, sender, sendResponse) {
-        // logger.log('contentScriptMsgListener');
-        var builder = new CsActionBuilder(message, sender, birbalJS.END_POINTS.BACKGROUND, sender, sendResponse);
-        // adding port if not exists
-        tabs.addPort(builder.tabId, sender, birbalJS.END_POINTS.CONTENTSCRIPT);
-        builder.destPort = tabs.getPort(builder.tabId, message.dest);
-        builder.takeAction();
-        logger.log('content-script #' + builder.tabId + ' msg action status? ' + builder.status());
-    }
-
-    // trying to make it stateless and less closures to improve memory usage
-    function onConnectCallback(connectingPort) {
-        logger.log('onConnectCallback, connectingPort-' + connectingPort.name);
-        var connectionName = connectingPort.name;
-
-        var msgListener;
-        if (connectionName === birbalJS.END_POINTS.PANEL) {
-            msgListener = function msgListenerForPanel(message, sender, sendResponse) {
-                panelMsgListener(connectingPort, message, sender, sendResponse);
-            };
-        } else if (connectionName === birbalJS.END_POINTS.CONTENTSCRIPT) {
-            msgListener = contentScriptMsgListener;
-        }
-
-        function onDisconnectCallback(disconnectingPort) {
-            logger.log('onDisconnectCallback');
-            var tabId = tabs.removePort(disconnectingPort, connectionName);
-            // notify other connections to same tab
-            // cleanup for disconnectingPort
-            disconnectingPort.onMessage.removeListener(msgListener);
-            logger.log(tabs.length + ' - After DisconnectCallback, removed tab #' + tabId + ': ' + connectionName);
-        }
-
-        // Bind connection,  message, events
-        connectingPort.onMessage.addListener(msgListener);
-        connectingPort.onDisconnect.addListener(onDisconnectCallback);
-
-        /////////////////////////////////
-    }
-
+    /*jslint unparam: false*/
+    // #3
     // Fired when a connection is made from either an extension process or a content script.
     // on reload of page, reopen of page, new connection, etc.
-    chrome.runtime.onConnect.addListener(onConnectCallback);
-    ///////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////
+    chrome.runtime.onConnect.addListener(function onConnectCallback(connectingPort) {
+        logger.log('onConnectCallback, connectingPort-' + connectingPort.name);
+        if (connectingPort.sender && connectingPort.sender.tab && connectingPort.sender.tab.id >0) {
+            // content script
+            var tabInfo,
+                tabId = connectingPort.sender.tab.id;
+            tabs.addPort(tabId, connectingPort, connectingPort.name);
+            tabInfo = tabs.getTabInfo(tabId);
+            if (tabInfo.doAnalysis) {
+                informContentScript(tabId, tabInfo.doAnalysis, 'instrumentNg');
+            }
+        }
 
-})(chrome, birbalJS);
+        /**
+         * Bind connection,  message, events
+         * @property onMessage event
+         */
+        connectingPort.onMessage.addListener(function messageListener(message, sender) {
+            receiver.answerCall(message, sender, connectingPort, destinationPortFinder);
+        });
+
+        // #20
+        /**
+         * disconnect event
+         * @property onDisconnect event
+         */
+        connectingPort.onDisconnect.addListener(function onDisconnectCallback(disconnectingPort) {
+            logger.log('onDisconnectCallback');
+            var tabId = tabs.removePort(disconnectingPort, connectingPort.name);
+            // notify other connections to same tab
+            logger.log(tabs.length + ' - After DisconnectCallback, removed tab #' + tabId + ': ' + connectingPort.name);
+        });
+        /////////////////////////////////
+    });
+    ///////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
+}(chrome, birbalJS));
