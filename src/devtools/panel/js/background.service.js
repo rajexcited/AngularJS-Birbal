@@ -38,11 +38,17 @@
             function panelInitialize(message) {
                 // action list - cleanup and init
                 $rootScope.$emit('clearResources', message.task);
-                $rootScope.$emit('changePanelView', 'nbEnable', message.msgDetails);
+                $rootScope.$evalAsync(function () {
+                    // allow clear rsc to get completed
+                    $rootScope.$emit('changePanelView', 'nbEnable', message.msgDetails);
+                });
             }
 
             receiver.actionOnTask('addPanel', panelInitialize);
             receiver.actionOnTask('removePanel', panelInitialize);
+            receiver.actionOnTask('ngDetectData', function (message) {
+                $rootScope.$emit('ngAppDetails', message.msgDetails);
+            });
 
             receiver.actionOnTask('digestMeasures', function (message) {
                 digestDataFactory.addDigestMeasure(message.msgDetails);

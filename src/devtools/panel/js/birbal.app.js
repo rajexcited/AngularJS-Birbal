@@ -37,6 +37,11 @@
                         changeViewActionListener(pageName, ngDetectData);
                     });
                 });
+                $rootScope.$on('ngAppDetails', function (event, ngDetectData) {
+                    $scope.$applyAsync(function () {
+                        angular.extend($scope.csInfo, ngDetectData);
+                    });
+                });
 
                 $rootScope.$on('clearResources', function clrRscActionListener(event, panelAction) {
                     // clear app data
@@ -44,6 +49,7 @@
                     $scope.csInfo = $scope.csInfo || {'enabled': isEnabled};
                     $scope.digestExpression = [];
                     if (panelAction === 'removePanel' || panelAction === 'addPanel') {
+                        digestDataFactory.resetDigestMeasures();
                         $scope.$applyAsync(function () {
                             $scope.view = '';
                             $scope.csInfo = {
@@ -134,9 +140,10 @@
                 /////////////////////////////////////////////////////////
                 //            settings view
                 /////////////////////////////////////////////////////////
+                // every second update digest details
                 $interval(function () {
                     $scope.digestCycle = digestDataFactory.getAllDigestMeasures();
-                }, 500);
+                }, 1000);
 
                 /* ION SLIDER */
                 $scope.rangeSlider = {

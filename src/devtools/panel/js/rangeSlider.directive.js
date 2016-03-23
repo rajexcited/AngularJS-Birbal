@@ -3,7 +3,7 @@
     'use strict';
 
     angular.module('rangeSlider.app', [])
-        .directive('rangeSlider', ['$compile', '$animate', function ($compile, $animate) {
+        .directive('rangeSlider', [function () {
 
             return {
                 restrict: 'AE',
@@ -12,25 +12,35 @@
                     sliderConfig: '=',
                     measures: '='
                 },
-                link: function (scope, element, attrs) {
+                link: function (scope, element) {
                     element.find('.ionRangeSlider').ionRangeSlider(scope.sliderConfig);
                     var slider = element.find('.ionRangeSlider').data("ionRangeSlider"),
+                        defaultSliderConfig = angular.copy(scope.sliderConfig),
                         chartConfig = {chartRangeMinX: 0, chartRangeMaxX: 200, width: "97.9028%"},
                         chartNode = element.find('.sparkline-linechart'),
                         ydata = [];
 
                     chartConfig.chartRangeMinX = scope.sliderConfig.min;
                     scope.$watch('measures.length', function (len, oldLen) {
-                        if (len === oldLen || !len) {
+                        var ti, mi, m,
+                            yl = ydata.length;
+                        if (!len && yl) {
+                            // clear data
+                            scope.sliderConfig = defaultSliderConfig;
+                            ydata.length = 0;
+                            chartConfig.chartRangeMaxX = 200;
+                            chartConfig.chartRangeMinX = 0;
+                            console.log('init');
                             return;
                         }
-                        var ti, mi, m;
-
+                        if (len === oldLen) {
+                            console.log('same len');
+                            return;
+                        }
                         // find slider range
-                        if (ydata.length === 0) {
-                            m = scope.measures[0];
+                        if (oldLen === 0) {
                             if (scope.sliderConfig.from === undefined) {
-                                scope.sliderConfig.from = Math.round(m.startTime / 1000);
+                                scope.sliderConfig.from = Math.round(scope.measures[0].startTime / 1000);
                             }
                         }
                         m = scope.measures[len - 1];
@@ -46,13 +56,13 @@
                             ydata[ti] = (ydata[ti] || 0) + 1;
                         }
 
-                        for (ti = oldLen; ti < len; ti++) {
+                        // initialize new items as ydata increases depends on ti above. recomputing yl
+                        for (ti = yl, yl = ydata.length; ti < yl; ti++) {
                             ydata[ti] = ydata[ti] || 0;
                         }
                         chartConfig.chartRangeMaxX = scope.sliderConfig.max;
                         chartNode.sparkline(ydata, chartConfig);
                     });
-
                 }
             };
         }]);

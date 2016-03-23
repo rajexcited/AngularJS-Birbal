@@ -146,8 +146,8 @@
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.ngDetect = msgDetails;
         // angular page >> add , not angular page >> remove
-        taskForpanel = msgDetails.ngDetected ? 'addPanel' : 'removePanel';
-        informPanel(message.tabId, msgDetails, taskForpanel);
+        //taskForpanel = msgDetails.ngDetected ? 'addPanel' : 'removePanel';
+        informPanel(message.tabId, msgDetails, 'ngDetectData');
     });
 
     // for devtools panel

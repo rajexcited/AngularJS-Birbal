@@ -9,20 +9,20 @@
     angular.module('measure.digest.app', [])
         .factory('digestDataFactory', [function () {
 
-            var addDigestMeasure, getNewDigestMeasures, getAllDigestMeasures, modifyDigestDebounceTime, getDigestDebounceTime,
+            var addDigestMeasure, getAllDigestMeasures, modifyDigestDebounceTime, getDigestDebounceTime, resetDigestMeasures,
                 _addApplyMeasureLog, _getScopesAndWatchersForOneDigest, _analyzeEdrForMeasure, _createWatchMeasures, _addWatchMeasures,
-                lastDigestMeasure, lastApplyMeasure,
-                digestDetails = {
-                    highlights: {
-                        longestDigestTime: 0,
-                        edr: null,
-                        dirtyWatchers: 0,
-                        nWatchers: 0,
-                        //qq: NEEL find out how can i determine ? ex. watch consumes 80% of digest in longest cycle time. watch are heavy, expensive.
-                        redLightWatchMsg: ''
-                    },
-                    measures: []
-                },
+                lastDigestMeasure, lastApplyMeasure, digestDetails,
+            //digestDetails = {
+            //    highlights: {
+            //        longestDigestTime: 0,
+            //        edr: null,
+            //        dirtyWatchers: 0,
+            //        nWatchers: 0,
+            //        //qq: NEEL find out how can i determine ? ex. watch consumes 80% of digest in longest cycle time. watch are heavy, expensive.
+            //        redLightWatchMsg: ''
+            //    },
+            //    measures: []
+            //},
                 allApplyMeasures = [],
                 watchDetails = {highlights: {}, measures: []},
             //addedMeasures = {_digest: [], _apply: [], _watch: []},
@@ -59,7 +59,8 @@
                     nWatchers = nWatchers + scope.watchers.length;
                     nScopes++;
                     _watchers = [];
-                    scope.watchers.forEach(function (watcher) {
+
+                    function eachScopeWatcher(watcher) {
                         if (!watcher) {
                             return;
                         }
@@ -68,12 +69,18 @@
                         nuWatcher.exp = watcher[0].exp;
                         nuWatcher.eq = watcher[0].eq;
                         // first and last always object with get and fn
-                        watcher.forEach(function (onewatch) {
+                        var len = watcher.length;
+
+                        function eachWatcherGet(onewatch) {
                             var gettime = (typeof onewatch === 'object') ? onewatch.get : onewatch;
                             nuWatcher.timeGet = nuWatcher.timeGet + gettime;
                             // last is fn
                             nuWatcher.timeFn = onewatch.fn || nuWatcher.timeFn;
-                        });
+                        }
+
+                        while (len--) {
+                            eachWatcherGet(watcher[len]);
+                        }
                         nuWatcher.runtime = nuWatcher.timeGet + nuWatcher.timeFn;
                         nuWatcher.wasteOnGetOnly = nuWatcher.timeFn === 0;
                         if (nuWatcher.wasteOnGetOnly) {
@@ -86,7 +93,12 @@
                         nWatchersTime = nWatchersTime + nuWatcher.runtime;
                         nuWatcher.scope = scope.$id;
                         _watchers.push(nuWatcher);
-                    });
+                    }
+
+                    var iscw, scopeWatcherLen = scope.watchers.length;
+                    for (iscw = 0; iscw < scopeWatcherLen; iscw++) {
+                        eachScopeWatcher(scope.watchers[iscw]);
+                    }
                     scope.watchers = _watchers;
                     // generate scope tree - no need
                 });
@@ -98,101 +110,116 @@
             };
 
             _createWatchMeasures = function (digestMeasure) {
-                var wexp, watchHolder = [];
-                // create an array for a digest
-                // get all exp of ths
+                var scwexp,
+                    wexp = [],
+                    watchHolder = [];
+                // iterate scope watchers
+                // get all exp for scope watchers
                 // find duplicate exp and merge them
-                // find duplicates with other digest results and merge with them
-                // delete duplicates
+                // no duplicate - add to new list
 
-                angular.forEach(digestMeasure.scope, function (scope) {
-                    watchHolder = watchHolder.concat(scope.watchers);
-                });
-                // duplicate referenced by exp
-                wexp = watchHolder.map(function (w) {
-                    return w.exp;
-                });
-
-                wexp.forEach(function (wex) {
+                function mergeWatchByExpression(wex, watcherToAdd) {
                     var fst, lst;
                     fst = wexp.indexOf(wex);
                     lst = wexp.lastIndexOf(wex);
-                    if (lst !== fst && watchHolder[fst].eq !== watchHolder[lst].eq) {
+                    if (lst !== fst && watchHolder[fst].eq !== watcherToAdd.eq) {
                         // merge
-                        watchHolder[fst].nGet = watchHolder[fst].nGet + watchHolder[lst].nGet;
-                        watchHolder[fst].nFn = watchHolder[fst].nFn + watchHolder[lst].nFn;
-                        watchHolder[fst].timeGet = watchHolder[fst].timeGet + watchHolder[lst].timeGet;
-                        watchHolder[fst].timeFn = watchHolder[fst].timeFn + watchHolder[lst].timeFn;
-                        watchHolder[fst].runtime = watchHolder[fst].runtime + watchHolder[lst].runtime;
+                        watchHolder[fst].nGet = watchHolder[fst].nGet + watcherToAdd.nGet;
+                        watchHolder[fst].nFn = watchHolder[fst].nFn + watcherToAdd.nFn;
+                        watchHolder[fst].timeGet = watchHolder[fst].timeGet + watcherToAdd.timeGet;
+                        watchHolder[fst].timeFn = watchHolder[fst].timeFn + watcherToAdd.timeFn;
+                        watchHolder[fst].runtime = watchHolder[fst].runtime + watcherToAdd.runtime;
                         watchHolder[fst].wasteOnGetOnly = watchHolder[fst].timeFn === 0 || watchHolder[fst].nFn < 2;
-                        watchHolder[fst].wasteRuntime = watchHolder[fst].wasteRuntime + watchHolder[lst].wasteRuntime;
-                        watchHolder[fst].scope = watchHolder[fst].scope + ',' + watchHolder[lst].scope;
+                        watchHolder[fst].wasteRuntime = watchHolder[fst].wasteRuntime + watcherToAdd.wasteRuntime;
+                        watchHolder[fst].scope = watchHolder[fst].scope + ',' + watcherToAdd.scope;
                         watchHolder[fst].nUsed = watchHolder[fst].scope.split(',').length;
-                        // delete
-                        watchHolder.splice(lst, 1);
+                    } else {
+                        watchHolder.push(watcherToAdd);
+                    }
+                }
+
+                angular.forEach(digestMeasure.scope, function (scope) {
+                    scwexp = scope.watchers.map(function (w) {
+                        return w.exp;
+                    });
+                    var i, len = scwexp.length;
+                    for (i = 0; i < len; i++) {
+                        wexp.push(scwexp);
+                        mergeWatchByExpression(scwexp[i], scope.watchers[i]);
                     }
                 });
+
                 return watchHolder;
             };
 
             _addWatchMeasures = function (watchMeasures) {
-                // find duplicates in 2 array
+                // find duplicates in 2 array and merge
 
-                // here merge both array and merge dup props, avoid duplications
-                var exp1, exp2, detailMeatures = watchDetails.measures;
-                exp1 = detailMeatures.map(function (w) {
+                var i, len, exp1, exp2, detailWatchMeasures = watchDetails.measures;
+                // here exp1 has unique items as well as exp2
+                // merging both can generate duplicates
+                exp1 = detailWatchMeasures.map(function (w) {
                     return w.exp;
                 });
                 exp2 = watchMeasures.map(function (w) {
                     return w.exp;
                 });
-                if (exp1.length) {
-                    // duplication possibilities
-                    exp2.forEach(function (w, ind2) {
-                        var scopeIds, scopes, ind1;
 
-                        ind1 = exp1.indexOf(w);
-                        if (ind1 !== -1 && detailMeatures[ind1].eq !== watchMeasures[ind2].eq) {
-                            // merge
-                            detailMeatures[ind1].nGet = detailMeatures[ind1].nGet + watchMeasures[ind2].nGet;
-                            detailMeatures[ind1].nFn = detailMeatures[ind1].nFn + watchMeasures[ind2].nFn;
-                            detailMeatures[ind1].timeGet = detailMeatures[ind1].timeGet + watchMeasures[ind2].timeGet;
-                            detailMeatures[ind1].timeFn = detailMeatures[ind1].timeFn + watchMeasures[ind2].timeFn;
-                            detailMeatures[ind1].runtime = detailMeatures[ind1].runtime + watchMeasures[ind2].runtime;
-                            detailMeatures[ind1].wasteOnGetOnly = detailMeatures[ind1].timeFn === 0 || detailMeatures[ind1].nFn < 2;
-                            detailMeatures[ind1].wasteRuntime = detailMeatures[ind1].wasteRuntime + watchMeasures[ind2].wasteRuntime;
-                            detailMeatures[ind1].scope = detailMeatures[ind1].scope + ',' + watchMeasures[ind2].scope;
-                            //scopeIds = (detailMeatures[ind1].scope + ',' + watchMeasures[ind2].scope).split(',');
-                            //// revisit this block and perform only if user wil ask for it
-                            //// create scope occurrence table
-                            //scopes = [];
-                            //scopeIds.forEach(function (id) {
-                            //    var lst, fst;
-                            //    if (!id) {
-                            //        return;
-                            //    }
-                            //    lst = scopeIds.lastIndexOf(id);
-                            //    fst = scopeIds.indexOf(id);
-                            //    if (lst !== fst) {
-                            //        // delete last duplicate
-                            //        scopeIds.splice(lst, 1);
-                            //    }
-                            //    if (!scopes[fst]) {
-                            //        scopes[fst] = {};
-                            //        scopes[fst][id] = 0;
-                            //    }
-                            //    scopes[fst][id]++;
-                            //});
-                            //detailMeatures[ind1].scope = JSON.stringify(scopes);
-                            if (detailMeatures[ind1].nUsed < watchMeasures[ind2].nUsed) {
-                                detailMeatures[ind1].nUsed = watchMeasures[ind2].nUsed;
-                            }
-                            //delete duplicate
-                            watchMeasures.splice(ind2, 1);
+                // duplication possibilities
+                function mergeWatchByExpression(w, ind2) {
+                    var /*scopeIds, scopes,*/ ind1;
+
+                    ind1 = exp1.indexOf(w);
+                    if (ind1 !== -1 && detailWatchMeasures[ind1].eq !== watchMeasures[ind2].eq) {
+                        // merge
+                        detailWatchMeasures[ind1].nGet = detailWatchMeasures[ind1].nGet + watchMeasures[ind2].nGet;
+                        detailWatchMeasures[ind1].nFn = detailWatchMeasures[ind1].nFn + watchMeasures[ind2].nFn;
+                        detailWatchMeasures[ind1].timeGet = detailWatchMeasures[ind1].timeGet + watchMeasures[ind2].timeGet;
+                        detailWatchMeasures[ind1].timeFn = detailWatchMeasures[ind1].timeFn + watchMeasures[ind2].timeFn;
+                        detailWatchMeasures[ind1].runtime = detailWatchMeasures[ind1].runtime + watchMeasures[ind2].runtime;
+                        detailWatchMeasures[ind1].wasteOnGetOnly = detailWatchMeasures[ind1].timeFn === 0 || detailWatchMeasures[ind1].nFn < 2;
+                        detailWatchMeasures[ind1].wasteRuntime = detailWatchMeasures[ind1].wasteRuntime + watchMeasures[ind2].wasteRuntime;
+                        detailWatchMeasures[ind1].scope = detailWatchMeasures[ind1].scope + ',' + watchMeasures[ind2].scope;
+                        //scopeIds = (detailWatchMeasures[ind1].scope + ',' + watchMeasures[ind2].scope).split(',');
+                        //// revisit this block and perform only if user wil ask for it
+                        //// create scope occurrence table
+                        //scopes = [];
+                        //scopeIds.forEach(function (id) {
+                        //    var lst, fst;
+                        //    if (!id) {
+                        //        return;
+                        //    }
+                        //    lst = scopeIds.lastIndexOf(id);
+                        //    fst = scopeIds.indexOf(id);
+                        //    if (lst !== fst) {
+                        //        // delete last duplicate
+                        //        scopeIds.splice(lst, 1);
+                        //    }
+                        //    if (!scopes[fst]) {
+                        //        scopes[fst] = {};
+                        //        scopes[fst][id] = 0;
+                        //    }
+                        //    scopes[fst][id]++;
+                        //});
+                        //detailWatchMeasures[ind1].scope = JSON.stringify(scopes);
+                        if (detailWatchMeasures[ind1].nUsed < watchMeasures[ind2].nUsed) {
+                            detailWatchMeasures[ind1].nUsed = watchMeasures[ind2].nUsed;
                         }
-                    });
+                    } else {
+                        // add unique
+                        detailWatchMeasures.push(watchMeasures[ind2]);
+                    }
                 }
-                detailMeatures = detailMeatures.concat(watchMeasures);
+
+                if (exp1.length) {
+                    len = exp2.length;
+                    for (i = 0; i < len; i++) {
+                        mergeWatchByExpression(exp2[i], i);
+                    }
+                } else {
+                    // first time only - add all watchMeasures to detail
+                    Array.prototype.push.apply(detailWatchMeasures, watchMeasures);
+                }
             };
 
             // create summary for digest
@@ -283,10 +310,6 @@
                 lastDigestMeasure = measureLog;
             };
 
-            getNewDigestMeasures = function () {
-
-            };
-
             getAllDigestMeasures = function () {
                 return digestDetails;
             };
@@ -294,11 +317,12 @@
             modifyDigestDebounceTime = function (newDebounceTime) {
                 digestDebounceTime = newDebounceTime;
                 // re-analyze edr
-                var edr, measures = [], lastMeasure;
-                digestDetails.measures.forEach(function (mEntry) {
-                    edr = _analyzeEdrForMeasure(mEntry, edr, measures, lastMeasure);
-                    lastMeasure = mEntry;
-                });
+                var edr, measures = [], lastMeasure, len = digestDetails.measures.length;
+
+                while (len--) {
+                    edr = _analyzeEdrForMeasure(digestDetails.measures[len], edr, measures, lastMeasure);
+                    lastMeasure = digestDetails.measures[len];
+                }
                 digestDetails.highlights.edr = edr;
             };
 
@@ -306,9 +330,29 @@
                 return digestDebounceTime;
             };
 
+            resetDigestMeasures = function () {
+                if (!digestDetails) {
+                    digestDetails = {
+                        measures: []
+                    };
+                }
+                digestDetails.highlights = {
+                    longestDigestTime: 0,
+                    edr: null,
+                    dirtyWatchers: 0,
+                    nWatchers: 0,
+                    //qq: NEEL find out how can i determine ? ex. watch consumes 80% of digest in longest cycle time. watch are heavy, expensive.
+                    redLightWatchMsg: ''
+                };
+                digestDetails.measures.length = 0;
+                allApplyMeasures.length = 0;
+                watchDetails.measures.length = 0;
+                watchDetails.highlights = {};
+            };
+
             return {
                 'addDigestMeasure': addDigestMeasure,
-                //'getNewDigestMeasures': getNewDigestMeasures,
+                'resetDigestMeasures': resetDigestMeasures,
                 'getAllDigestMeasures': getAllDigestMeasures,
                 'modifyDigestDebounceTime': modifyDigestDebounceTime,
                 'getDigestDebounceTime': getDigestDebounceTime

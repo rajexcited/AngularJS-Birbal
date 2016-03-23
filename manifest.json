@@ -1,7 +1,7 @@
 {
   "name": "AngularJS Birbal",
   "version": "0.0.3",
-  "description": "Find and solve angular problems in Birbal ways. Initial Phase",
+  "description": "Ease developers to solve angular problems specially performance. Initial Phase- includes digest details",
 
   "content_scripts": [{
     "matches": ["<all_urls>"],

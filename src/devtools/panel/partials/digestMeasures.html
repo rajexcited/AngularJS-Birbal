@@ -11,7 +11,7 @@
     </div>
     <!-- /.box-header -->
     <div class="box-body no-padding">
-        <table class="table table-striped" id="digestCycleDataTable">
+        <table class="table table-striped " id="digestCycleDataTable">
             <thead style="background-color: white;">
             <tr>
                 <th style="width: 10px;">#</th>
@@ -47,7 +47,7 @@
                 <th>
                     <div data-toggle="tooltip"
                          data-original-title="this is non-watcher time. includes async, postDigest, DOM updates due to watcher or async, etc.">
-                        <span ng-click="sortByExpression('otherRuntime', $event)">asyncQueue and <br>postDigestQueue (n in % time) <i
+                        <span ng-click="sortByExpression('otherRuntime', $event)">asyncQueue and <br>postDigestQueue (n in time) <i
                                 class="fa fa-fw fa-unsorted"></i></span>
                     </div>
                 </th>
@@ -59,11 +59,11 @@
                 <td>{{:: aMeasure.startTime/1000 | number : 3}} sec</td>
                 <td> {{:: aMeasure.runtime | number :2}} ms</td>
                 <td> {{:: aMeasure.nDirtyWatchers}} / {{:: aMeasure.nWatchers}}</td>
-                <td> wasted {{:: aMeasure.nWasteWatchersTime | percentage : aMeasure.runtime}}
-                    <br> total {{:: aMeasure.nWatchersRuntime | percentage : aMeasure.runtime}}
+                <td> wasted {{:: aMeasure.nWasteWatchersTime|number:2}} ms
+                    <br> total {{:: aMeasure.nWatchersRuntime |number:2}} ms
                 </td>
                 <td> {{:: aMeasure.postDigestQueue.length + aMeasure.asyncQueue.length }} in
-                    {{:: aMeasure.otherRuntime | percentage : aMeasure.runtime}}
+                    {{:: aMeasure.otherRuntime | number:2}} ms
                 </td>
             </tr>
             </tbody>

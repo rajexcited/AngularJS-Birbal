@@ -555,10 +555,10 @@
 
     function inspectAngular() {
         logger.log('starting inspection ' + performance.now());
-        if (annotate) {
-            // angular has been instrumented
-            return;
-        }
+        //if (annotate) {
+        //    // angular has been instrumented
+        //    return;
+        //}
         contentMessageActions.angularDetected = true;
         // quick messaging
         var msg = {};
