@@ -53,7 +53,8 @@
                         $scope.$applyAsync(function () {
                             $scope.view = '';
                             $scope.csInfo = {
-                                'enabled': isEnabled
+                                'enabled': isEnabled,
+                                'pause' : false
                             };
                         });
                     }
@@ -91,10 +92,12 @@
 
                 $scope.sidebarActions.pauseMyAnalysis = function () {
                     backgroundService.informBackground(null, 'pauseAnalysis');
+                    $scope.csInfo.pause = true;
                 };
 
                 $scope.sidebarActions.resumeMyAnalysis = function () {
                     backgroundService.informBackground(null, 'startAnalysis');
+                    $scope.pause = false;
                 };
 
                 $scope.sidebarActions.changePanelView = changeViewActionListener;

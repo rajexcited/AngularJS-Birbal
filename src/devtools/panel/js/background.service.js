@@ -38,10 +38,7 @@
             function panelInitialize(message) {
                 // action list - cleanup and init
                 $rootScope.$emit('clearResources', message.task);
-                $rootScope.$evalAsync(function () {
-                    // allow clear rsc to get completed
-                    $rootScope.$emit('changePanelView', 'nbEnable', message.msgDetails);
-                });
+                $rootScope.$emit('changePanelView', 'nbEnable', message.msgDetails);
             }
 
             receiver.actionOnTask('addPanel', panelInitialize);

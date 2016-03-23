@@ -17,25 +17,20 @@
                     <i class="fa fa-link"></i> <span>on Window Load</span>
                 </a>
             </li>
-            <li class="treeview">
-                <a href="#"> <i class="fa fa-link"></i> <span>Multilevel</span> <i
-                        class="fa fa-angle-left pull-right"></i></a>
-                <ul class="treeview-menu">
-                    <li select-view="testlevel2.1"><a href="#">test Link in level 2</a></li>
-                    <li select-view="testlevel2.2"><a href="#">test Link in level 2</a></li>
-                </ul>
-            </li>
             <li select-view="settings">
                 <a href="#" ng-click="sidebarActions.changePanelView('settings');">
                     <i class="fa fa-link"></i> <span>Settings</span>
                 </a>
             </li>
-            <li><a href="#" ng-click="sidebarActions.pauseMyAnalysis();"><i class="fa fa-link"></i>
-                <span>Pause capturing data</span></a>
-            <li><a href="#" ng-click="sidebarActions.resumeMyAnalysis();"><i class="fa fa-link"></i> <span>Resume capturing data</span></a>
-            <li ng-if="!csInfo.enabled"><a href="#" ng-click="sidebarActions.enableMe();"><i class="fa fa-link"></i> <span>Enable</span></a>
-            <li ng-if="csInfo.enabled"><a href="#" ng-click="sidebarActions.disableMe();"><i class="fa fa-link"></i> <span>Disable</span></a>
+            <li ng-show="!csInfo.pause && csInfo.enabled"><a href="#" ng-click="sidebarActions.pauseMyAnalysis();"><i class="fa fa-link"></i>
+                <span>Pause capturing data</span></a></li>
+            <li ng-show="csInfo.pause && csInfo.enabled"><a href="#" ng-click="sidebarActions.resumeMyAnalysis();"><i class="fa fa-link"></i> <span>Resume capturing data</span></a>
             </li>
+            <li ng-show="csInfo.enabled"><a href="#" ng-click="sidebarActions.disableMe();"><i class="fa fa-link"></i>
+                <span>Disable</span></a>
+            </li>
+            <li ng-show="!csInfo.enabled"><a href="#" ng-click="sidebarActions.enableMe();"><i class="fa fa-link"></i>
+                <span>Enable</span></a></li>
         </ul>
         <!-- /.sidebar-menu -->
     </section>
