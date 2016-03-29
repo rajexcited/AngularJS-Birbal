@@ -48,13 +48,14 @@
                     var isEnabled = !!($scope.csInfo && $scope.csInfo.enabled);
                     $scope.csInfo = $scope.csInfo || {'enabled': isEnabled};
                     $scope.digestExpression = [];
+                    $scope.watchOrderExpression = [];
                     if (panelAction === 'removePanel' || panelAction === 'addPanel') {
                         digestDataFactory.resetDigestMeasures();
                         $scope.$applyAsync(function () {
                             $scope.view = '';
                             $scope.csInfo = {
                                 'enabled': isEnabled,
-                                'pause' : false
+                                'pause': false
                             };
                         });
                     }
@@ -146,12 +147,13 @@
                 // every second update digest details
                 $interval(function () {
                     $scope.digestCycle = digestDataFactory.getAllDigestMeasures();
+                    $scope.watchDetails = digestDataFactory.getWatchMeasures();
                 }, 1000);
 
                 /* ION SLIDER */
                 $scope.rangeSlider = {
-                    config: {
-                        digest: {
+                    digest: {
+                        config: {
                             min: 0,
                             max: 200,
                             //from: 0,
@@ -166,7 +168,11 @@
                     }
                 };
 
-                $scope.sortByExpression = function (expression, event) {
+                $scope.rangeSlider.digest.onChange = function (from, to) {
+                    $scope.selectedDigestRange = digestDataFactory.getDigestHighlightsForRange(from, to);
+                };
+
+                $scope.digestSortByExpression = function (expression, event) {
                     if (expression && event) {
                         // get index of expression, ignore predicate
                         var sortClass = 'fa-sort-asc',
@@ -189,7 +195,26 @@
                         event.currentTarget.querySelector('i.fa.fa-fw').className = "fa fa-fw " + sortClass;
                     } else {
                         $('#digestCycleDataTable').find('thead i.fa.fa-fw').removeClass('fa-sort-asc fa-sort-desc').addClass('fa-unsorted');
-                        $scope.digestExpression = [];
+                        $scope.digestExpression.length = 0;
+                    }
+                };
+
+                $scope.watchSortByExpression = function (expression, event) {
+                    $('#watchersDataTable').find('thead i.fa.fa-fw').removeClass('fa-sort-asc fa-sort-desc').addClass('fa-unsorted');
+                    if (expression && event) {
+                        // get index of expression, ignore predicate
+                        var sortClass = 'fa-sort-asc',
+                            expAsc = '+' + expression;
+
+                        if ($scope.watchOrderExpression[0] === expAsc) {
+                            $scope.watchOrderExpression[0] = '-' + expression;
+                            sortClass = 'fa-sort-desc';
+                        } else {
+                            $scope.watchOrderExpression[0] = expAsc;
+                        }
+                        event.currentTarget.querySelector('i.fa.fa-fw').className = "fa fa-fw " + sortClass;
+                    } else {
+                        $scope.watchOrderExpression.length = 0;
                     }
                 };
 

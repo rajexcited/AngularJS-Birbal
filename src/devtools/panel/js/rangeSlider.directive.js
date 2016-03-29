@@ -10,15 +10,28 @@
                 template: '<div class="col-xs-12"> <input class="ionRangeSlider" type="text" value=""> </div> <div class="col-xs-12"> <span class="sparkline-linechart" style="padding-left: 0.948618%;"></span> </div>',
                 scope: {
                     sliderConfig: '=',
-                    measures: '='
+                    measures: '=',
+                    onRangeChange: '='
                 },
                 link: function (scope, element) {
-                    element.find('.ionRangeSlider').ionRangeSlider(scope.sliderConfig);
-                    var slider = element.find('.ionRangeSlider').data("ionRangeSlider"),
+                    var $range = element.find('.ionRangeSlider'),
                         defaultSliderConfig = angular.copy(scope.sliderConfig),
                         chartConfig = {chartRangeMinX: 0, chartRangeMaxX: 200, width: "97.9028%"},
                         chartNode = element.find('.sparkline-linechart'),
                         ydata = [];
+
+                    // use for show point on range slider
+                    //chartNode.bind('sparklineClick', function (ev) {
+                    //    var sparkline = ev.sparklines[0],
+                    //        region = sparkline.getCurrentRegionFields();
+                    //    console.log("Clicked on x=" + region.x + " y=" + region.y);
+                    //});
+
+                    scope.sliderConfig.onFinish = function (data) {
+                        // apply filter
+                        scope.onRangeChange(data.from, data.to);
+                    };
+                    $range.ionRangeSlider(scope.sliderConfig);
 
                     chartConfig.chartRangeMinX = scope.sliderConfig.min;
                     scope.$watch('measures.length', function (len, oldLen) {
@@ -30,11 +43,9 @@
                             ydata.length = 0;
                             chartConfig.chartRangeMaxX = 200;
                             chartConfig.chartRangeMinX = 0;
-                            console.log('init');
                             return;
                         }
                         if (len === oldLen) {
-                            console.log('same len');
                             return;
                         }
                         // find slider range
@@ -47,7 +58,7 @@
                         if (scope.sliderConfig.max < m.endTime) {
                             scope.sliderConfig.max = Math.round(m.endTime / 1000) + 50;
                         }
-                        slider.update(scope.sliderConfig);
+                        $range.data("ionRangeSlider").update(scope.sliderConfig);
 
                         // generate chart data
                         for (mi = oldLen; mi < len; mi++) {
@@ -55,11 +66,11 @@
                             ti = Math.round(m.startTime / 1000);
                             ydata[ti] = (ydata[ti] || 0) + 1;
                         }
-
                         // initialize new items as ydata increases depends on ti above. recomputing yl
                         for (ti = yl, yl = ydata.length; ti < yl; ti++) {
-                            ydata[ti] = ydata[ti] || 0;
+                            ydata[ti] = ydata[ti] || null;
                         }
+                        ydata[0] = ydata[0] || 0;
                         chartConfig.chartRangeMaxX = scope.sliderConfig.max;
                         chartNode.sparkline(ydata, chartConfig);
                     });

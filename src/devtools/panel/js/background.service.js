@@ -17,7 +17,7 @@
                 // mock logger with noop()
                 logger = {};
                 ['log', 'warn', 'info', 'error', 'debug'].forEach(function (prop) {
-                    logger[prop] = angular.noop();
+                    logger[prop] = angular.noop;
                 });
             }
             // register logger service

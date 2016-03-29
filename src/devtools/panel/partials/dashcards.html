@@ -6,7 +6,8 @@
         </div><!-- /.box-header -->
         <div class="box-body">
             <div class="row margin">
-                <span id="digestRangeSlider" range-slider="" slider-config="rangeSlider.config.digest"
+                <span id="digestRangeSlider" range-slider="" slider-config="rangeSlider.digest.config"
+                      on-range-change="rangeSlider.digest.onChange"
                       measures="digestCycle.measures"></span>
             </div>
         </div>
@@ -47,13 +48,13 @@
                     <!-- /.col -->
                 </div>
                 <!-- /.row -->
-                <div class="row">
+                <div class="row" ng-if="selectedDigestRange.edr">
                     <div class="col-sm-12">
                         <div class="description-block">
-                            <span>???  For chosen time range, digest rate: {{digestCycle.selectedRange.edr.nDigest}} cycles in
-                                {{digestCycle.selectedRange.edr.runtime|number:2}} ms</span>
+                            <span>???  For chosen time range, digest rate: {{selectedDigestRange.edr.nDigest}} cycles in
+                                {{selectedDigestRange.edr.runtime|number:2}} ms</span>
                             <h5 class="description-header">longest cycle:
-                                {{digestCycle.selectedRange.longestDigestTime|number:2}} ms</h5>
+                                {{selectedDigestRange.longestDigestTime|number:2}} ms</h5>
                         </div>
                         <!-- /.description-block -->
                     </div>

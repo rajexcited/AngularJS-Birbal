@@ -2,10 +2,10 @@
     <div class="box-header">
         <h3 class="box-title">
             Digest Measure Table <i data-toggle="tooltip" data-original-title="clear sort options"
-                                    ng-click="sortByExpression()" class="fa fa-fw fa-reorder"></i>
+                                    ng-click="digestSortByExpression()" class="fa fa-fw fa-reorder"></i>
         </h3>
 
-        <div class="box-tools pull-right">
+        <div class="box-tools">
             <button class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
         </div><!-- /.box-tools -->
     </div>
@@ -17,19 +17,19 @@
                 <th style="width: 10px;">#</th>
                 <th>
                     <div data-toggle="tooltip" data-original-title="digest start time after page load"
-                         ng-click="sortByExpression('startTime', $event)">
+                         ng-click="digestSortByExpression('startTime', $event)">
                         start time (sec)<i class="fa fa-fw fa-unsorted"></i>
                     </div>
                 </th>
-                <th><span ng-click="sortByExpression('runtime', $event)">duration (ms) <i
+                <th><span ng-click="digestSortByExpression('runtime', $event)">duration (ms) <i
                         class="fa fa-fw fa-unsorted"></i></span></th>
                 <th>
                     <div data-toggle="tooltip"
                          data-original-title="If these consumes more time and makes digest cycle slow or increase effective digest rate, try to manage watchers.">
                         watch count <br> (
-                        <span ng-click="sortByExpression('nDirtyWatchers', $event)">dirty<i
+                        <span ng-click="digestSortByExpression('nDirtyWatchers', $event)">dirty<i
                                 class="fa fa-fw fa-unsorted"></i></span> /
-                        <span ng-click="sortByExpression('nWatchers', $event)">total<i
+                        <span ng-click="digestSortByExpression('nWatchers', $event)">total<i
                                 class="fa fa-fw fa-unsorted"></i></span> )
                     </div>
                 </th>
@@ -38,24 +38,24 @@
                          data-original-title="watch time in % of digest time. Gives idea of watch impact on digest cycle.
                         digest performance issue due to watch if total is > 75%.  try to reduce wasted watch time.">
                         watch time of digest for <br>
-                        <span ng-click="sortByExpression('nWasteWatchersTime', $event)">wasted <i
+                        <span ng-click="digestSortByExpression('nWasteWatchersTime', $event)">wasted <i
                                 class="fa fa-fw fa-unsorted"></i></span> |
-                        <span ng-click="sortByExpression('nWatchersRuntime', $event)">total <i
+                        <span ng-click="digestSortByExpression('nWatchersRuntime', $event)">total <i
                                 class="fa fa-fw fa-unsorted"></i></span>
                     </div>
                 </th>
                 <th>
                     <div data-toggle="tooltip"
-                         data-original-title="this is non-watcher time. includes async, postDigest, DOM updates due to watcher or async, etc.">
-                        <span ng-click="sortByExpression('otherRuntime', $event)">asyncQueue and <br>postDigestQueue (n in time) <i
+                         data-original-title="this is non-watcher time. includes async, postDigest, events, DOM updates due to watcher or async, etc.">
+                        <span ng-click="digestSortByExpression('otherRuntime', $event)">asyncQueue, postDigestQueue (n in time) <i
                                 class="fa fa-fw fa-unsorted"></i></span>
                     </div>
                 </th>
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="aMeasure in digestCycle.measures | orderBy: digestExpression">
-                <td>{{:: $index}}</td>
+            <tr ng-repeat="aMeasure in digestCycle.measures | range: 'digestMeasure': selectedDigestRange.from: selectedDigestRange.to |orderBy: digestExpression">
+                <td>{{:: aMeasure.index}}</td>
                 <td>{{:: aMeasure.startTime/1000 | number : 3}} sec</td>
                 <td> {{:: aMeasure.runtime | number :2}} ms</td>
                 <td> {{:: aMeasure.nDirtyWatchers}} / {{:: aMeasure.nWatchers}}</td>

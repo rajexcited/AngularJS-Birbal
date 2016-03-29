@@ -220,7 +220,7 @@
                         // last is current
                         indRvs = scope.$$watchers.length;
                         addedWatcher = scope.$$watchers[0];
-                        watchstr = toStringForm(watchCollectionExp || watchExp);
+                        watchstr = toStringForm(watchCollectionExp || watchExp.exp || watchExp);
                         // patch get and fn to trace
                         ngWatchGet = addedWatcher.get;
                         ngWatchFn = addedWatcher.fn;

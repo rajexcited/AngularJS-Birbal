@@ -9,7 +9,7 @@
     angular.module('measure.digest.app', [])
         .factory('digestDataFactory', [function () {
 
-            var addDigestMeasure, getAllDigestMeasures, modifyDigestDebounceTime, getDigestDebounceTime, resetDigestMeasures,
+            var addDigestMeasure, getAllDigestMeasures, modifyDigestDebounceTime, getDigestDebounceTime, resetDigestMeasures, getWatchMeasures, getDigestHighlightsForRange,
                 _addApplyMeasureLog, _getScopesAndWatchersForOneDigest, _analyzeEdrForMeasure, _createWatchMeasures, _addWatchMeasures,
                 lastDigestMeasure, lastApplyMeasure, digestDetails,
             //digestDetails = {
@@ -54,51 +54,61 @@
             _getScopesAndWatchersForOneDigest = function (oneDigestMeasure) {
                 // scope
                 var nuWatcher, nWatchers = 0, nWasteWatchers = 0, nScopes = 0, nWatchersTime = 0, nWasteWatchersTime = 0, _watchers;
-                angular.forEach(oneDigestMeasure.scope, function (scope) {
+                angular.forEach(oneDigestMeasure.scope, function (scope, id) {
                     // find watchers
-                    nWatchers = nWatchers + scope.watchers.length;
                     nScopes++;
-                    _watchers = [];
 
-                    function eachScopeWatcher(watcher) {
-                        if (!watcher) {
+                    function eachScopeWatcher(oneWatcher) {
+                        if (!oneWatcher) {
                             return;
                         }
-                        nuWatcher = {'nGet': 0, 'timeGet': 0, 'nFn': 0, 'timeFn': 0, 'exp': '', 'eq': false};
-                        nuWatcher.nGet = watcher.length;
-                        nuWatcher.exp = watcher[0].exp;
-                        nuWatcher.eq = watcher[0].eq;
-                        // first and last always object with get and fn
-                        var len = watcher.length;
 
-                        function eachWatcherGet(onewatch) {
-                            var gettime = (typeof onewatch === 'object') ? onewatch.get : onewatch;
+                        function eachWatcherGet(oneWatchGetter) {
+                            var gettime = (typeof oneWatchGetter === 'object') ? oneWatchGetter.get : oneWatchGetter;
                             nuWatcher.timeGet = nuWatcher.timeGet + gettime;
-                            // last is fn
-                            nuWatcher.timeFn = onewatch.fn || nuWatcher.timeFn;
+                            // !! converts to true for any non-zero value
+                            if (oneWatchGetter.fn !== undefined) {
+                                nuWatcher.timeFn = nuWatcher.timeFn + oneWatchGetter.fn;
+                                nuWatcher.nFn++;
+                                nuWatcher.wasteOnGetOnly = false;
+                            }
                         }
+
+                        nuWatcher = {
+                            'nGet': 0,
+                            'timeGet': 0,
+                            'nFn': 0,
+                            'timeFn': 0,
+                            'exp': '',
+                            'eq': oneWatcher[0].eq,
+                            'wasteOnGetOnly': true,
+                            'runtime': 0,
+                            'scope': id
+                        };
+                        var len;
+                        len = nuWatcher.nGet = oneWatcher.length;
+                        // to convert back to simple string literal
+                        nuWatcher.exp = JSON.parse(oneWatcher[0].exp);
+                        // first and last always object with get and fn
 
                         while (len--) {
-                            eachWatcherGet(watcher[len]);
+                            eachWatcherGet(oneWatcher[len]);
                         }
                         nuWatcher.runtime = nuWatcher.timeGet + nuWatcher.timeFn;
-                        nuWatcher.wasteOnGetOnly = nuWatcher.timeFn === 0;
                         if (nuWatcher.wasteOnGetOnly) {
                             ++nWasteWatchers;
-                            nuWatcher.wasteRuntime = nuWatcher.runtime;
                             nWasteWatchersTime = nWasteWatchersTime + nuWatcher.runtime;
-                        } else {
-                            nuWatcher.nFn = 1;
                         }
                         nWatchersTime = nWatchersTime + nuWatcher.runtime;
-                        nuWatcher.scope = scope.$id;
                         _watchers.push(nuWatcher);
                     }
 
-                    var iscw, scopeWatcherLen = scope.watchers.length;
-                    for (iscw = 0; iscw < scopeWatcherLen; iscw++) {
+                    _watchers = [];
+                    var iscw, scwlen = scope.watchers.length;
+                    for (iscw = 0; iscw < scwlen; iscw++) {
                         eachScopeWatcher(scope.watchers[iscw]);
                     }
+                    nWatchers = nWatchers + _watchers.length;
                     scope.watchers = _watchers;
                     // generate scope tree - no need
                 });
@@ -109,32 +119,47 @@
                 oneDigestMeasure.nWasteWatchersTime = nWasteWatchersTime;
             };
 
+            /**
+             * get all watchers from given digest cycle
+             * @param {object} digestMeasure one digest cycle details
+             * @returns {Array} all watchers of digest
+             * @private
+             */
             _createWatchMeasures = function (digestMeasure) {
                 var scwexp,
                     wexp = [],
                     watchHolder = [];
                 // iterate scope watchers
-                // get all exp for scope watchers
+                // get exp for scope watchers
                 // find duplicate exp and merge them
                 // no duplicate - add to new list
 
                 function mergeWatchByExpression(wex, watcherToAdd) {
-                    var fst, lst;
-                    fst = wexp.indexOf(wex);
-                    lst = wexp.lastIndexOf(wex);
-                    if (lst !== fst && watchHolder[fst].eq !== watcherToAdd.eq) {
-                        // merge
-                        watchHolder[fst].nGet = watchHolder[fst].nGet + watcherToAdd.nGet;
-                        watchHolder[fst].nFn = watchHolder[fst].nFn + watcherToAdd.nFn;
-                        watchHolder[fst].timeGet = watchHolder[fst].timeGet + watcherToAdd.timeGet;
-                        watchHolder[fst].timeFn = watchHolder[fst].timeFn + watcherToAdd.timeFn;
-                        watchHolder[fst].runtime = watchHolder[fst].runtime + watcherToAdd.runtime;
-                        watchHolder[fst].wasteOnGetOnly = watchHolder[fst].timeFn === 0 || watchHolder[fst].nFn < 2;
-                        watchHolder[fst].wasteRuntime = watchHolder[fst].wasteRuntime + watcherToAdd.wasteRuntime;
-                        watchHolder[fst].scope = watchHolder[fst].scope + ',' + watcherToAdd.scope;
-                        watchHolder[fst].nUsed = watchHolder[fst].scope.split(',').length;
+                    var fst = wexp.indexOf(wex),
+                        lst = wexp.lastIndexOf(wex),
+                        existedWatch;
+
+                    // find out eligibility of fst or lst to merge due to eq property
+                    if ((fst !== -1 && watchHolder[fst].eq === watcherToAdd.eq) === false) {
+                        // fst not eligible
+                        // after verifying lst state - assign to fst to merge
+                        fst = (lst !== -1 && watchHolder[lst].eq === watcherToAdd.eq) !== false && lst;
+                    }
+                    watcherToAdd.nUsed = watcherToAdd.scope.split(',').length;
+                    if (fst === false) {
+                        wexp.push(wex);
+                        watchHolder.push(angular.copy(watcherToAdd));
                     } else {
-                        watchHolder.push(watcherToAdd);
+                        // merge - exp, eq are same for merger
+                        existedWatch = watchHolder[fst];
+                        existedWatch.nGet = existedWatch.nGet + watcherToAdd.nGet;
+                        existedWatch.nFn = existedWatch.nFn + watcherToAdd.nFn;
+                        existedWatch.timeGet = existedWatch.timeGet + watcherToAdd.timeGet;
+                        existedWatch.timeFn = existedWatch.timeFn + watcherToAdd.timeFn;
+                        existedWatch.runtime = existedWatch.runtime + watcherToAdd.runtime;
+                        existedWatch.wasteOnGetOnly = existedWatch.wasteOnGetOnly && watcherToAdd.wasteOnGetOnly;
+                        existedWatch.scope = existedWatch.scope + ',' + watcherToAdd.scope;
+                        existedWatch.nUsed = existedWatch.nUsed + watcherToAdd.nUsed;
                     }
                 }
 
@@ -144,7 +169,6 @@
                     });
                     var i, len = scwexp.length;
                     for (i = 0; i < len; i++) {
-                        wexp.push(scwexp);
                         mergeWatchByExpression(scwexp[i], scope.watchers[i]);
                     }
                 });
@@ -154,71 +178,59 @@
 
             _addWatchMeasures = function (watchMeasures) {
                 // find duplicates in 2 array and merge
-
-                var i, len, exp1, exp2, detailWatchMeasures = watchDetails.measures;
                 // here exp1 has unique items as well as exp2
                 // merging both can generate duplicates
-                exp1 = detailWatchMeasures.map(function (w) {
-                    return w.exp;
-                });
-                exp2 = watchMeasures.map(function (w) {
-                    return w.exp;
-                });
 
-                // duplication possibilities
-                function mergeWatchByExpression(w, ind2) {
-                    var /*scopeIds, scopes,*/ ind1;
+                var i, len,
+                    detailWatchMeasures = watchDetails.measures,
+                    exp = detailWatchMeasures.map(function (w) {
+                        return w.exp;
+                    }),
+                    expdw = watchMeasures.map(function (w) {
+                        return w.exp;
+                    });
 
-                    ind1 = exp1.indexOf(w);
-                    if (ind1 !== -1 && detailWatchMeasures[ind1].eq !== watchMeasures[ind2].eq) {
-                        // merge
-                        detailWatchMeasures[ind1].nGet = detailWatchMeasures[ind1].nGet + watchMeasures[ind2].nGet;
-                        detailWatchMeasures[ind1].nFn = detailWatchMeasures[ind1].nFn + watchMeasures[ind2].nFn;
-                        detailWatchMeasures[ind1].timeGet = detailWatchMeasures[ind1].timeGet + watchMeasures[ind2].timeGet;
-                        detailWatchMeasures[ind1].timeFn = detailWatchMeasures[ind1].timeFn + watchMeasures[ind2].timeFn;
-                        detailWatchMeasures[ind1].runtime = detailWatchMeasures[ind1].runtime + watchMeasures[ind2].runtime;
-                        detailWatchMeasures[ind1].wasteOnGetOnly = detailWatchMeasures[ind1].timeFn === 0 || detailWatchMeasures[ind1].nFn < 2;
-                        detailWatchMeasures[ind1].wasteRuntime = detailWatchMeasures[ind1].wasteRuntime + watchMeasures[ind2].wasteRuntime;
-                        detailWatchMeasures[ind1].scope = detailWatchMeasures[ind1].scope + ',' + watchMeasures[ind2].scope;
-                        //scopeIds = (detailWatchMeasures[ind1].scope + ',' + watchMeasures[ind2].scope).split(',');
-                        //// revisit this block and perform only if user wil ask for it
-                        //// create scope occurrence table
-                        //scopes = [];
-                        //scopeIds.forEach(function (id) {
-                        //    var lst, fst;
-                        //    if (!id) {
-                        //        return;
-                        //    }
-                        //    lst = scopeIds.lastIndexOf(id);
-                        //    fst = scopeIds.indexOf(id);
-                        //    if (lst !== fst) {
-                        //        // delete last duplicate
-                        //        scopeIds.splice(lst, 1);
-                        //    }
-                        //    if (!scopes[fst]) {
-                        //        scopes[fst] = {};
-                        //        scopes[fst][id] = 0;
-                        //    }
-                        //    scopes[fst][id]++;
-                        //});
-                        //detailWatchMeasures[ind1].scope = JSON.stringify(scopes);
-                        if (detailWatchMeasures[ind1].nUsed < watchMeasures[ind2].nUsed) {
-                            detailWatchMeasures[ind1].nUsed = watchMeasures[ind2].nUsed;
-                        }
+                // duplication possibilities - merge to detailWatchMeasures
+                function mergeWatchByExpression(w, ind) {
+                    var fst = exp.indexOf(w),
+                        lst = exp.lastIndexOf(w),
+                        wmd = watchMeasures[ind],
+                        wm;
+
+                    // find out eligibility of fst or lst to merge due to eq property
+                    if ((fst !== -1 && detailWatchMeasures[fst].eq === wmd.eq) === false) {
+                        // fst not eligible
+                        // after verifying lst state - assign to fst to merge
+                        fst = (lst !== -1 && detailWatchMeasures[lst].eq === wmd.eq) !== false && lst;
+                    }
+
+                    if (fst === false) {
+                        wmd.nUsedMax = wmd.nUsed;
+                        detailWatchMeasures.push(wmd);
                     } else {
-                        // add unique
-                        detailWatchMeasures.push(watchMeasures[ind2]);
+                        // merge - exp and eq are same for merger
+                        wm = detailWatchMeasures[fst];
+                        wm.nGet = wm.nGet + wmd.nGet;
+                        wm.nFn = wm.nFn + wmd.nFn;
+                        wm.timeGet = wm.timeGet + wmd.timeGet;
+                        wm.timeFn = wm.timeFn + wmd.timeFn;
+                        wm.runtime = wm.runtime + wmd.runtime;
+                        wm.wasteOnGetOnly = wm.wasteOnGetOnly && wmd.wasteOnGetOnly;
+                        wm.scope = wm.scope + ',' + wmd.scope;
+                        wm.nUsedMax = (wm.nUsedMax > wmd.nUsed && wm.nUsed) || wmd.nUsed;
+                        wm.nUsed = wm.nUsed + wmd.nUsed;
                     }
                 }
 
-                if (exp1.length) {
-                    len = exp2.length;
-                    for (i = 0; i < len; i++) {
-                        mergeWatchByExpression(exp2[i], i);
-                    }
-                } else {
+                if (exp.length === 0) {
                     // first time only - add all watchMeasures to detail
                     Array.prototype.push.apply(detailWatchMeasures, watchMeasures);
+                } else {
+                    // iterate expdw
+                    len = expdw.length;
+                    for (i = 0; i < len; i++) {
+                        mergeWatchByExpression(expdw[i], i);
+                    }
                 }
             };
 
@@ -226,6 +238,7 @@
             _analyzeEdrForMeasure = function (aMeasure, edr, measures, lastDigestMeasure) {
                 // edr = effective digest rate, calculated using digest debounce time
                 var mPrev, m, dmlen, nuedr;
+                dmlen = measures.length;
 
                 function _createEdr(digestM) {
                     return {'start': digestM.startTime, 'end': digestM.endTime, 'runtime': 0, 'nDigest': 0};
@@ -285,7 +298,10 @@
 
                 measureLog.runtime = measureLog.endTime - measureLog.startTime;
                 _addApplyMeasureLog(measureLog);
+                // watchers
                 _getScopesAndWatchersForOneDigest(measureLog);
+                watchMeasures = _createWatchMeasures(measureLog);
+                _addWatchMeasures(watchMeasures);
                 measureLog.otherRuntime = measureLog.runtime - measureLog.nWatchersRuntime;
                 // postDigest, and nothing for asyncQueue
                 if (measureLog.postDigestQueue) {
@@ -293,10 +309,9 @@
                 }
                 // do nothing for emit and broadcast events
                 // do nothing on error message for uncompleted digest cycle
-                watchMeasures = _createWatchMeasures(measureLog);
-                _addWatchMeasures(watchMeasures);
                 edr = _analyzeEdrForMeasure(measureLog, digestDetails.highlights.edr, digestDetails.measures, lastDigestMeasure);
                 digestDetails.highlights.edr = edr;
+                measureLog.index = digestDetails.measures.length;
                 if (digestDetails.highlights.longestDigestTime < measureLog.runtime) {
                     digestDetails.highlights.longestDigestTime = measureLog.runtime;
                 }
@@ -350,12 +365,69 @@
                 watchDetails.highlights = {};
             };
 
+
+            getWatchMeasures = function () {
+                return watchDetails;
+            };
+
+            getDigestHighlightsForRange = function (timeFrom, timeTo) {
+                var highlights = {
+                        longestDigestTime: 0,
+                        edr: null,
+                        dirtyWatchers: 0,
+                        nWatchers: 0,
+                        from: 0,
+                        to: 0,
+                        //qq: NEEL find out how can i determine ? ex. watch consumes 80% of digest in longest cycle time. watch are heavy, expensive.
+                        redLightWatchMsg: ''
+                    },
+                    measures = [],
+                    lastMeasure,
+                    len = digestDetails.measures.length,
+                    m,
+                    toInd = -1,
+                    fromInd = -1;
+
+
+                while (len--) {
+                    m = digestDetails.measures[len];
+                    if (toInd === -1) {
+                        if (Math.round(m.endTime / 1000) > timeTo) {
+                            continue;
+                        }
+                        toInd = len;
+                    }
+                    if (Math.round(m.startTime / 1000) < timeFrom) {
+                        break;
+                    }
+
+                    highlights.edr = _analyzeEdrForMeasure(m, highlights.edr, measures, lastMeasure);
+                    lastMeasure = digestDetails.measures[len];
+                    if (highlights.longestDigestTime < lastMeasure.runtime) {
+                        highlights.longestDigestTime = lastMeasure.runtime;
+                    }
+                    // count watchers in digest max of dirty/total
+                    if (highlights.dirtyWatchers < lastMeasure.nDirtyWatchers) {
+                        highlights.dirtyWatchers = lastMeasure.nDirtyWatchers;
+                    }
+                    if (highlights.nWatchers < lastMeasure.nWatchers) {
+                        highlights.nWatchers = lastMeasure.nWatchers;
+                    }
+                }
+                highlights.to = toInd !== -1 ? toInd : len;
+                highlights.from = (Math.round(m.endTime / 1000) < timeFrom || len === -1) ? len + 1 : len;
+
+                return highlights;
+            };
+
             return {
                 'addDigestMeasure': addDigestMeasure,
                 'resetDigestMeasures': resetDigestMeasures,
                 'getAllDigestMeasures': getAllDigestMeasures,
                 'modifyDigestDebounceTime': modifyDigestDebounceTime,
-                'getDigestDebounceTime': getDigestDebounceTime
+                'getDigestDebounceTime': getDigestDebounceTime,
+                'getWatchMeasures': getWatchMeasures,
+                'getDigestHighlightsForRange': getDigestHighlightsForRange
             };
 
         }]);
