@@ -330,6 +330,9 @@
             };
 
             modifyDigestDebounceTime = function (newDebounceTime) {
+                if(newDebounceTime===digestDebounceTime) {
+                    return;
+                }
                 digestDebounceTime = newDebounceTime;
                 // re-analyze edr
                 var edr, measures = [], lastMeasure, len = digestDetails.measures.length;

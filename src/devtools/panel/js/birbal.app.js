@@ -128,22 +128,25 @@
                 //            settings view
                 /////////////////////////////////////////////////////////
                 $scope.settings = {
-                    digestDebounce: digestDataFactory.getDigestDebounceTime(),
+                    digestDebounceTime: digestDataFactory.getDigestDebounceTime(),
                     showScopeToElement: false
                 };
 
-                $scope.$watch('settings.showScopeToElement', function scopePropSettingsHandler(newval) {
-                    var sidebarAction = newval ? 'addScopeToElementPanel' : 'removeScopeToElementPanel';
+                $scope.settings.exportScopesInElementPanel = function () {
+                    var sidebarAction = $scope.settings.showScopeToElement ? 'addScopeToElementPanel' : 'removeScopeToElementPanel';
                     birbalJS.setElementPanelAction(sidebarAction);
-                });
-
-                $scope.settings.reloadPage = function () {
-                    birbalJS.pageAction('reload');
                 };
 
-                /////////////////////////////////////////////////////////
-                //            settings view
-                /////////////////////////////////////////////////////////
+                $scope.settings.debounceChanged = function () {
+                    if (!$scope.settings.digestDebounceTime || $scope.settings.digestDebounceTime < 0) {
+                        $scope.settings.digestDebounceTime = digestDataFactory.getDigestDebounceTime();
+                    }
+                    digestDataFactory.modifyDigestDebounceTime($scope.digestDebounceTime);
+                };
+
+                /////////////////////////////////////////////////////////////////////////////////////////
+                //            slider, filter, dashboard update, sort, configurations
+                /////////////////////////////////////////////////////////////////////////////////////////
                 // every second update digest details
                 $interval(function () {
                     $scope.digestCycle = digestDataFactory.getAllDigestMeasures();
@@ -218,19 +221,6 @@
                     }
                 };
 
-                /*
-                 // deal this later with panel view
-                 $scope.settings.reCalculateMeasures = function () {
-                 $timeout.cancel(timeoutpromise);
-                 timeoutpromise = undefined;
-                 lastMesuredIndex = 0;
-                 $scope.digestMeasures.initialize();
-
-                 $scope.$evalAsync(function () {
-                 analyzeDigestMeasures();
-                 });
-                 };
-                 */
                 // end of controller
             }]);
 

@@ -1,10 +1,9 @@
-<div style="display: none">
-
-    <span><b>Sidebar Option:</b></span>
+<div>
     <br>
 
     <div class="checkbox">
-        <label> <input type="checkbox" ng-model="settings.properties"> Show ng properties in Element Panel </label>
+        <label> <input type="checkbox" ng-model="settings.showScopeToElement"
+                       ng-click="settings.exportScopesInElementPanel();"> Show ng scope in Element Panel </label>
     </div>
     <br>
     <span><b>digest Cycle related Option:</b></span>
@@ -12,11 +11,10 @@
 
     <div class="checkbox">
         <label> debounce time between digest cycles(in ms)
-            <input type="number" ng-model="settings.digestDebounce" ng-blur="settings.reCalculateMeasures();">
+            <input type="number" min="0" ng-model="settings.digestDebounceTime" ng-blur="settings.debounceChanged();">
         </label>
     </div>
-
 </div>
-<div>
+<div style="display: none">
     Will provide feature details soon.
 </div>
