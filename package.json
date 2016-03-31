@@ -1,12 +1,17 @@
 {
   "name": "angularjs-birbal",
-  "version": "0.0.1",
-  "description": "chrome extension for inspecting angular apps",
+  "version": "0.0.3",
+  "description": "chrome extension for inspecting angular apps. dependecies and performance analysis.",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "gulp": "^3.9.1",
+    "gulp-zip": "^3.2.0"
+  },
   "dependencies": {
-    "angular": "^1.4.7",
-    "jquery": "^2.1.4",
-    "floatthead": "",
-    "ion-rangeslider":""
+    "angular": "1.4.7",
+    "jquery": "2.1.4",
+    "floatthead": "^1.4.0",
+    "ion-rangeslider": "^2.1.2"
   },
   "repository": {
     "type": "git",
@@ -17,9 +22,14 @@
     "angularjs",
     "chrome",
     "extension",
-    "performance"
+    "performance",
+    "birbal",
+    "birbalJS"
   ],
-  "author": "Raj <rajexcited@gmail.com>",
+  "author": {
+    "name": "Raj",
+    "email": "rajexcited@gmail.com"
+  },
   "license": "MIT",
   "homepage": "https://github.com/rajexcited/AngularJS-Birbal"
 }

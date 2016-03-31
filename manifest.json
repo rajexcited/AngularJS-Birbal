@@ -1,38 +1,39 @@
 {
   "name": "AngularJS Birbal",
   "version": "0.0.3",
-  "description": "Ease developers to solve angular problems specially performance. Initial Phase- includes digest details",
-
-  "content_scripts": [{
-    "matches": ["<all_urls>"],
-    "js": ["src/message.js", "src/content-script/content-script.js"],
-    "run_at": "document_start"
-  }],
-
+  "description": "Angular performance inspection by Birbal eyes. Detailed digest cycles, watch, effect of events, effects of http",
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/message.js",
+        "src/content-script/content-script.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
   "permissions": [
     "tabs",
     "webNavigation",
     "<all_urls>",
     "alarms"
   ],
-
   "background": {
-    "scripts": ["src/message.js", "src/background/background.js"],
+    "scripts": [
+      "src/message.js",
+      "src/background/background.js"
+    ],
     "persistent": false
   },
-
   "page_action": {
     "default_title": "AngularJS Birbal"
   },
-
   "devtools_page": "src/devtools/devToolsPage.html",
-
   "content_security_policy": "default-src 'self'  chrome-extension-resource: ;   style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval';  connect-src *; frame-src *;",
-
   "web_accessible_resources": [
     "src/content-script/inject/angularinspector.js"
   ],
-
   "manifest_version": 2
-
 }
