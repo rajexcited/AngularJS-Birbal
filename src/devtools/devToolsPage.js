@@ -9,7 +9,7 @@
     chrome.devtools.panels.create(
         'Angular Birbal',
         null, // No icon path
-        '/src/devtools/panel/partials/index.html',
+        '/src/panel/partials/index.html',
         null // no callback needed
     );
 
