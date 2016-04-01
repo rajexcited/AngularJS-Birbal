@@ -1,5 +1,7 @@
 module.exports = function (grunt) {
 
+    var ENV = (grunt.option('prod') && 'prod') || (grunt.option('dev') && 'dev');
+
     // Project configuration.
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -47,7 +49,7 @@ module.exports = function (grunt) {
                     // copy all minified in dist to src and rename to .js
                     {expand: true, cwd: 'dist/', src: '**/*.min.js', dest: 'zip/src/', ext: '.js'},
                     {expand: true, cwd: 'src/panel/css/', src: '*.css', dest: 'zip/src/panel/'},
-                    {src: 'src/panel/partials/*.html', dest: 'zip/'},
+                    {src: ['src/panel/partials/*', '!src/panel/partials/index.html'], dest: 'zip/'},
                     {src: 'src/devtools/devToolsPage.html', dest: 'zip/src/devtools/devToolsPage.html'},
                     {src: 'src/devtools/devToolsPage.js', dest: 'zip/src/devtools/devToolsPage.js'}
                 ]
@@ -74,8 +76,8 @@ module.exports = function (grunt) {
                     },
                     // font-awesome
                     {
-                        expand:true,
-                        flatten:true,
+                        expand: true,
+                        flatten: true,
                         src: ['node_modules/font-awesome/css/font-awesome.min.css', 'node_modules/font-awesome/fonts/fontawesome-webfont.woff2'],
                         dest: 'lib/admin-lte/'
                     },
@@ -111,16 +113,33 @@ module.exports = function (grunt) {
                 ]
             }
         },
+        'template': {
+            'index': {
+                'options': {
+                    'data': function () {
+                        "use strict";
+                        var allIncludes = grunt.file.readJSON('include.json');
+                        if (!ENV) {
+                            throw Error('no environment defined. use argument --dev.');
+                        }
+                        return allIncludes[ENV];
+                    },
+                    dest: ENV === 'prod' ? 'dist/' : ''
+                },
+                'files': {
+                    '<%= template.index.options.dest%>src/panel/partials/index.html': ['src/panel/partials/index.html.template']
+                }
+            }
+        },
         clean: {
             dist: ['dist/**'],
             compress: ['zip/**'],
-            lib: ['lib/**']
+            //lib: ['lib/**']
         }
     });
 
     // time for each task
     require('time-grunt')(grunt);
-
     // Load the plugins to run below registered tasks.
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -128,11 +147,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-compress');
+    grunt.loadNpmTasks('grunt-template');
 
     // Default task(s).
     grunt.registerTask('default', ['jshint']);
-    grunt.registerTask('build-lib', ['copy:lib']);
     // creating zip file for distribution
     grunt.registerTask('build-extension', ['default', 'clean:dist', 'clean:compress', 'concat', 'uglify', 'copy', 'compress']);
 
+    grunt.registerTask('build', ['clean:dist', 'copy:lib', 'template']);
 };

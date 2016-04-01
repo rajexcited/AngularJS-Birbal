@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>AngularJS Birbal</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- css -->
+    <% _.forEach(files.css, function(cssFilePath) { var htmlComment=cssFilePath.comment; if(htmlComment) { cssFilePath= cssFilePath.path;%>  <%= htmlComment%> <%}%>
+    <link rel="stylesheet" href="<%= cssFilePath%>">
+    <% }); %>
+</head>
+
+<body class="hold-transition skin-blue sidebar-mini fixed" ng-app="birbal-app" ng-controller="panelViewController">
+<!-- wrapper -->
+<div class="wrapper">
+    <!-- main header -->
+    <div class="main-header">
+        <a href="#" class="logo" data-toggle="offcanvas" role="button">
+            <span class="sidebar-toggle visible-xs no-pad-top-force"></span>
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="logo-lg">AngularJS <b>Birbal</b> </span>
+            <span class="logo-mini">nb</span>
+        </a>
+        <!-- ./main header -->
+    </div>
+    <div ng-include="'sidebar.html'"></div>
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1> AngularJS App Stats from Birbal's view </h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="#" ng-click="sidebar.changePanelView('dashboard');">
+                        <i class="fa fa-dashboard"></i> Dashboard
+                    </a>
+                </li>
+                <li class="active">{{view}}</li>
+            </ol>
+        </section>
+        <!-- Main content -->
+        <section class="content">
+            <span nb-panel-view view-name="view">No AngularJS app detected Test.</span>
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+</div>
+<!-- ./wrapper -->
+
+<!-- scripts -->
+<% _.forEach(files.js,function(jsFilePath) { var htmlComment=jsFilePath.comment; if(htmlComment) { jsFilePath = jsFilePath.path;%> <%= htmlComment%> <%}%>
+<script src="<%= jsFilePath%>"></script>
+<% }); %>
+
+</body>
+</html>

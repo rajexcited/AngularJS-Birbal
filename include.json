@@ -1,0 +1,32 @@
+{
+  "dev": {
+    "files": {
+      "css": [
+        {
+          "comment": "<!-- BootStrap -->",
+          "path": "../vendor/AdminLTE/css/bootstrap.min.css"
+        },
+        {
+          "comment": "<!-- Theme style -->",
+          "path": "../vendor/AdminLTE/css/AdminLTE.min.css"
+        },
+        "/node_modules/ion-rangeslider/css/ion.rangeSlider.skinNice.css",
+        "../vendor/AdminLTE/css/ionicons.min.css"
+      ],
+      "js": [
+        "../vendor/AdminLTE/js/app.min.js",
+        {
+          "comment": "<!-- Vendor lib -->",
+          "path": "../vendor/AdminLTE/js/bootstrap.min.js"
+        },
+        "../js/birbalJSInit.js"
+      ]
+    }
+  },
+  "prod": {
+    "files": {
+      "css": [],
+      "js": []
+    }
+  }
+}
