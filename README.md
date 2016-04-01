@@ -1,33 +1,42 @@
 # AngularJS-Birbal
-Birbal advice for AngularJS app. Chrome Extension for developers
+Learn Angular performance effects. It provides extra eye to developer for ngApp.
+
+Features include:
+  - digest cycle list with details
+  - filter capability to debug and analyze
+  - watch details
+  - effects of custom and browser events 
+  - effect of http
 
 It is in initial phase of developement.
 [Webstore link](https://chrome.google.com/webstore/detail/lpgcgfldhlpcekibknamgefpbifakkai)
 
 Goal is to provide angular developers more run-time information of the application.
-Provide performance statistics.
-Provide dependancy chart.
-Provide real time map between modules.
 
-Following features/ functionalities, I'm trying to provide.
+## Roadmap:
+  - Provide performance statistics for module.
+  - ngView and ngRoute statistics
+  - Provide dependancy chart.
+  - Provide real time map between modules.
+  - learn and find memory leak
+  - learn and find DOM leak
 
-  - counts dirty watch for each digest cycle
-  - should be compatible with all angular versions (find out limitations)
-  - gives digest time
-  - gives error for digest fail
-  - gives dirty watch expression
-  - gives scope for dirty watch
-  - highlight the element if possible for critical
-  - no need to give id or ng-app to start test (should work for bootstrap as well)
-  - records digest statistics with timeId (helps in further analysis)
-  - find $$listeners impact to application (is it covering in digest cycle?)
-  - gives suggestions/ tips for failure if possible
-  - http or AJAX or route impact on application
-  - total watches for application for each cycle to track app
-  - learn and implement memory leaking concept
-  - learn and implement memory management concept
-  - try to use ng-graph-dependancy extension feature here directly.
+# How to Develop?
 
-[See development progress] (https://github.com/rajexcited/AngularJS-Birbal/blob/master/developmentPhases)
+## Requirements:
+This project is setup using NodeJS/npm and grunt. 
+## Getting Started:
+  - Clone the repository: ``` git clone https://github.com/rajexcited/AngularJS-Birbal.git ``` 
+  - run below commands in project folder.
+  
+      ```    
+      node install
+      node run build
+      ```
 
-Master is a development branch
+  - use 'load unpacked extension' option from chrome extension developer mode.
+  
+Many thanks to projects for directions.
+- angular batarang
+- angular performance
+- ngdependency graph
