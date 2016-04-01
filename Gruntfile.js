@@ -62,44 +62,39 @@ module.exports = function (grunt) {
                     {src: 'node_modules/angular/angular.min.js', dest: 'lib/angular.min.js'},
                     // jquery
                     {src: 'node_modules/jquery/dist/jquery.min.js', dest: 'lib/jquery.min.js'},
-                    // admin-lte
+                    // admin-lte, bootstrap and font-awesome
                     {
                         expand: true,
                         cwd: 'node_modules/admin-lte/',
                         flatten: true,
-                        src: [
-                            // js
-                            'bootstrap/js/bootstrap.min.js', 'dist/js/app.min.js',
-                            // css
-                            'bootstrap/css/bootstrap.min.css', 'dist/css/AdminLTE.min.css', 'dist/css/skins/skin-blue.min.css'
-                        ],
-                        dest: 'lib/admin-lte/'
+                        src: ['bootstrap/js/bootstrap.min.js', 'dist/js/app.min.js'],
+                        dest: 'lib/admin-lte/js/'
                     },
-                    // font-awesome
                     {
                         expand: true,
                         flatten: true,
-                        src: ['node_modules/font-awesome/css/font-awesome.min.css', 'node_modules/font-awesome/fonts/fontawesome-webfont.woff2'],
-                        dest: 'lib/admin-lte/'
+                        src: ['node_modules/font-awesome/css/font-awesome.min.css', 'node_modules/admin-lte/bootstrap/css/bootstrap.min.css', 'node_modules/admin-lte/dist/css/AdminLTE.min.css', 'node_modules/admin-lte/dist/css/skins/skin-blue.min.css'],
+                        dest: 'lib/admin-lte/css/'
                     },
+                    {src: 'node_modules/font-awesome/fonts/*', dest: 'lib/admin-lte/fonts/', flatten: true},
                     // ion-rangeslider
                     {
                         expand: true,
                         cwd: 'node_modules/ion-rangeslider/',
-                        flatten: true,
                         src: [
                             // js
                             'js/ion.rangeSlider.min.js',
                             // css
-                            'css/ion.rangeSlider.skinNice.css', 'css/ion.rangeSlider.css', 'css/normalize.css'
+                            'css/ion.rangeSlider.skinNice.css', 'css/ion.rangeSlider.css', 'css/normalize.css',
+                            'img/sprite-skin-nice.png'
                         ],
                         dest: 'lib/ion-rangeslider/'
-                    },
+                    }//, not using this lib
                     // floathead
-                    {
-                        src: 'node_modules/floatthead/dist/jquery.floatThead.min.js',
-                        dest: 'lib/jquery.floatThead.min.js'
-                    }
+                    //{
+                    //    src: 'node_modules/floatthead/dist/jquery.floatThead.min.js',
+                    //    dest: 'lib/jquery.floatThead.min.js'
+                    //}
                 ]
             }
         },
@@ -135,7 +130,7 @@ module.exports = function (grunt) {
         clean: {
             dist: ['dist/**'],
             compress: ['zip/**'],
-            //lib: ['lib/**']
+            lib: ['lib/**']
         }
     });
 
@@ -157,5 +152,6 @@ module.exports = function (grunt) {
     // creating zip file for distribution
     grunt.registerTask('build-extension', ['default', 'clean:dist', 'clean:compress', 'concat', 'uglify', 'copy', 'compress']);
 
-    grunt.registerTask('build', ['clean:dist', 'copy:lib', 'template']);
+    // for development
+    grunt.registerTask('build', ['clean', 'copy:lib', 'template']);
 };
