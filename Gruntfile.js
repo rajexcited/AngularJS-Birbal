@@ -41,7 +41,7 @@ module.exports = function (grunt) {
             }
         },
         copy: {
-            main: {
+            src: {
                 files: [
                     // src files
                     // copy all minified in dist to src and rename to .js
@@ -49,42 +49,53 @@ module.exports = function (grunt) {
                     {expand: true, cwd: 'src/panel/css/', src: '*.css', dest: 'zip/src/panel/'},
                     {src: 'src/panel/partials/*.html', dest: 'zip/'},
                     {src: 'src/devtools/devToolsPage.html', dest: 'zip/src/devtools/devToolsPage.html'},
-                    {src: 'src/devtools/devToolsPage.js', dest: 'zip/src/devtools/devToolsPage.js'},
-                    // node-modules/lib files
+                    {src: 'src/devtools/devToolsPage.js', dest: 'zip/src/devtools/devToolsPage.js'}
+                ]
+            },
+            // compile and generate lib folder
+            lib: {
+                files: [
                     // angular
-                    {src: 'node_modules/angular/angular.min.js', dest: 'zip/lib/angular/angular.js'},
+                    {src: 'node_modules/angular/angular.min.js', dest: 'lib/angular.min.js'},
                     // jquery
-                    {src: 'node_modules/jquery/dist/jquery.js', dest: 'zip/lib/jquery/jquery.js'},
+                    {src: 'node_modules/jquery/dist/jquery.min.js', dest: 'lib/jquery.min.js'},
                     // admin-lte
                     {
                         expand: true,
                         cwd: 'node_modules/admin-lte/',
                         flatten: true,
-                        src: ['bootstrap/js/bootstrap.min.js', 'dist/js/app.min.js'],
-                        dest: 'zip/lib/admin-lte/js/'
+                        src: [
+                            // js
+                            'bootstrap/js/bootstrap.min.js', 'dist/js/app.min.js',
+                            // css
+                            'bootstrap/css/bootstrap.min.css', 'dist/css/AdminLTE.min.css', 'dist/css/skins/skin-blue.min.css'
+                        ],
+                        dest: 'lib/admin-lte/'
                     },
+                    // font-awesome
                     {
-                        expand: true,
-                        cwd: 'node_modules/admin-lte/',
-                        flatten: true,
-                        src: ['bootstrap/css/bootstrap.min.css', 'dist/css/AdminLTE.min.css', 'dist/css/skins/skin-blue.min.css'],
-                        dest: 'zip/lib/admin-lte/css/'
+                        expand:true,
+                        flatten:true,
+                        src: ['node_modules/font-awesome/css/font-awesome.min.css', 'node_modules/font-awesome/fonts/fontawesome-webfont.woff2'],
+                        dest: 'lib/admin-lte/'
                     },
                     // ion-rangeslider
                     {
-                        src: 'node_modules/ion-rangeslider/js/ion.rangeSlider.min.js',
-                        dest: 'zip/lib/ion-rangeslider/js/ion.rangeSlider.min.js'
-                    },
-                    {
                         expand: true,
-                        cwd: 'node_modules/ion-rangeslider/css/',
-                        src: ['ion.rangeSlider.skinNice.css', 'ion.rangeSlider.css', 'normalize.css'],
-                        dest: 'zip/lib/ion-rangeslider/css/'
+                        cwd: 'node_modules/ion-rangeslider/',
+                        flatten: true,
+                        src: [
+                            // js
+                            'js/ion.rangeSlider.min.js',
+                            // css
+                            'css/ion.rangeSlider.skinNice.css', 'css/ion.rangeSlider.css', 'css/normalize.css'
+                        ],
+                        dest: 'lib/ion-rangeslider/'
                     },
                     // floathead
                     {
                         src: 'node_modules/floatthead/dist/jquery.floatThead.min.js',
-                        dest: 'zip/lib/floatthead/jquery.floatThead.min.js'
+                        dest: 'lib/jquery.floatThead.min.js'
                     }
                 ]
             }
@@ -102,7 +113,8 @@ module.exports = function (grunt) {
         },
         clean: {
             dist: ['dist/**'],
-            compress: ['zip/**']
+            compress: ['zip/**'],
+            lib: ['lib/**']
         }
     });
 
@@ -118,7 +130,9 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-compress');
 
     // Default task(s).
-    grunt.registerTask('default', ['clean:dist', 'jshint', 'concat', 'uglify']);
-    grunt.registerTask('build-extension', ['default', 'clean:compress', 'copy', 'compress']);
+    grunt.registerTask('default', ['jshint']);
+    grunt.registerTask('build-lib', ['copy:lib']);
+    // creating zip file for distribution
+    grunt.registerTask('build-extension', ['default', 'clean:dist', 'clean:compress', 'concat', 'uglify', 'copy', 'compress']);
 
 };
