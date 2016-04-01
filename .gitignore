@@ -2,3 +2,5 @@ dist
 node_modules
 .idea
 zip
+lib
+src/panel/partials/index.html

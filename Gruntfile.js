@@ -76,7 +76,7 @@ module.exports = function (grunt) {
                         src: ['node_modules/font-awesome/css/font-awesome.min.css', 'node_modules/admin-lte/bootstrap/css/bootstrap.min.css', 'node_modules/admin-lte/dist/css/AdminLTE.min.css', 'node_modules/admin-lte/dist/css/skins/skin-blue.min.css'],
                         dest: 'lib/admin-lte/css/'
                     },
-                    {src: 'node_modules/font-awesome/fonts/*', dest: 'lib/admin-lte/fonts/', flatten: true},
+                    {src: 'fonts/*', dest: 'lib/admin-lte/', expand: true, cwd: 'node_modules/font-awesome/'},
                     // ion-rangeslider
                     {
                         expand: true,
@@ -89,7 +89,10 @@ module.exports = function (grunt) {
                             'img/sprite-skin-nice.png'
                         ],
                         dest: 'lib/ion-rangeslider/'
-                    }//, not using this lib
+                    },
+                    // other vendor files
+                    {expand: true, cwd: 'vendor/', src: '**', dest: 'lib/'}
+                    //, not using this lib
                     // floathead
                     //{
                     //    src: 'node_modules/floatthead/dist/jquery.floatThead.min.js',
@@ -130,7 +133,8 @@ module.exports = function (grunt) {
         clean: {
             dist: ['dist/**'],
             compress: ['zip/**'],
-            lib: ['lib/**']
+            lib: ['lib/**'],
+            template: ['src/panel/partials/index.html', 'dist/src/panel/partials/index.html']
         }
     });
 

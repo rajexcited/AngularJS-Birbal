@@ -17,12 +17,14 @@
                         __ngPrivate__: {}
                     };
 
-                props = Object.keys(scope);
-                for (i = 0; i < props.length; i++) {
-                    if (props[i].substring(0, 2) === '$$') {
-                        scopeContents.__ngPrivate__[props[i]] = scope[props[i]];
-                    } else {
-                        scopeContents[props[i]] = scope[props[i]];
+                if (scope) {
+                    props = Object.keys(scope);
+                    for (i = 0; i < props.length; i++) {
+                        if (props[i].substring(0, 2) === '$$') {
+                            scopeContents.__ngPrivate__[props[i]] = scope[props[i]];
+                        } else {
+                            scopeContents[props[i]] = scope[props[i]];
+                        }
                     }
                 }
                 return scopeContents;
@@ -37,7 +39,7 @@
         };
 
         setDefault = function () {
-            sidebar.setPage('/src/devtools/panel/partials/panelsidebardefault.html');
+            sidebar.setPage('/src/panel/partials/panelsidebardefault.html');
         };
         // default
         setDefault();

@@ -2,7 +2,7 @@
 (function (angular, birbalJS) {
     "use strict";
 
-    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'measure.digest.app', 'birbalFilters.app', 'rangeSlider.app', 'floatThead'])
+    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'measure.digest.app', 'birbalFilters.app', 'rangeSlider.app'])
         .controller('panelViewController',
             ['$scope', 'backgroundService', '$rootScope', 'digestDataFactory', '$interval', function ($scope, backgroundService, $rootScope, digestDataFactory, $interval) {
                 // default first message on inspect tab load, letting app know I'm ready
