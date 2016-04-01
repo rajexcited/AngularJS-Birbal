@@ -38,7 +38,8 @@ module.exports = function (grunt) {
                     'dist/panel/panel.min.js': ['<%= concat.dist.dest %>'],
                     'dist/background/background.min.js': ['src/background/background.js'],
                     'dist/content-script/content-script.min.js': ['src/content-script/content-script.js'],
-                    'dist/content-script/inject/angularinspector.min.js': ['src/content-script/inject/angularinspector.js']
+                    'dist/content-script/inject/angularinspector.min.js': ['src/content-script/inject/angularinspector.js'],
+                    'dist/message.min.js': ['src/message.js']
                 }
             }
         },
