@@ -14,6 +14,7 @@ It is in initial phase of developement.
 Goal is to provide angular developers more run-time information of the application.
 
 ## Roadmap:
+  - include automation test and build process.
   - Provide performance statistics for module.
   - ngView and ngRoute statistics
   - Provide dependancy chart.
