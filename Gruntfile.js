@@ -140,14 +140,16 @@ module.exports = function (grunt) {
 
     // time for each task
     require('time-grunt')(grunt);
-    // Load the plugins to run below registered tasks.
-    grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-compress');
-    grunt.loadNpmTasks('grunt-template');
+    require('jit-grunt')(grunt);
+
+    // Load the plugins to run below registered tasks. - lazy loading using jit-grunt
+    //grunt.loadNpmTasks('grunt-contrib-clean');
+    //grunt.loadNpmTasks('grunt-contrib-uglify');
+    //grunt.loadNpmTasks('grunt-contrib-jshint');
+    //grunt.loadNpmTasks('grunt-contrib-concat');
+    //grunt.loadNpmTasks('grunt-contrib-copy');
+    //grunt.loadNpmTasks('grunt-contrib-compress');
+    //grunt.loadNpmTasks('grunt-template');
 
     // Default task(s).
     grunt.registerTask('default', ['jshint']);
