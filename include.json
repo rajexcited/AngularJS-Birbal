@@ -3,30 +3,107 @@
     "files": {
       "css": [
         {
-          "comment": "<!-- BootStrap -->",
+          "comment": "<!--bootstrap-->",
           "path": "../vendor/AdminLTE/css/bootstrap.min.css"
         },
         {
           "comment": "<!-- Theme style -->",
           "path": "../vendor/AdminLTE/css/AdminLTE.min.css"
         },
+        "../vendor/AdminLTE/css/skin-blue.min.css",
+        {
+          "comment": "<!--  Custom styles  -->",
+          "path": "../css/panel.css"
+        },
+        "../vendor/AdminLTE/css/font-awesome.min.css",
+        "../vendor/AdminLTE/css/ionicons.min.css",
         "/node_modules/ion-rangeslider/css/ion.rangeSlider.skinNice.css",
-        "../vendor/AdminLTE/css/ionicons.min.css"
+        "/node_modules/ion-rangeslider/css/ion.rangeSlider.css",
+        "/node_modules/ion-rangeslider/css/normalize.css"
       ],
       "js": [
-        "../vendor/AdminLTE/js/app.min.js",
+        {
+          "comment": "<!-- REQUIRED JS SCRIPTS -->",
+          "path": "/node_modules/jquery/dist/jquery.js"
+        },
+        "/node_modules/angular/angular.js",
+        "/node_modules/floatthead/dist/jquery.floatThead.js",
+        "/node_modules/ion-rangeslider/js/ion.rangeSlider.js",
+        {
+          "comment": "<!-- Birbal communication -->",
+          "path": "/src/message.js"
+        },
         {
           "comment": "<!-- Vendor lib -->",
           "path": "../vendor/AdminLTE/js/bootstrap.min.js"
         },
-        "../js/birbalJSInit.js"
+        "../vendor/AdminLTE/js/app.min.js",
+        "../vendor/angular-floatHead.js",
+        "../vendor/jquery.sparkline.min.js",
+        {
+          "comment": "<!-- communication and tab evals -->",
+          "path": "../js/devtoolsExtended.js"
+        },
+        "../js/birbalJSInit.js",
+        {
+          "comment": "<!-- panel view scripts -->",
+          "path": "../js/birbal.app.js"
+        },
+        "../js/background.service.js",
+        "../js/panel-view.directive.js",
+        "../js/birbalFilters.filter.js",
+        "../js/digestDataFactory.factory.js",
+        "../js/httpRecordFactory.factory.js",
+        "../js/rangeSlider.directive.js"
       ]
     }
   },
   "prod": {
     "files": {
-      "css": [],
-      "js": []
+      "css": [
+        {
+          "comment": "<!--bootstrap-->",
+          "path": "../vendor/AdminLTE/css/bootstrap.min.css"
+        },
+        {
+          "comment": "<!-- Theme style -->",
+          "path": "../vendor/AdminLTE/css/AdminLTE.min.css"
+        },
+        "../vendor/AdminLTE/css/skin-blue.min.css",
+        {
+          "comment": "<!--  Custom styles  -->",
+          "path": "../panel.css"
+        },
+        "../vendor/AdminLTE/css/font-awesome.min.css",
+        "../vendor/AdminLTE/css/ionicons.min.css",
+        "/node_modules/ion-rangeslider/css/ion.rangeSlider.skinNice.css",
+        "/node_modules/ion-rangeslider/css/ion.rangeSlider.css",
+        "/node_modules/ion-rangeslider/css/normalize.css"
+      ],
+      "js": [
+        {
+          "comment": "<!-- REQUIRED JS SCRIPTS -->",
+          "path": "/node_modules/jquery/dist/jquery.min.js"
+        },
+        "/node_modules/angular/angular.min.js",
+        "/node_modules/floatthead/dist/jquery.floatThead.min.js",
+        "/node_modules/ion-rangeslider/js/ion.rangeSlider.min.js",
+        {
+          "comment": "<!-- Birbal communication -->",
+          "path": "/src/message.js"
+        },
+        {
+          "comment": "<!-- Vendor lib -->",
+          "path": "../vendor/AdminLTE/js/bootstrap.min.js"
+        },
+        "../vendor/AdminLTE/js/app.min.js",
+        "../vendor/angular-floatHead.js",
+        "../vendor/jquery.sparkline.min.js",
+        {
+          "comment": "<!-- all panel js -->",
+          "path": "../panel.js"
+        }
+      ]
     }
   }
 }
