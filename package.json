@@ -23,7 +23,7 @@
     "ion-rangeslider": "^2.1.2"
   },
   "scripts": {
-    "clean": "grunt clean",
+    "clean": "npm prune & npm update & grunt clean",
     "build": "grunt build --dev",
     "package": "grunt build-extension --prod"
   },
