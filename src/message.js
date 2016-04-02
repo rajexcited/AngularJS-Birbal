@@ -1,5 +1,5 @@
 /*global chrome, window*/
-(function (chrome, window) {
+(function (chrome) {
     'use strict';
 
     var BirbalJSImpl, endPoints, MessageImpl, ReceiverImpl;
@@ -44,8 +44,8 @@
         if (!callerId || !task) {
             throw new Error('callerId or task not defined');
         }
-
-        this.tabId = chrome.devtools && chrome.devtools.inspectedWindow && chrome.devtools.inspectedWindow.tabId;
+        var chrome = window.chrome;
+        this.tabId = chrome && chrome.devtools && chrome.devtools.inspectedWindow && chrome.devtools.inspectedWindow.tabId;
         this.callerId = callerId;
         /* default is background */
         this.receiverId = receiverId || endPoints.BACKGROUND;
@@ -84,7 +84,7 @@
                 // used in background
                 destPort = destPort.apply(null, arguments);
             }
-            if (srcPort.name === receiverSelf.receiverId || !destPort ||  destPort.name === receiverSelf.receiverId || destPort === receiverSelf.receiverId) {
+            if (srcPort.name === receiverSelf.receiverId || !destPort || destPort.name === receiverSelf.receiverId || destPort === receiverSelf.receiverId) {
                 var taskName, callback;
                 taskName = message.task;
                 callback = taskCallBackList[taskName];
@@ -97,9 +97,6 @@
                 // delegates message to destPort
                 destPort.postMessage(message);
             }
-            /*else {
-                throw new Error('cannot answer the call.');
-            }*/
         };
         ///
     };
@@ -122,4 +119,4 @@
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
 
-}(chrome, window));
+}(chrome));

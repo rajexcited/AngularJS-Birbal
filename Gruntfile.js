@@ -1,13 +1,15 @@
 module.exports = function (grunt) {
 
+    // prod will get published.
     var ENV = (grunt.option('prod') && 'prod') || (grunt.option('dev') && 'dev');
+    var allIncludes = grunt.file.readJSON('include.json');
 
     // Project configuration.
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         jshint: {
             // define the files to lint
-            files: ['Gruntfile.js', 'src/**/panel/js/*.js', 'test/**/*.js'],
+            files: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js'],
             // configure JSHint (documented at http://www.jshint.com/docs/)
             options: {
                 // more options here if you want to override JSHint defaults
@@ -38,7 +40,6 @@ module.exports = function (grunt) {
                     'dist/panel/panel.min.js': ['<%= concat.dist.dest %>'],
                     'dist/background/background.min.js': ['src/background/background.js'],
                     'dist/content-script/content-script.min.js': ['src/content-script/content-script.js'],
-                    'dist/content-script/inject/angularinspector.min.js': ['src/content-script/inject/angularinspector.js'],
                     'dist/message.min.js': ['src/message.js']
                 }
             }
@@ -50,9 +51,9 @@ module.exports = function (grunt) {
                     // copy all minified in dist to src and rename to .js
                     {expand: true, cwd: 'dist/', src: '**/*.min.js', dest: 'zip/src/', ext: '.js'},
                     {expand: true, cwd: 'src/panel/css/', src: '*.css', dest: 'zip/src/panel/'},
-                    {src: ['src/panel/partials/*', '!src/panel/partials/index.html'], dest: 'zip/'},
-                    {src: 'src/devtools/devToolsPage.html', dest: 'zip/src/devtools/devToolsPage.html'},
-                    {src: 'src/devtools/devToolsPage.js', dest: 'zip/src/devtools/devToolsPage.js'}
+                    {src: ['src/panel/partials/*.html'], dest: 'zip/'},
+                    {src: 'src/devtools/*', dest: 'zip/'},
+                    {src: 'src/content-script/inject/angularinspector.js', dest: 'zip/'}
                 ]
             },
             // compile and generate lib folder
@@ -76,7 +77,7 @@ module.exports = function (grunt) {
                         src: ['node_modules/font-awesome/css/font-awesome.min.css', 'node_modules/admin-lte/bootstrap/css/bootstrap.min.css', 'node_modules/admin-lte/dist/css/AdminLTE.min.css', 'node_modules/admin-lte/dist/css/skins/skin-blue.min.css'],
                         dest: 'lib/admin-lte/css/'
                     },
-                    {src: 'fonts/*', dest: 'lib/admin-lte/', expand: true, cwd: 'node_modules/font-awesome/'},
+                    {src: 'fonts/*.woff2', dest: 'lib/admin-lte/', expand: true, cwd: 'node_modules/font-awesome/'},
                     // ion-rangeslider
                     {
                         expand: true,
@@ -92,12 +93,6 @@ module.exports = function (grunt) {
                     },
                     // other vendor files
                     {expand: true, cwd: 'vendor/', src: '**', dest: 'lib/'}
-                    //, not using this lib
-                    // floathead
-                    //{
-                    //    src: 'node_modules/floatthead/dist/jquery.floatThead.min.js',
-                    //    dest: 'lib/jquery.floatThead.min.js'
-                    //}
                 ]
             }
         },
@@ -108,25 +103,17 @@ module.exports = function (grunt) {
                 },
                 files: [
                     {expand: true, cwd: 'zip/', src: ['**/*'], dest: '/'},
-                    {src: ['lib/**', 'img/*'], dest: '/'}
+                    {src: ['lib/**', 'img/*', 'manifest.json', 'LICENSE', 'README.md'], dest: '/'}
                 ]
             }
         },
         'template': {
             'index': {
                 'options': {
-                    'data': function () {
-                        "use strict";
-                        var allIncludes = grunt.file.readJSON('include.json');
-                        if (!ENV) {
-                            throw Error('no environment defined. use argument --dev.');
-                        }
-                        return allIncludes[ENV];
-                    },
-                    dest: ENV === 'prod' ? 'dist/' : ''
+                    'data': allIncludes[ENV]
                 },
                 'files': {
-                    '<%= template.index.options.dest%>src/panel/partials/index.html': ['src/panel/partials/index.html.template']
+                    'src/panel/partials/index.html': ['src/panel/partials/index.html.template']
                 }
             }
         },
@@ -134,7 +121,7 @@ module.exports = function (grunt) {
             dist: ['dist/**'],
             compress: ['zip/**'],
             lib: ['lib/**'],
-            template: ['src/panel/partials/index.html', 'dist/src/panel/partials/index.html']
+            template: ['src/panel/partials/index.html']
         }
     });
 
@@ -154,8 +141,7 @@ module.exports = function (grunt) {
     // Default task(s).
     grunt.registerTask('default', ['jshint']);
     // creating zip file for distribution
-    grunt.registerTask('build-extension', ['default', 'clean:dist', 'clean:compress', 'concat', 'uglify', 'copy', 'compress']);
-
+    grunt.registerTask('build-extension', ['jshint', 'clean', 'template', 'concat', 'uglify', 'copy', 'compress']);
     // for development
-    grunt.registerTask('build', ['clean', 'copy:lib', 'template']);
+    grunt.registerTask('build', ['default', 'clean', 'copy:lib', 'template']);
 };
