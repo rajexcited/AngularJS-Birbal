@@ -24,24 +24,36 @@ Goal is to provide angular developers more run-time information of the applicati
 
 # How to Develop?
 
-## Requirements:
+#### Requirements:
 This project is setup using NodeJS/npm and grunt. 
-## Getting Started:
+### Getting Started:
   - Clone the repository: ``` git clone https://github.com/rajexcited/AngularJS-Birbal.git ``` 
   - run below commands in project folder.
   
       ```    
-      node install
-      node run build
+      npm install
+      npm run build
       ```
 
   - use 'load unpacked extension' option from chrome extension developer mode.
-  - run example and inspect this extension, 
+  - to update, install, manage dependencies and clean dist, use this command
     ```
+    npm run clean
+    ```
+
+  - run example and inspect this extension,
+
+    ```
+    npm run build
     grunt connect:example
     ```
-  
-Many thanks to projects for directions.
-- angular batarang
-- angular performance
-- ngdependency graph
+
+####Inspirational Projects:
+- [AngularJS Batarang] (https://github.com/angular/batarang)
+- [Angular-performance] (https://github.com/Linkurious/angular-performance)
+- [AngularJS dependency graph] (https://github.com/filso/ng-dependency-graph)
+- [AngularJS] (https://github.com/angular/angular.js)
+
+
+## License
+  [MIT] (https://github.com/rajexcited/AngularJS-Birbal/blob/master/LICENSE)
