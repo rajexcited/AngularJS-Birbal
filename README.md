@@ -31,16 +31,20 @@ This project is setup using NodeJS/npm and grunt.
   - run below commands in project folder.
   
       ```    
-      node install
-      node run build
+      npm install
+      npm run build
       ```
 
   - use 'load unpacked extension' option from chrome extension developer mode.
-  - run example and inspect this extension, 
+  - to update, install, manage dependencies and clean dist, use this command
+  - run example and inspect this extension,
     ```
     grunt connect:example
     ```
-  
+
+  ```
+  npm run clean
+  ```
 Many thanks to projects for directions.
 - angular batarang
 - angular performance
