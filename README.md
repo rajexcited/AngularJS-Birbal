@@ -48,7 +48,12 @@ This project is setup using NodeJS/npm and grunt.
     grunt connect:example
     ```
 
-Many thanks to projects for directions.
-- angular batarang
-- angular performance
-- ngdependency graph
+Inspirational Projects:
+- [AngularJS Batarang] (https://github.com/angular/batarang)
+- [Angular-performance] (https://github.com/Linkurious/angular-performance)
+- [AngularJS dependency graph] (https://github.com/filso/ng-dependency-graph)
+- [AngularJS] (https://github.com/angular/angular.js)
+
+
+# License
+  [MIT] (https://github.com/rajexcited/AngularJS-Birbal/blob/master/LICENSE)
