@@ -1,0 +1,115 @@
+{
+  "source": "https://en.wikipedia.org/wiki/Comparison_of_commercial_GPS_software",
+  "data": [
+    {
+      "app name": "Apple Maps",
+      "map source": "TomTom, Others",
+      "OS": "iOS",
+      "cost": "Free",
+      "3D mode": "yes",
+      "voice guidance": "yes",
+      "live traffic": "yes",
+      "speed traps": "no"
+    },
+    {
+      "app name": "BlackBerry Maps",
+      "map source": "Unknown",
+      "OS": "BlackBerry 10",
+      "cost": "Free",
+      "3D mode": "yes",
+      "voice guidance": "yes",
+      "live traffic": "no",
+      "speed traps": "no"
+    },
+    {
+      "app name": "Google Maps",
+      "map source": "Expedition,Google,Keyhole",
+      "OS": "Android, iOS,Windows Phone",
+      "cost": "Free",
+      "3D mode": "yes",
+      "voice guidance": "yes",
+      "live traffic": "yes",
+      "speed traps": "no"
+    },
+    {
+      "app name": "HERE",
+      "map source": "HERE Maps B.V.",
+      "OS": "Android, iOS,Windows Phone",
+      "cost": "Free",
+      "3D mode": "yes",
+      "voice guidance": "yes",
+      "live traffic": "yes",
+      "speed traps": "no"
+    },
+    {
+      "app name": "iGO",
+      "map source": "Top-Map, Tele Atlas, Navteq",
+      "OS": "Android, iOS,Windows Mobile",
+      "cost": "Paid",
+      "3D mode": "yes",
+      "voice guidance": "yes",
+      "live traffic": "yes",
+      "speed traps": "yes"
+    },
+    {
+      "app name": "MAPS.ME",
+      "map source": "OpenStreetMap",
+      "OS": "Android, iOS,BlackBerry",
+      "cost": "Free",
+      "3D mode": "no",
+      "voice guidance": "yes",
+      "live traffic": "no",
+      "speed traps": "no"
+    },
+    {
+      "app name": "Moovit",
+      "map source": "OpenStreetMap",
+      "OS": "iOS, Android",
+      "cost": "Free",
+      "3D mode": "no",
+      "voice guidance": "no",
+      "live traffic": "no",
+      "speed traps": "no"
+    },
+    {
+      "app name": "Navigon",
+      "map source": "Navteq",
+      "OS": "Android, iOS,Windows Phone",
+      "cost": "Paid",
+      "3D mode": "yes",
+      "voice guidance": "yes",
+      "live traffic": "In-App purchase",
+      "speed traps": "yes"
+    },
+    {
+      "app name": "OsmAnd",
+      "map source": "OpenStreetMap",
+      "OS": "Android, iOS",
+      "cost": "Free",
+      "3D mode": "no",
+      "voice guidance": "yes",
+      "live traffic": "no",
+      "speed traps": "no"
+    },
+    {
+      "app name": "Ovi Maps",
+      "map source": "Nokia / Navteq",
+      "OS": "Symbian OS S60",
+      "cost": "Free",
+      "3D mode": "yes",
+      "voice guidance": "yes",
+      "live traffic": "yes",
+      "speed traps": "no"
+    },
+    {
+      "app name": "Ovi Maps",
+      "map source": "Nokia / Navteq",
+      "OS": "Maemo",
+      "cost": "Paid",
+      "3D mode": "yes",
+      "voice guidance": "yes",
+      "live traffic": "yes",
+      "speed traps": "no"
+    }
+  ]
+}
