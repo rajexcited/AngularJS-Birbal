@@ -24,9 +24,9 @@ Goal is to provide angular developers more run-time information of the applicati
 
 # How to Develop?
 
-## Requirements:
+#### Requirements:
 This project is setup using NodeJS/npm and grunt. 
-## Getting Started:
+### Getting Started:
   - Clone the repository: ``` git clone https://github.com/rajexcited/AngularJS-Birbal.git ``` 
   - run below commands in project folder.
   
@@ -48,12 +48,12 @@ This project is setup using NodeJS/npm and grunt.
     grunt connect:example
     ```
 
-Inspirational Projects:
+####Inspirational Projects:
 - [AngularJS Batarang] (https://github.com/angular/batarang)
 - [Angular-performance] (https://github.com/Linkurious/angular-performance)
 - [AngularJS dependency graph] (https://github.com/filso/ng-dependency-graph)
 - [AngularJS] (https://github.com/angular/angular.js)
 
 
-# License
+## License
   [MIT] (https://github.com/rajexcited/AngularJS-Birbal/blob/master/LICENSE)
