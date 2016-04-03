@@ -36,6 +36,10 @@ This project is setup using NodeJS/npm and grunt.
       ```
 
   - use 'load unpacked extension' option from chrome extension developer mode.
+  - run example and inspect this extension, 
+    ```
+    grunt connect:example
+    ```
   
 Many thanks to projects for directions.
 - angular batarang
