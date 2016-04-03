@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>perf Example</title>
+
+    <link rel="stylesheet" href="/lib/admin-lte/css/font-awesome.min.css">
+    <style>
+        table th { padding: 10px;}
+        .edit>.editIcon {
+            visibility: hidden;
+        }
+        .edit:hover>.editIcon {
+            visibility: visible;
+            cursor: pointer;
+        }
+    </style>
+
+</head>
+<body>
+<div ng-app="myApp">
+    <div ng-controller="myController">
+        <div>
+            <span>Search in table (column_name:search_text)</span> <br>
+            <input type="text" ng-model="searchInput">
+        </div>
+        <div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Index</th>
+                    <th ng-repeat="col in myTable.column">{{col}}</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in myTable.data | filter: search">
+                        <td>{{$index}}</td>
+                        <td ng-repeat="colVal in row">
+                            <div class="edit">
+                                <div class="editIcon fa fa-pencil" ng-click="editing=true" ng-show="!editing">&nbsp;</div>
+                                <button ng-show="editing" ng-click="editing=false">Ok</button>
+                                <span ng-show="!editing"> {{colVal}} </span>
+                                <input type="text" ng-model="colVal" ng-show="editing" size="{{colVal.length<11 ? 5 : 20}}">
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="/lib/angular.min.js"></script>
+<script type="text/javascript" src="/example/myApp.js"></script>
+
+</body>
+</html>

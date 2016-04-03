@@ -105,7 +105,7 @@ module.exports = function (grunt) {
                         if (manifest.version !== pkg.version) {
                             throw new Error('version must be same for both package.json and manifest.json.\n package.json = "' + pkg.version + '"\nmanifest.json = "' + manifest.version + '"');
                         }
-                        return 'zip/birbal-extension-v' + pkg.version + '.zip';
+                        return 'zip/birbaljs-extension-v' + pkg.version + '.zip';
                     }
                 },
                 files: [
@@ -132,6 +132,16 @@ module.exports = function (grunt) {
             compress: ['zip/**'],
             lib: ['lib/**'],
             template: ['src/panel/partials/index.html']
+        },
+        connect: {
+            example: {
+                options: {
+                    port: 8000,
+                    keepalive: true,
+                    //livereload:true,
+                    open: 'http://localhost:8000/example/exampleApp.html'
+                }
+            }
         }
     });
 
