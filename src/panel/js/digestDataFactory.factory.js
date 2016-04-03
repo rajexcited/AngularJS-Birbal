@@ -12,20 +12,8 @@
             var addDigestMeasure, getAllDigestMeasures, modifyDigestDebounceTime, getDigestDebounceTime, resetDigestMeasures, getWatchMeasures, getDigestHighlightsForRange,
                 _addApplyMeasureLog, _getScopesAndWatchersForOneDigest, _analyzeEdrForMeasure, _createWatchMeasures, _addWatchMeasures,
                 lastDigestMeasure, lastApplyMeasure, digestDetails,
-            //digestDetails = {
-            //    highlights: {
-            //        longestDigestTime: 0,
-            //        edr: null,
-            //        dirtyWatchers: 0,
-            //        nWatchers: 0,
-            //        //qq: NEEL find out how can i determine ? ex. watch consumes 80% of digest in longest cycle time. watch are heavy, expensive.
-            //        redLightWatchMsg: ''
-            //    },
-            //    measures: []
-            //},
                 allApplyMeasures = [],
                 watchDetails = {highlights: {}, measures: []},
-            //addedMeasures = {_digest: [], _apply: [], _watch: []},
             // time in ms
                 digestDebounceTime = 200;
 
@@ -330,7 +318,7 @@
             };
 
             modifyDigestDebounceTime = function (newDebounceTime) {
-                if(newDebounceTime===digestDebounceTime) {
+                if (newDebounceTime === digestDebounceTime) {
                     return;
                 }
                 digestDebounceTime = newDebounceTime;

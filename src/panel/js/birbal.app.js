@@ -59,26 +59,6 @@
                             };
                         });
                     }
-                    /*else if (panelAction === 'addPanel') {
-                     $scope.$apply(function () {
-                     $scope.view = '';
-                     });
-                     }*/
-
-                    //
-                    //delete $scope.csInfo;
-                    //digestMeasures.length = 0;
-                    //$scope.csInfo = {};
-
-                    // qq: why do i need this?
-                    // digestMeasuresBox = digestTmplData = undefined;
-                    //$scope.$applyAsync(function () {
-                    //actionList.enabled = false;
-                    //lastMesuredIndex = 0;
-                    //$timeout.cancel(timeoutpromise);
-                    //timeoutpromise = undefined;
-                    //$scope.digestMeasures = new DigestMeasure();
-                    //});
                 });
 
                 /////////////////////////////////////////////////////////
@@ -98,23 +78,10 @@
 
                 $scope.sidebarActions.resumeMyAnalysis = function () {
                     backgroundService.informBackground(null, 'startAnalysis');
-                    $scope.pause = false;
+                    $scope.csInfo.pause = false;
                 };
 
                 $scope.sidebarActions.changePanelView = changeViewActionListener;
-                //$scope.sidebarActions.changePanelView = function (viewName) {
-                // qq: when do I need this?
-                //if (!actionList.enabled && $scope.csInfo.ngModule && viewName !== 'settings') {
-                //    // register/enable/refresh
-                //    backgroundService.informBackground({
-                //        ngModule: $scope.csInfo.ngModule,
-                //        task: 'runAnalysis'
-                //    });
-                //    actionList.enabled = true;
-                //    analyzeDigestMeasures();
-                //}
-                //changeViewActionListener(viewName);
-                //};
 
                 $scope.sidebarActions.enableMe = function () {
                     // register/enable/refresh
@@ -144,6 +111,9 @@
                     digestDataFactory.modifyDigestDebounceTime($scope.digestDebounceTime);
                 };
 
+                $scope.settings.clearData = function () {
+                    digestDataFactory.resetDigestMeasures();
+                };
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            slider, filter, dashboard update, sort, configurations
                 /////////////////////////////////////////////////////////////////////////////////////////
