@@ -138,7 +138,6 @@ module.exports = function (grunt) {
                 options: {
                     port: 8000,
                     keepalive: true,
-                    //livereload:true,
                     open: 'http://localhost:8000/example/exampleApp.html'
                 }
             }
