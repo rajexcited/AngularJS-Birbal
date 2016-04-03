@@ -2,7 +2,6 @@ module.exports = function (grunt) {
 
     // prod will get published.
     var ENV = (grunt.option('prod') && 'prod') || (grunt.option('dev') && 'dev');
-    var allIncludes = grunt.file.readJSON('include.json');
 
     // Project configuration.
     grunt.initConfig({
@@ -99,7 +98,15 @@ module.exports = function (grunt) {
         compress: {
             main: {
                 options: {
-                    archive: 'zip/extension.zip'
+                    'archive': function () {
+                        var manifest = grunt.file.readJSON('manifest.json'),
+                            pkg = grunt.config('pkg');
+
+                        if (manifest.version !== pkg.version) {
+                            throw new Error('version must be same for both package.json and manifest.json.\n package.json = "' + pkg.version + '"\nmanifest.json = "' + manifest.version + '"');
+                        }
+                        return 'zip/birbal-extension-v' + pkg.version + '.zip';
+                    }
                 },
                 files: [
                     {expand: true, cwd: 'zip/', src: ['**/*'], dest: '/'},
@@ -110,7 +117,10 @@ module.exports = function (grunt) {
         'template': {
             'index': {
                 'options': {
-                    'data': allIncludes[ENV]
+                    'data': function () {
+                        var allIncludes = grunt.file.readJSON('include.json');
+                        return allIncludes[ENV];
+                    }
                 },
                 'files': {
                     'src/panel/partials/index.html': ['src/panel/partials/index.html.template']
