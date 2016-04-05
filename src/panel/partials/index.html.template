@@ -33,7 +33,7 @@
     <div class="content-wrapper">
         <!-- Content Header (Page header) -->
         <section class="content-header">
-            <h1> AngularJS App Stats from Birbal's view </h1>
+            <h1> AngularJS App Stats from Birbal's eye </h1>
             <ol class="breadcrumb">
                 <li>
                     <a href="#" ng-click="sidebar.changePanelView('dashboard');">

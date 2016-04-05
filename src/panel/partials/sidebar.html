@@ -12,9 +12,14 @@
                     <i class="fa fa-link"></i> <span>Dashboard</span>
                 </a>
             </li>
-            <li style="display: none;" select-view="onWindowLoad">
-                <a href="#" ng-click="sidebarActions.changePanelView('onWindowLoad');">
-                    <i class="fa fa-link"></i> <span>on Window Load</span>
+            <li select-view="digestDetails">
+                <a href="#" ng-click="sidebarActions.changePanelView('digestDetails');">
+                    <i class="fa fa-link"></i> <span>Digest details</span>
+                </a>
+            </li>
+            <li select-view="watchDetails">
+                <a href="#" ng-click="sidebarActions.changePanelView('watchDetails');">
+                    <i class="fa fa-link"></i> <span>Watchers</span>
                 </a>
             </li>
             <li select-view="settings">
@@ -22,15 +27,22 @@
                     <i class="fa fa-link"></i> <span>Settings</span>
                 </a>
             </li>
-            <li ng-show="!csInfo.pause && csInfo.enabled"><a href="#" ng-click="sidebarActions.pauseMyAnalysis();"><i class="fa fa-link"></i>
+            <li ng-show="!csInfo.pause && csInfo.enabled"><a href="#" ng-click="sidebarActions.pauseMyAnalysis();"><i
+                    class="fa fa-link"></i>
                 <span>Pause capturing data</span></a></li>
-            <li ng-show="csInfo.pause && csInfo.enabled"><a href="#" ng-click="sidebarActions.resumeMyAnalysis();"><i class="fa fa-link"></i> <span>Resume capturing data</span></a>
+            <li ng-show="csInfo.pause && csInfo.enabled"><a href="#" ng-click="sidebarActions.resumeMyAnalysis();"><i
+                    class="fa fa-link"></i> <span>Resume capturing data</span></a>
             </li>
             <li ng-show="csInfo.enabled"><a href="#" ng-click="sidebarActions.disableMe();"><i class="fa fa-link"></i>
                 <span>Disable</span></a>
             </li>
             <li ng-show="!csInfo.enabled"><a href="#" ng-click="sidebarActions.enableMe();"><i class="fa fa-link"></i>
                 <span>Enable</span></a></li>
+            <li select-view="help">
+                <a href="#" ng-click="sidebarActions.changePanelView('help');">
+                    <i class="fa fa-link"></i> <span>Help</span>
+                </a>
+            </li>
         </ul>
         <!-- /.sidebar-menu -->
     </section>

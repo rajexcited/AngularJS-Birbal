@@ -1,0 +1,77 @@
+<div>
+    <p> Detected AngularJS version {{ csInfo.ngVersion.full}}({{ csInfo.ngVersion.codeName}}) </p>
+    <span> ng-app = <b> {{ csInfo.ngModule}} </b></span>
+    <br> <br>
+
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Digest range Slider</h3>
+                <span>select time range to filter digest result and inline chart shows the frequency of digest cycle over the time scale.</span>
+            </div><!-- /.box-header -->
+            <div class="box-body">
+                <div class="row margin">
+                <span id="digestRangeSlider" range-slider="" slider-config="rangeSlider.digest.config"
+                      on-range-change="rangeSlider.digest.onChange"
+                      measures="digestCycle.measures"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- Widget: user widget style 1 -DIGEST card -->
+            <div class="box box-widget widget-user">
+                <div class="widget-user-header bg-aqua-active">
+                    <h3 class="widget-user-username">Digest Cycles</h3>
+                    <h5 class="widget-user-desc">Summary</h5>
+                </div>
+                <div class="widget-user-image">
+                    <img class="img-circle" src="/img/digest_measures.jpg" alt="digestMeasures">
+                </div>
+                <div class="box-footer">
+                    <div class="row">
+                        <div class="col-sm-5 border-right">
+                            <div class="description-block" data-toggle="tooltip" data-original-title="Longest ever">
+                                <span class="description-text">Longest </span>
+                                <h5 class="description-header">{{digestCycle.highlights.longestDigestTime | number:2}}
+                                    ms</h5>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-7">
+                            <div class="description-block" data-toggle="tooltip"
+                                 data-original-title="Effective digest rate based on debounce time defined in settings view">
+                                <span class="description-text">Effective digest rate: </span>
+                                <h5 class="description-header"> {{digestCycle.highlights.edr.nDigest}} cycles in
+                                    {{digestCycle.highlights.edr.runtime|number:2}} ms </h5>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                    <!-- /.row -->
+                    <div class="row" ng-if="selectedDigestRange.edr">
+                        <div class="col-sm-12">
+                            <div class="description-block">
+                            <span>???  For chosen time range, digest rate: {{selectedDigestRange.edr.nDigest}} cycles in
+                                {{selectedDigestRange.edr.runtime|number:2}} ms</span>
+                                <h5 class="description-header">longest cycle:
+                                    {{selectedDigestRange.longestDigestTime|number:2}} ms</h5>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                    <!-- /.row -->
+                </div>
+            </div>
+            <!-- /.widget-user -->
+        </div>
+        <!-- /.col Digest card-->
+    </div>
+
+    <div ng-include="'digestMeasures.html'"></div>
+</div>

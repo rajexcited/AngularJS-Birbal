@@ -2,7 +2,7 @@
 (function (angular, birbalJS) {
     "use strict";
 
-    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'measure.digest.app', 'birbalFilters.app', 'rangeSlider.app'])
+    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'measure.digest.app', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app'])
         .controller('panelViewController',
             ['$scope', 'backgroundService', '$rootScope', 'digestDataFactory', '$interval', function ($scope, backgroundService, $rootScope, digestDataFactory, $interval) {
                 // default first message on inspect tab load, letting app know I'm ready
@@ -20,13 +20,8 @@
                 function changeViewActionListener(pageName, ngDetectData) {
                     //pageName = (typeof event === 'string') ? event : pageName;
                     if (pageName === 'nbEnable' && $scope.csInfo.enabled) {
-                        //if ($scope.view) {
-                        //    return;
-                        //}
                         pageName = $scope.view || 'dashboard';
                     }
-
-                    //$scope.$applyAsync(function () {
                     $scope.view = pageName;
                     //initializing csInfo for template data for first time or after cleanup
                     angular.extend($scope.csInfo, ngDetectData);

@@ -72,7 +72,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="aMeasure in watchDetails.measures | orderBy: watchOrderExpression">
+            <tr ng-repeat="aMeasure in watchDetails.measures | filter: watch.search.filterBy | filter: watch.search.filterByFn | orderBy: watchOrderExpression">
                 <td>{{:: aMeasure.exp}}</td>
                 <td>{{:: aMeasure.eq}}</td>
                 <td> {{ aMeasure.nGet }}</td>

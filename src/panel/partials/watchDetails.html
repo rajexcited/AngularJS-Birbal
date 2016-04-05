@@ -1,0 +1,63 @@
+<div>
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- Widget: user widget style 1 -WATCH card -->
+            <div class="box box-widget widget-user">
+                <div class="widget-user-header bg-lime-active">
+                    <h3 class="widget-user-username">Watch Counts</h3>
+                    <h5 class="widget-user-desc">Summary</h5>
+                </div>
+                <div class="widget-user-image">
+                    <img class="img-circle" src="/img/digest_measures.jpg" alt="watchMeasures">
+                </div>
+                <div class="box-footer" ng-class="{'bg-red-gradient':!!digestCycle.highlights.redLightWatchMsg}">
+                    <div class="row" data-toggle="tooltip"
+                         data-original-title="{{digestCycle.highlights.redLightWatchMsg}}">
+                        <div class="col-sm-6 border-right">
+                            <div class="description-block">
+                                <span class="description-text">max total count in cycle</span>
+                                <h5 class="description-header">{{digestCycle.highlights.nWatchers}}</h5>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-6">
+                            <div class="description-block" data-toggle="tooltip"
+                                 data-original-title="in one digest cycle">
+                                <span class="description-text">max dirty count in cycle</span>
+                                <h5 class="description-header">{{digestCycle.highlights.dirtyWatchers }}</h5>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                    <!-- /.row -->
+                </div>
+            </div>
+            <!-- /.widget-user -->
+        </div>
+        <!-- /.col Watch card-->
+        <div class="col-sm-6">
+            <div class="box box-solid">
+                <div class="box-body">
+                    <div class="callout callout-info">
+                        <h4> Search Watchers.</h4>
+                        <h5>Choose Column Action and give </h5>
+                        <p>
+                            1. input value as in exact or substring match <br>
+                            2. input value as in multi value match ex. 1,4,7 <br>
+                            3. input value as in range ('-') ex. 1-10
+                        </p>
+                    </div>
+                    <div search-watch="watch.search"></div>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box Watch search -->
+        </div>
+        <!-- /.col Watch search -->
+    </div>
+    <!-- /.row watch highlights-->
+
+    <div ng-include="'watchMeasures.html'"></div>
+</div>

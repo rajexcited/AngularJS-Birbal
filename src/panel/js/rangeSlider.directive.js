@@ -46,13 +46,16 @@
                             return;
                         }
                         if (len === oldLen) {
-                            return;
+                            oldLen=0;
                         }
                         // find slider range
                         if (oldLen === 0) {
                             if (scope.sliderConfig.from === undefined) {
                                 scope.sliderConfig.from = Math.round(scope.measures[0].startTime / 1000);
                             }
+                            // clearData related
+                            //scope.sliderConfig.min = Math.max(scope.sliderConfig.from - 2,0);
+                            //scope.sliderConfig.max = scope.sliderConfig.min+50;
                         }
                         m = scope.measures[len - 1];
                         if (scope.sliderConfig.max < m.endTime) {
