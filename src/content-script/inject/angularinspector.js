@@ -565,7 +565,7 @@
         // get ANGULAR basic details
         msg.ngVersion = window.angular && window.angular.version;
         msg.ngDetected = !!msg.ngVersion;
-        msg.ngModule = msg.ngDetected && getAngularApp();
+        msg.ngModule = msg.ngDetected && getAngularApp() || '';
         msg.ngRootNode = msg.ngDetected && generateXPath(document.querySelector('.ng-scope'));
         // send inspection data
         broadcastMessage(msg, 'ngDetect');

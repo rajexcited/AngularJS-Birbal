@@ -36,7 +36,7 @@
             <li ng-show="csInfo.enabled"><a href="#" ng-click="sidebarActions.disableMe();"><i class="fa fa-link"></i>
                 <span>Disable</span></a>
             </li>
-            <li ng-show="!csInfo.enabled"><a href="#" ng-click="sidebarActions.enableMe();"><i class="fa fa-link"></i>
+            <li ng-show="csInfo.ngDetected && !csInfo.enabled"><a href="#" ng-click="sidebarActions.enableMe();"><i class="fa fa-link"></i>
                 <span>Enable</span></a></li>
             <li select-view="help">
                 <a href="#" ng-click="sidebarActions.changePanelView('help');">
