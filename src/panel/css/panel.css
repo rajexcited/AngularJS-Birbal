@@ -30,6 +30,10 @@
 }
 
 /******/
+/* table */
+table {word-wrap: break-word;}
+/******/
+
 
 @media (max-width: 767px) {
     /* xtra small */

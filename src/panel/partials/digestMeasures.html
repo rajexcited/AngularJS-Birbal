@@ -37,7 +37,7 @@
                     <div data-toggle="tooltip"
                          data-original-title="watch time in % of digest time. Gives idea of watch impact on digest cycle.
                         digest performance issue due to watch if total is > 75%.  try to reduce wasted watch time.">
-                        watch time of digest for <br>
+                        watch time of digest for
                         <span ng-click="digestSortByExpression('nWasteWatchersTime', $event)">wasted <i
                                 class="fa fa-fw fa-unsorted"></i></span> |
                         <span ng-click="digestSortByExpression('nWatchersRuntime', $event)">total <i
@@ -46,10 +46,16 @@
                 </th>
                 <th>
                     <div data-toggle="tooltip"
-                         data-original-title="this is non-watcher time. includes async, postDigest, events, DOM updates due to watcher or async, etc.">
-                        <span ng-click="digestSortByExpression('otherRuntime', $event)">asyncQueue, postDigestQueue (n in time) <i
+                         data-original-title="Non-watcher time includes http, $evalAsync, $timeout, $interval, postDigest, events, DOM updates etc.">
+                        <span ng-click="digestSortByExpression('otherRuntime', $event)"> non watch time <i
                                 class="fa fa-fw fa-unsorted"></i></span>
                     </div>
+                </th>
+                <th>
+                    <div> n basic asyncQueue, postDigestQueue</div>
+                </th>
+                <th>
+                    <div> Angular Events (name: time)</div>
                 </th>
             </tr>
             </thead>
@@ -62,8 +68,24 @@
                 <td> wasted {{:: aMeasure.nWasteWatchersTime|number:2}} ms
                     <br> total {{:: aMeasure.nWatchersRuntime |number:2}} ms
                 </td>
-                <td> {{:: aMeasure.postDigestQueue.length + aMeasure.asyncQueue.length }} in
-                    {{:: aMeasure.otherRuntime | number:2}} ms
+                <td> {{:: aMeasure.otherRuntime | number:2}} ms</td>
+                <td><p ng-if=":: aMeasure.asyncQueue.length"> basic Async - {{:: aMeasure.asyncQueue.length}} </p>
+                    <p ng-if=":: aMeasure.postDigestQueue.length"> basic Post Digest -
+                        {{:: aMeasure.postDigestQueue.length}} </p>
+                    <p ng-if=":: aMeasure.nWatchAsyncStarters"> {{:: aMeasure.nWatchAsyncStarters}}
+                        watchers involved in next async </p>
+                </td>
+                <td>
+                    <p ng-if="::aMeasure.events.emit.length"><b>-Emit- took
+                        {{::aMeasure.events.emitTotal|number:2}} ms</b></p>
+                    <div ng-repeat="emit in ::aMeasure.events.emit">
+                        {{::emit.name}}
+                    </div>
+                    <p ng-if="::aMeasure.events.broadcast.length"><b>-Broadcast- took
+                        {{::aMeasure.events.broadcastTotal|number:2}} ms</b></p>
+                    <div ng-repeat="broadcast in ::aMeasure.events.broadcast">
+                        {{::broadcast.name}}
+                    </div>
                 </td>
             </tr>
             </tbody>

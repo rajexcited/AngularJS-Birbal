@@ -85,15 +85,9 @@
     /**
      * detect angular loaded and run analysis
      */
-    receiver.actionOnTask('startAnalysis', function (message) {
+    receiver.actionOnTask('startAnalysis', function () {
         // inject to ngmodule to get onload data
-        // qq: why these conditions?
-        if (contentMessageActions.pause === undefined) {
-            //contentMessageActions.ngRootNode = message.msgDetails.ngRootNode;
-            //contentMessageActions.ngModule = message.msgDetails.ngModule;
-            //logger.info(performance.now() + ' ai');
-            //startInstrumentation();
-        } else {
+        if (contentMessageActions.pause !== undefined) {
             contentMessageActions.pause = false;
         }
     });
@@ -193,12 +187,14 @@
                         emit: [],
                         broadcast: []
                     },
-                    http: {}
+                    http: {},
+                    asyncEval: [],
+                    browserDefer: []
                 };
 
                 // instrument scope/rootScope
                 $provide.decorator('$rootScope', function ($delegate) {
-                    var scopePrototype, ngWatch, ngWatchCollection, ngDigest, ngApply, ngEmit, ngBroadcast,
+                    var scopePrototype, ngWatch, ngWatchCollection, ngDigest, ngApply, ngEmit, ngBroadcast, ngEvalAsync,
                         watchCollectionExp;
 
                     /* $rootScope prototype initial reference version 1.2.4
@@ -270,7 +266,7 @@
                                     _w = _watchers[len - 1] = {'get': runtime};
                                 }
 
-                                start = perf.now();
+                                _w.start = start = perf.now();
                                 ngWatchFn.apply(null, arguments);
                                 _w.fn = perf.now() - start;
                             }
@@ -330,10 +326,16 @@
                             nb.digest.applyStartTime = nb.applyStartTime;
                             nb.digest.applyEndTime = nb.applyEndTime;
                             nb.digest.events = nb.events;
+                            nb.digest.async = {
+                                evalAsync: nb.asyncEval,
+                                browserDefer: nb.browserDefer
+                            };
                             broadcastMessage(nb.digest, 'digestMeasures');
                             nb.applyStartTime = nb.applyEndTime = undefined;
                             nb.events.emit.length = 0;
                             nb.events.broadcast.length = 0;
+                            nb.asyncEval.length = 0;
+                            nb.browserDefer.length = 0;
                         }
                     };
                     ngApply = scopePrototype.$apply;
@@ -375,6 +377,11 @@
                         event.runtime = event.end - event.start;
                         nb.events.broadcast.push(event);
                         return broadcastret;
+                    };
+                    ngEvalAsync = scopePrototype.$evalAsync;
+                    scopePrototype.$evalAsync = function () {
+                        ngEvalAsync.apply(this, arguments);
+                        nb.asyncEval.push(perf.now());
                     };
 
                     return $delegate;
@@ -429,6 +436,18 @@
                     };
                 });
 
+                // $browser to capture async task
+                $provide.decorator('$browser', function ($delegate) {
+                    var ngDefer = $delegate.defer;
+                    var wrapper = function () {
+                        ngDefer.apply(null, arguments);
+                        nb.browserDefer.push(perf.now());
+                    };
+                    wrapper.prototype = ngDefer.prototype;
+                    wrapper.cancel = ngDefer.cancel;
+                    $delegate.defer = wrapper;
+                    return $delegate;
+                });
             });
     }
 
@@ -625,7 +644,7 @@
     window.addEventListener('beforeunload', function () {
         // release resources
         receiver = undefined;
-        contentMessageActions=undefined;
+        contentMessageActions = undefined;
         window.removeEventListener('message', contentMsgListener);
     });
     /////////////////////////////////////////////////////////

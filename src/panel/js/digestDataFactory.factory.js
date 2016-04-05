@@ -10,7 +10,7 @@
         .factory('digestDataFactory', [function () {
 
             var addDigestMeasure, getAllDigestMeasures, modifyDigestDebounceTime, getDigestDebounceTime, resetDigestMeasures, getWatchMeasures, getDigestHighlightsForRange,
-                _addApplyMeasureLog, _getScopesAndWatchersForOneDigest, _analyzeEdrForMeasure, _createWatchMeasures, _addWatchMeasures,
+                _addApplyMeasureLog, _getScopesAndWatchersForOneDigest, _analyzeEdrForMeasure, _createWatchMeasures, _addWatchMeasures, _computeTotalRuntimeForEvents, _findAsyncRelationToWatch,
                 lastDigestMeasure, lastApplyMeasure, digestDetails,
                 allApplyMeasures = [],
                 watchDetails = {highlights: {}, measures: []},
@@ -39,6 +39,52 @@
                 delete measureLog.applyStartTime;
             };
 
+            // find async task relation with watch
+            // async task are - $evalAsync, $timeout, $interval, and remaining $browser.defer
+            _findAsyncRelationToWatch = function (digestMeasure) {
+                // find range for async and defer
+                function findAsyncRange() {
+                    var alen = digestMeasure.async.evalAsync.length,
+                        blen = digestMeasure.async.browserDefer.length,
+                        min, max, async, defer;
+                    if (alen === 0 && blen === 0) {
+                        return;
+                    }
+                    if (alen === 0) {
+                        min = digestMeasure.async.browserDefer[0];
+                        max = digestMeasure.async.browserDefer[blen - 1] || min;
+                    } else if (blen === 0) {
+                        min = digestMeasure.async.evalAsync[0];
+                        max = digestMeasure.async.evalAsync[alen - 1] || min;
+                    } else {
+                        min = Math.min(digestMeasure.async.evalAsync[0], digestMeasure.async.browserDefer[0]);
+                        async = digestMeasure.async.evalAsync[alen - 1];
+                        defer = digestMeasure.async.browserDefer[blen - 1];
+                        if (async && defer) {
+                            max = Math.max(async, defer);
+                        } else if (async) {
+                            max = Math.max(async, min, digestMeasure.async.browserDefer[0]);
+                        } else {
+                            max = Math.max(defer, min, digestMeasure.async.evalAsync[0]);
+                        }
+                    }
+                    return {'min': min, 'max': max};
+                }
+
+                var asyncRange = findAsyncRange();
+                angular.forEach(digestMeasure.scope, function (scope) {
+                    var ws = scope.watchers, wslen = ws.length, st, end;
+                    while (wslen--) {
+                        st = ws[wslen].start;
+                        end = st + ws[wslen].runtime;
+                        // conditions can be reduced
+                        // async is in range of watch or watch is in range of async
+                        ws[wslen].startsAsync = !!((asyncRange.min >= st && asyncRange.min < end) || (asyncRange.max > st && asyncRange.max <= end)
+                        || (st >= asyncRange.min && st < asyncRange.max) || (end > asyncRange.min && end <= asyncRange.max));
+                    }
+                });
+            };
+
             _getScopesAndWatchersForOneDigest = function (oneDigestMeasure) {
                 // scope
                 var nuWatcher, nWatchers = 0, nWasteWatchers = 0, nScopes = 0, nWatchersTime = 0, nWasteWatchersTime = 0, _watchers;
@@ -58,6 +104,7 @@
                             if (oneWatchGetter.fn !== undefined) {
                                 nuWatcher.timeFn = nuWatcher.timeFn + oneWatchGetter.fn;
                                 nuWatcher.nFn++;
+                                nuWatcher.start = oneWatchGetter.start;
                                 nuWatcher.wasteOnGetOnly = false;
                             }
                         }
@@ -71,7 +118,8 @@
                             'eq': oneWatcher[0].eq,
                             'wasteOnGetOnly': true,
                             'runtime': 0,
-                            'scope': id
+                            'scope': id,
+                            'start': null
                         };
                         var len;
                         len = nuWatcher.nGet = oneWatcher.length;
@@ -116,7 +164,8 @@
             _createWatchMeasures = function (digestMeasure) {
                 var scwexp,
                     wexp = [],
-                    watchHolder = [];
+                    watchHolder = [],
+                    nAsyncStarters = 0;
                 // iterate scope watchers
                 // get exp for scope watchers
                 // find duplicate exp and merge them
@@ -134,6 +183,9 @@
                         fst = (lst !== -1 && watchHolder[lst].eq === watcherToAdd.eq) !== false && lst;
                     }
                     watcherToAdd.nUsed = watcherToAdd.scope.split(',').length;
+                    if (watcherToAdd.startsAsync) {
+                        nAsyncStarters++;
+                    }
                     if (fst === false) {
                         wexp.push(wex);
                         watchHolder.push(angular.copy(watcherToAdd));
@@ -148,6 +200,7 @@
                         existedWatch.wasteOnGetOnly = existedWatch.wasteOnGetOnly && watcherToAdd.wasteOnGetOnly;
                         existedWatch.scope = existedWatch.scope + ',' + watcherToAdd.scope;
                         existedWatch.nUsed = existedWatch.nUsed + watcherToAdd.nUsed;
+                        existedWatch.startsAsync = existedWatch.startsAsync || watcherToAdd.startsAsync;
                     }
                 }
 
@@ -160,6 +213,7 @@
                         mergeWatchByExpression(scwexp[i], scope.watchers[i]);
                     }
                 });
+                digestMeasure.nWatchAsyncStarters = nAsyncStarters;
 
                 return watchHolder;
             };
@@ -270,6 +324,26 @@
                 return edr;
             };
 
+            _computeTotalRuntimeForEvents = function (aMeasure) {
+                var l, t, ev;
+                // emit
+                ev = aMeasure.events.emit;
+                l = ev.length;
+                t = 0;
+                while (l--) {
+                    t = t + ev[l].runtime;
+                }
+                aMeasure.events.emitTotal = t;
+                // broadcast
+                ev = aMeasure.events.broadcast;
+                l = ev.length;
+                t = 0;
+                while (l--) {
+                    t = t + ev[l].runtime;
+                }
+                aMeasure.events.broadcastTotal = t;
+            };
+
             /**
              * finds
              * digest rate  & max rate
@@ -288,14 +362,19 @@
                 _addApplyMeasureLog(measureLog);
                 // watchers
                 _getScopesAndWatchersForOneDigest(measureLog);
+                // $evalAsync, $timeout, $interval
+                // pre-process async to find relation with watch
+                _findAsyncRelationToWatch(measureLog);
+
                 watchMeasures = _createWatchMeasures(measureLog);
                 _addWatchMeasures(watchMeasures);
                 measureLog.otherRuntime = measureLog.runtime - measureLog.nWatchersRuntime;
-                // postDigest, and nothing for asyncQueue
+                // postDigest
                 if (measureLog.postDigestQueue) {
                     measureLog.postDigestQueue = JSON.parse(measureLog.postDigestQueue);
                 }
-                // do nothing for emit and broadcast events
+                // emit and broadcast ng or custom events
+                _computeTotalRuntimeForEvents(measureLog);
                 // do nothing on error message for uncompleted digest cycle
                 edr = _analyzeEdrForMeasure(measureLog, digestDetails.highlights.edr, digestDetails.measures, lastDigestMeasure);
                 digestDetails.highlights.edr = edr;
@@ -376,8 +455,7 @@
                     lastMeasure,
                     len = digestDetails.measures.length,
                     m,
-                    toInd = -1,
-                    fromInd = -1;
+                    toInd = -1;
 
 
                 while (len--) {
