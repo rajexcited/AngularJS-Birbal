@@ -76,11 +76,13 @@
                     var ws = scope.watchers, wslen = ws.length, st, end;
                     while (wslen--) {
                         st = ws[wslen].start;
-                        end = st + ws[wslen].runtime;
-                        // conditions can be reduced
-                        // async is in range of watch or watch is in range of async
-                        ws[wslen].startsAsync = !!((asyncRange.min >= st && asyncRange.min < end) || (asyncRange.max > st && asyncRange.max <= end)
-                        || (st >= asyncRange.min && st < asyncRange.max) || (end > asyncRange.min && end <= asyncRange.max));
+                        if (st !== null) {
+                            end = st + ws[wslen].runtime;
+                            // conditions can be reduced
+                            // async is in range of watch or watch is in range of async
+                            ws[wslen].startsAsync = !!((asyncRange.min >= st && asyncRange.min < end) || (asyncRange.max > st && asyncRange.max <= end)
+                            || (st >= asyncRange.min && st < asyncRange.max) || (end > asyncRange.min && end <= asyncRange.max));
+                        }
                     }
                 });
             };
@@ -325,21 +327,47 @@
             };
 
             _computeTotalRuntimeForEvents = function (aMeasure) {
-                var l, t, ev;
+                var l, t, ev, evmap, i, n;
                 // emit
                 ev = aMeasure.events.emit;
                 l = ev.length;
                 t = 0;
+                evmap = ev.map(function (e) {
+                    return e.name;
+                });
                 while (l--) {
                     t = t + ev[l].runtime;
+                    // remove dups and count occurance
+                    i = evmap.indexOf(evmap[l]);
+                    if (i !== l) {
+                        n = ev[i].name.match(/\(\s+(\d+)\s+times/);
+                        n = (n && parseInt(n[1]) + 1) || 1;
+                        ev[i].name = evmap[i] + '  ( ' + n + ' times)';
+                        ev.splice(l, 1);
+                        evmap.splice(l, 1);
+                        l++;
+                    }
                 }
                 aMeasure.events.emitTotal = t;
                 // broadcast
                 ev = aMeasure.events.broadcast;
                 l = ev.length;
                 t = 0;
+                evmap = ev.map(function (e) {
+                    return e.name;
+                });
                 while (l--) {
                     t = t + ev[l].runtime;
+                    // remove dups and count occurance
+                    i = evmap.indexOf(evmap[l]);
+                    if (i !== l) {
+                        n = ev[i].name.match(/\(\s+(\d+)\s+times/);
+                        n = (n && parseInt(n[1]) + 1) || 1;
+                        ev[i].name = evmap[i] + '  ( ' + n + ' times)';
+                        ev.splice(l, 1);
+                        evmap.splice(l, 1);
+                        l++;
+                    }
                 }
                 aMeasure.events.broadcastTotal = t;
             };

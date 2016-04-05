@@ -69,11 +69,10 @@
                     <br> total {{:: aMeasure.nWatchersRuntime |number:2}} ms
                 </td>
                 <td> {{:: aMeasure.otherRuntime | number:2}} ms</td>
-                <td><p ng-if=":: aMeasure.asyncQueue.length"> basic Async - {{:: aMeasure.asyncQueue.length}} </p>
-                    <p ng-if=":: aMeasure.postDigestQueue.length"> basic Post Digest -
-                        {{:: aMeasure.postDigestQueue.length}} </p>
+                <td><p ng-if=":: aMeasure.asyncQueue.length"> {{:: aMeasure.asyncQueue.length}} basic Async Evaluations </p>
+                    <p ng-if=":: aMeasure.postDigestQueue.length"> {{:: aMeasure.postDigestQueue.length}} Post Digest </p>
                     <p ng-if=":: aMeasure.nWatchAsyncStarters"> {{:: aMeasure.nWatchAsyncStarters}}
-                        watchers involved in next async </p>
+                        watchers involved in async </p>
                 </td>
                 <td>
                     <p ng-if="::aMeasure.events.emit.length"><b>-Emit- took
