@@ -1,6 +1,8 @@
 # AngularJS-Birbal
 Learn Angular performance effects. It provides extra eye to developer for ngApp.
 
+##[Chrome Webstore link](https://chrome.google.com/webstore/detail/lpgcgfldhlpcekibknamgefpbifakkai)
+
 Features include:
   - digest cycle list with details
   - filter capability to debug and analyze
@@ -9,8 +11,6 @@ Features include:
   - effect of http
 
 It is in initial phase of developement.
-[Webstore link](https://chrome.google.com/webstore/detail/lpgcgfldhlpcekibknamgefpbifakkai)
-
 Goal is to provide angular developers more run-time information of the application.
 
 ## Roadmap:
