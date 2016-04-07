@@ -1,6 +1,6 @@
 {
   "name": "angularjs-birbal",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "chrome extension for inspecting angular apps. dependecies and performance analysis.",
   "devDependencies": {
     "grunt": "^0.4.5",

@@ -80,8 +80,7 @@
                             end = st + ws[wslen].runtime;
                             // conditions can be reduced
                             // async is in range of watch or watch is in range of async
-                            ws[wslen].startsAsync = !!((asyncRange.min >= st && asyncRange.min < end) || (asyncRange.max > st && asyncRange.max <= end)
-                            || (st >= asyncRange.min && st < asyncRange.max) || (end > asyncRange.min && end <= asyncRange.max));
+                            ws[wslen].startsAsync = !!((asyncRange.min >= st && asyncRange.min < end) || (asyncRange.max > st && asyncRange.max <= end) || (st >= asyncRange.min && st < asyncRange.max) || (end > asyncRange.min && end <= asyncRange.max));
                         }
                     }
                 });
