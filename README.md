@@ -17,7 +17,7 @@ Goal is to provide angular developers more run-time information of the applicati
   - include automation test and build process.
   - Provide performance statistics for module.
   - ngView and ngRoute statistics
-  - Provide dependancy chart.
+  - Provide dependency chart.
   - Provide real time map between modules.
   - learn and find memory leak
   - learn and find DOM leak

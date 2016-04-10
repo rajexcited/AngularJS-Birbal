@@ -3,7 +3,7 @@
     'use strict';
 
     // all scripts gets reloaded after long inactive state
-    var logger, tabs, receiver;
+    var logger, tabs, receiver, setPageAction;
     /////////////////////////////////////////////////////////
     //            LOGGER FOR DEVELOPMENT ONLY
     /////////////////////////////////////////////////////////
@@ -136,6 +136,7 @@
             //informContentScript(message.tabId, tabInfo.ngDetect, 'startAnalysis');
             informPanel(message.tabId, tabInfo.ngDetect, 'addPanel');
         }
+        setPageAction(message.tabId);
     });
     // #6
     receiver.actionOnTask('ngDetect', function (message) {
@@ -148,6 +149,7 @@
         // angular page >> add , not angular page >> remove
         //taskForpanel = msgDetails.ngDetected ? 'addPanel' : 'removePanel';
         informPanel(message.tabId, msgDetails, 'ngDetectData');
+        setPageAction(message.tabId);
     });
 
     // for devtools panel
@@ -194,7 +196,7 @@
     // on reload of page, reopen of page, new connection, etc.
     chrome.runtime.onConnect.addListener(function onConnectCallback(connectingPort) {
         logger.log('onConnectCallback, connectingPort-' + connectingPort.name);
-        if (connectingPort.sender && connectingPort.sender.tab && connectingPort.sender.tab.id >0) {
+        if (connectingPort.sender && connectingPort.sender.tab && connectingPort.sender.tab.id > 0) {
             // content script
             var tabInfo,
                 tabId = connectingPort.sender.tab.id;
@@ -226,6 +228,14 @@
         });
         /////////////////////////////////
     });
+
+    setPageAction = function (tabId) {
+        var tabInfo = tabs.getTabInfo(tabId);
+        if (tabInfo && tabInfo.ngDetect && tabInfo.ngDetect.ngDetected) {
+            chrome.pageAction.show(tabId);
+            chrome.pageAction.setPopup({"tabId": tabId, "popup": "src/popup/popup.html"});
+        }
+    };
     ///////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////
 }(chrome, birbalJS));
