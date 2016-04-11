@@ -28,7 +28,7 @@
             'error': function (msg) {
                 console.error(msg);
             }
-        }
+        };
     }
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
@@ -223,7 +223,7 @@
                         // last is current
                         indRvs = scope.$$watchers.length;
                         addedWatcher = scope.$$watchers[0];
-                        watchstr = toStringForm(watchCollectionExp || prettyPrintExpression || watchExp.exp || watchstr);
+                        watchstr = toStringForm(watchCollectionExp || prettyPrintExpression || watchExp.exp || watchExp);
                         // patch get and fn to trace
                         ngWatchGet = addedWatcher.get;
                         ngWatchFn = addedWatcher.fn;
