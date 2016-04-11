@@ -18,10 +18,17 @@
         logger = window.console;
     } else {
         // mock logger with noop()
-        logger = {};
-        ['log', 'warn', 'info', 'error', 'debug'].forEach(function (prop) {
-            logger[prop] = noop;
-        });
+        logger = {
+            'log': noop,
+            'info': noop,
+            'debug': noop,
+            'warn': function (msg) {
+                console.warn(msg);
+            },
+            'error': function (msg) {
+                console.error(msg);
+            }
+        }
     }
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
@@ -204,7 +211,7 @@
                     scopePrototype = Object.getPrototypeOf($delegate);
                     // add watch collection here
                     ngWatch = scopePrototype.$watch;
-                    scopePrototype.$watch = function (watchExp) {
+                    scopePrototype.$watch = function (watchExp, l, o, prettyPrintExpression) {
                         var start, runtime,
                             ngWatchGet, ngWatchFn, ngWatchEq, ngWatchret,
                             addedWatcher, watchstr,
@@ -216,7 +223,7 @@
                         // last is current
                         indRvs = scope.$$watchers.length;
                         addedWatcher = scope.$$watchers[0];
-                        watchstr = toStringForm(watchCollectionExp || watchExp.exp || watchExp);
+                        watchstr = toStringForm(watchCollectionExp || prettyPrintExpression || watchExp.exp || watchstr);
                         // patch get and fn to trace
                         ngWatchGet = addedWatcher.get;
                         ngWatchFn = addedWatcher.fn;

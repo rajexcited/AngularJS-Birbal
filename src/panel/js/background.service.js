@@ -15,10 +15,17 @@
                 logger = window.console;
             } else {
                 // mock logger with noop()
-                logger = {};
-                ['log', 'warn', 'info', 'error', 'debug'].forEach(function (prop) {
-                    logger[prop] = angular.noop;
-                });
+                logger = {
+                    'log': noop,
+                    'info': noop,
+                    'debug': noop,
+                    'warn': function (msg) {
+                        console.warn(msg);
+                    },
+                    'error': function (msg) {
+                        console.error(msg);
+                    }
+                };
             }
             // register logger service
             serviceInstance.logger = birbalJS.logger = logger;
@@ -62,33 +69,6 @@
                 logger.log('in bgMsgListener');
                 receiver.answerCall(message, sender, backgroundConnection, birbalJS.END_POINTS.PANEL);
             });
-
-            //qq: where do i need this?
-            // register proxy logger
-            serviceInstance.proxylogger = birbalJS.proxylogger = {
-                send: function (messageType, message) {
-                    var data = {
-                        'type': messageType,
-                        'message': message
-                    };
-                    serviceInstance.informBackground(data, 'log', birbalJS.END_POINTS.BACKGROUND);
-                },
-                log: function (msg) {
-                    serviceInstance.proxylogger.send('log', msg);
-                },
-                warn: function (msg) {
-                    serviceInstance.proxylogger.send('warn', msg);
-                },
-                info: function (msg) {
-                    serviceInstance.proxylogger.send('info', msg);
-                },
-                error: function (msg) {
-                    serviceInstance.proxylogger.send('error', msg);
-                },
-                debug: function (msg) {
-                    serviceInstance.proxylogger.send('debug', msg);
-                }
-            };
             /////////////////////////////////////////////////////////
             /////////////////////////////////////////////////////////
         }])

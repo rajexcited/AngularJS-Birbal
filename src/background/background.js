@@ -15,10 +15,17 @@
         logger = window.console;
     } else {
         // mock logger with noop()
-        logger = {};
-        ['log', 'warn', 'info', 'error', 'debug'].forEach(function (prop) {
-            logger[prop] = noop;
-        });
+        logger = {
+            'log': noop,
+            'info': noop,
+            'debug': noop,
+            'warn': function (msg) {
+                console.warn(msg);
+            },
+            'error': function (msg) {
+                console.error(msg);
+            }
+        };
     }
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////

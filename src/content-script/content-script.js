@@ -18,10 +18,17 @@
         logger = window.console;
     } else {
         // mock logger with noop()
-        logger = {};
-        ['log', 'warn', 'info', 'error', 'debug'].forEach(function (prop) {
-            logger[prop] = noop;
-        });
+        logger = {
+            'log': noop,
+            'info': noop,
+            'debug': noop,
+            'warn': function (msg) {
+                console.warn(msg);
+            },
+            'error': function (msg) {
+                console.error(msg);
+            }
+        };
     }
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
@@ -117,17 +124,17 @@
             return;
         }
 
+        script = document.createElement('script');
+        script.className = 'birbal-' + name;
+        script.src = chrome.extension.getURL('src/content-script/inject/' + name + '.js');
+        htmlRootNode.appendChild(script);
+
         rrt = new RegExp('this\\.tabId.+;');
         script = document.createElement('script');
         script.innerText = 'BirbalMessage=' + birbalJS.Message.toString().replace(rrt, '');
         htmlRootNode.appendChild(script);
         // qq: if remove works, no need of regex to replace above
         htmlRootNode.removeChild(script);
-
-        script = document.createElement('script');
-        script.className = 'birbal-' + name;
-        script.src = chrome.extension.getURL('src/content-script/inject/' + name + '.js');
-        htmlRootNode.appendChild(script);
     }
 
     // #4
