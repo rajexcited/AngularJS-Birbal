@@ -16,9 +16,9 @@
             } else {
                 // mock logger with noop()
                 logger = {
-                    'log': noop,
-                    'info': noop,
-                    'debug': noop,
+                    'log': angular.noop,
+                    'info': angular.noop,
+                    'debug': angular.noop,
                     'warn': function (msg) {
                         console.warn(msg);
                     },
