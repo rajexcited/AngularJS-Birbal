@@ -5,7 +5,7 @@
     /**
      Birbal detects angular page, and notify with basic informations
      */
-    var logger, contentMessageActions = {}, receiver, annotate;
+    var logger, contentMessageActions = {}, receiver, annotate, sendDependencyTree;
     /////////////////////////////////////////////////////////
     //            LOGGER FOR DEVELOPMENT ONLY
     /////////////////////////////////////////////////////////
@@ -182,7 +182,7 @@
                 }
 
                 // initialize nb to send measures
-                var nb,
+                var nb, ngPFactory, ngPService, ngPProvider, depstimeout,
                     perf = window.performance;
                 nb = {
                     digest: {
@@ -196,9 +196,11 @@
                     },
                     http: {},
                     asyncEval: [],
-                    browserDefer: []
+                    browserDefer: [],
+                    deps: []
                 };
 
+                window.deps = nb.deps;
                 // instrument scope/rootScope
                 $provide.decorator('$rootScope', function ($delegate) {
                     var scopePrototype, ngWatch, ngWatchCollection, ngDigest, ngApply, ngEmit, ngBroadcast, ngEvalAsync,
@@ -264,7 +266,6 @@
                             if (nb.pause) {
                                 ngWatchFn.apply(null, arguments);
                             } else {
-                                //try {
                                 var len = _watchers.length, _w;
                                 if (len === 1) {
                                     _w = _watchers[0];
@@ -396,52 +397,53 @@
 
                 //qq: how can i analyze http with my digest cycle
                 // register the interceptor as a service
-                $httpProvider.interceptors.push(function () {
+                ($httpProvider && $httpProvider.interceptors && $httpProvider.interceptors.push(function () {
 
-                    function collectHttpData(config) {
-                        var httpCall = {
-                            url: config.url,
-                            method: config.method,
-                            req: config.nbTime.req,
-                            reqErr: config.nbTime.reqErr,
-                            resp: config.nbTime.resp,
-                            respErr: config.nbTime.respErr
-                        };
-                        broadcastMessage(httpCall, 'httpMeasures');
-                    }
-
-                    return {
-                        'request': function (config) {
-                            if (!nb.pause) {
-                                config.nbTime = {'req': perf.now()};
-                            }
-                            return config;
-                        },
-                        'requestError': function (rejection) {
-                            if (rejection.nbTime) {
-                                rejection.nbTime.reqErr = perf.now();
-                                collectHttpData(rejection);
-                            }
-                            return rejection;
-                        },
-                        'response': function (response) {
-                            // do something on success
-                            if (response.nbTime) {
-                                response.nbTime.resp = perf.now();
-                                collectHttpData(response);
-                            }
-                            return response;
-                        },
-                        'responseError': function (rejection) {
-                            // do something on error
-                            if (rejection.nbTime) {
-                                rejection.nbTime.respErr = perf.now();
-                                collectHttpData(rejection);
-                            }
-                            return rejection;
+                        function collectHttpData(config) {
+                            var httpCall = {
+                                url: config.url,
+                                method: config.method,
+                                req: config.nbTime.req,
+                                reqErr: config.nbTime.reqErr,
+                                resp: config.nbTime.resp,
+                                respErr: config.nbTime.respErr
+                            };
+                            broadcastMessage(httpCall, 'httpMeasures');
                         }
-                    };
-                });
+
+                        return {
+                            'request': function (config) {
+                                if (!nb.pause) {
+                                    config.nbTime = {'req': perf.now()};
+                                }
+                                return config;
+                            },
+                            'requestError': function (rejection) {
+                                if (rejection.nbTime) {
+                                    rejection.nbTime.reqErr = perf.now();
+                                    collectHttpData(rejection);
+                                }
+                                return rejection;
+                            },
+                            'response': function (response) {
+                                // do something on success
+                                if (response.nbTime) {
+                                    response.nbTime.resp = perf.now();
+                                    collectHttpData(response);
+                                }
+                                return response;
+                            },
+                            'responseError': function (rejection) {
+                                // do something on error
+                                if (rejection.nbTime) {
+                                    rejection.nbTime.respErr = perf.now();
+                                    collectHttpData(rejection);
+                                }
+                                return rejection;
+                            }
+                        };
+                    })
+                );
 
                 // $browser to capture async task
                 $provide.decorator('$browser', function ($delegate) {
@@ -455,6 +457,130 @@
                     $delegate.defer = wrapper;
                     return $delegate;
                 });
+                $provide.decorator('$controller', function ($delegate) {
+                    return (function (name) {
+                        if (typeof name === 'string') {
+                            nb.deps.push('ctrl:' + name);
+                        }
+                        return $delegate.apply(this, arguments);
+                    });
+                });
+
+                ngPFactory = $provide.factory;
+                $provide.factory = function (name) {
+                    var factRet = ngPFactory.apply(this, arguments),
+                        fact$get = factRet.$get,
+                        l, factGet;
+
+                    factGet = function () {
+                        nb.deps.push('factory:' + name);
+                        // getting rid of closure to free memory
+                        try {
+                            var getInst = fact$get;
+                            if (l !== undefined) {
+                                factRet.$get[l] = getInst;
+                            } else {
+                                factRet.$get = getInst;
+                            }
+                            return getInst.apply(this, arguments);
+                        } catch (e) {
+                            logger.warn(e);
+                        } finally {
+                            sendActiveDeps();
+                            fact$get = factRet = l = undefined;
+                        }
+                    };
+                    if (angular.isArray(fact$get)) {
+                        l = fact$get.length - 1;
+                        fact$get = fact$get[l];
+                        factRet.$get[l] = factGet;
+                    } else {
+                        factRet.$get = factGet;
+                    }
+                    return factRet;
+                };
+
+                ngPService = $provide.service;
+                $provide.service = function (name) {
+                    var servRet = ngPService.apply(this, arguments),
+                        serv$get = servRet.$get,
+                        l, servGet;
+
+                    servGet = function () {
+                        nb.deps.push('service:' + name);
+                        // getting rid of closure to free memory
+                        try {
+                            var getInst = serv$get;
+                            if (l !== undefined) {
+                                servRet.$get[l] = getInst;
+                            } else {
+                                servRet.$get = getInst;
+                            }
+                            return getInst.apply(this, arguments);
+                        } catch (e) {
+                            logger.warn(e);
+                        } finally {
+                            sendActiveDeps();
+                            serv$get = servRet = l = undefined;
+                        }
+                    };
+                    if (angular.isArray(serv$get)) {
+                        l = serv$get.length - 1;
+                        serv$get = serv$get[l];
+                        servRet.$get[l] = servGet;
+                    } else {
+                        servRet.$get = servGet;
+                    }
+
+                    return servRet;
+                };
+
+                ngPProvider = $provide.provider;
+                $provide.provider = function (name) {
+                    var prvdRet = ngPProvider.apply(this, arguments),
+                        prvd$get = prvdRet.$get,
+                        l, prvdGet;
+
+                    console.info(name);
+                    prvdGet = function () {
+                        nb.deps.push('provider:' + name);
+                        // getting rid of closure to free memory
+                        try {
+                            var getInst = prvd$get;
+                            if (l !== undefined) {
+                                prvdRet.$get[l] = getInst;
+                            } else {
+                                prvdRet.$get = getInst;
+                            }
+                            return getInst.apply(this, arguments);
+                        } catch (e) {
+                            logger.warn(e);
+                        } finally {
+                            sendActiveDeps();
+                            prvd$get = prvdRet = l = undefined;
+                        }
+                    };
+                    if (angular.isArray(prvd$get)) {
+                        l = prvd$get.length - 1;
+                        prvd$get = prvd$get[l];
+                        prvdRet.$get[l] = prvdGet;
+                    } else {
+                        prvdRet.$get = prvdGet;
+                    }
+
+                    return prvdRet;
+                };
+
+                function sendActiveDeps() {
+                    if (!depstimeout) {
+                        depstimeout = window.setTimeout(function () {
+                            broadcastMessage(nb.deps, 'active-dependencies');
+                            depstimeout = undefined;
+                        }, 1000);
+                    }
+                }
+
+                sendDependencyTree();
             });
     }
 
@@ -545,6 +671,12 @@
 
     }
 
+    ////////////////////////////////////////////////////////////////////
+    //      FIND dependency tree for app
+    /////////////////////////////////////////////////////////////////////
+    sendDependencyTree = function () {
+        
+    };
     ////////////////////////////////////////////////////////////////////
     //      START INSPECTING PAGE FOR ANGULAR - onload
     /////////////////////////////////////////////////////////////////////

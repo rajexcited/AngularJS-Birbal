@@ -2,7 +2,6 @@
  * Created by Neel on 3/16/2016.
  */
 /*global angular*/
-
 (function (angular) {
     "use strict";
 
