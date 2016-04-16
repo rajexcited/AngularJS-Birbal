@@ -177,7 +177,7 @@
         // enable or disable
         var tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.doAnalysis = message.msgDetails.doAnalysis;
-        informContentScript(message.tabId, tabInfo.doAnalysis, 'instrumentNg');
+        informContentScript(message.tabId, {'ngStart': tabInfo.doAnalysis, 'ngModule': tabInfo.ngDetect.ngModule}, 'instrumentNg');
     });
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
@@ -210,7 +210,7 @@
             tabs.addPort(tabId, connectingPort, connectingPort.name);
             tabInfo = tabs.getTabInfo(tabId);
             if (tabInfo.doAnalysis) {
-                informContentScript(tabId, tabInfo.doAnalysis, 'instrumentNg');
+                informContentScript(tabId, {'ngStart': tabInfo.doAnalysis, 'ngModule': tabInfo.ngDetect.ngModule}, 'instrumentNg');
             }
         }
 

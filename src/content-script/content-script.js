@@ -143,7 +143,9 @@
         // in background message listener
         var newMessage = new birbalJS.Message(message.msgDetails, birbalJS.END_POINTS.CONTENTSCRIPT, birbalJS.END_POINTS.ANGULARINSPECTOR, message.task);
         if (newMessage.task === 'instrumentNg') {
-            document.getElementsByTagName('html')[0].setAttribute('birbal-ng-start', newMessage.msgDetails);
+            var htmlNode=document.getElementsByTagName('html')[0];
+            htmlNode.setAttribute('birbal-ng-start', newMessage.msgDetails.ngStart);
+            htmlNode.setAttribute('birbal-ng-module', newMessage.msgDetails.ngModule);
         } else {
             window.postMessage(newMessage, '*');
         }

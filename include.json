@@ -40,6 +40,7 @@
         "../js/birbalFilters.filter.js",
         "../js/digestDataFactory.factory.js",
         "../js/httpRecordFactory.factory.js",
+        "../js/dependencyTree.factory.js",
         "../js/rangeSlider.directive.js",
         "../js/searchCriteria.watch.directive.js"
       ]

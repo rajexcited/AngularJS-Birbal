@@ -3,8 +3,8 @@
     'use strict';
 
     var backgroundConnection;
-    angular.module('background-service-app', ['measure.digest.app', 'measure.http.app'])
-        .service('backgroundService', ['$rootScope', 'digestDataFactory', 'httpRecordFactory', function ($rootScope, digestDataFactory, httpRecordFactory) {
+    angular.module('background-service-app', ['measure.digest.app', 'measure.http.app','dependencyTree.app'])
+        .service('backgroundService', ['$rootScope', 'digestDataFactory', 'httpRecordFactory', 'dependencyTree', function ($rootScope, digestDataFactory, httpRecordFactory,dependencyTree) {
             /////////////////////////////////////////////////////////
             //            LOGGER FOR DEVELOPMENT ONLY
             /////////////////////////////////////////////////////////
@@ -60,6 +60,12 @@
 
             receiver.actionOnTask('httpMeasures', function (message) {
                 httpRecordFactory.addHttpMeasure(message.msgDetails);
+            });
+            receiver.actionOnTask('activeDependencies', function (message) {
+                dependencyTree.addActive(message.msgDetails);
+            });
+            receiver.actionOnTask('dependencyTree', function (message) {
+                dependencyTree.setTree(message.msgDetails);
             });
             /////////////////////////////////////////////////////////
             //            BG message listener

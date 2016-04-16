@@ -127,21 +127,23 @@
      */
     function getAngularApp() {
         logger.log('finding app name');
-        var ngRootNode = document.querySelector('.ng-scope'),
-            attributes = ngRootNode.attributes,
-            appname,
-            attrName,
+        var ngRootNode = document.getElementsByTagName('html')[0],
+            attributes, appname, attrName, len;
+
+        appname = ngRootNode.getAttribute('birbal-ng-module');
+        if (!appname) {
+            ngRootNode = document.querySelector('.ng-scope');
+            attributes = ngRootNode.attributes;
             len = attributes.length;
-
-        do {
-            len--;
-            attrName = attributes.item(len).name;
-            if (normalizeAngularAttr(attrName) === 'ngApp') {
-                appname = attributes.item(len).value;
-                break;
-            }
-        } while (len);
-
+            do {
+                len--;
+                attrName = attributes.item(len).name;
+                if (normalizeAngularAttr(attrName) === 'ngApp') {
+                    appname = attributes.item(len).value;
+                    break;
+                }
+            } while (len);
+        }
         return appname;
 
         /**
@@ -199,7 +201,6 @@
                     browserDefer: [],
                     deps: []
                 };
-
                 window.deps = nb.deps;
                 // instrument scope/rootScope
                 $provide.decorator('$rootScope', function ($delegate) {
@@ -397,7 +398,8 @@
 
                 //qq: how can i analyze http with my digest cycle
                 // register the interceptor as a service
-                ($httpProvider && $httpProvider.interceptors && $httpProvider.interceptors.push(function () {
+                if ($httpProvider && $httpProvider.interceptors) {
+                    $httpProvider.interceptors.push(function () {
 
                         function collectHttpData(config) {
                             var httpCall = {
@@ -442,8 +444,8 @@
                                 return rejection;
                             }
                         };
-                    })
-                );
+                    });
+                }
 
                 // $browser to capture async task
                 $provide.decorator('$browser', function ($delegate) {
@@ -574,13 +576,13 @@
                 function sendActiveDeps() {
                     if (!depstimeout) {
                         depstimeout = window.setTimeout(function () {
-                            broadcastMessage(nb.deps, 'active-dependencies');
+                            broadcastMessage(nb.deps, 'activeDependencies');
                             depstimeout = undefined;
                         }, 1000);
                     }
                 }
 
-                sendDependencyTree();
+                sendDependencyTree([getAngularApp()]);
             });
     }
 
@@ -673,9 +675,131 @@
 
     ////////////////////////////////////////////////////////////////////
     //      FIND dependency tree for app
+    // referenced from https://github.com/filso/ng-dependency-graph
     /////////////////////////////////////////////////////////////////////
-    sendDependencyTree = function () {
-        
+    sendDependencyTree = function (appNames) {
+        var metadata = {
+            apps: [],
+            modules: []
+        };
+
+        function createModule(name) {
+            var exist = false;
+            for (var i = 0; i < metadata.modules.length; i++) {
+                if (metadata.modules[i].name === name) {
+                    exist = true;
+                    break;
+                }
+            }
+
+            if (exist || name === undefined) {
+                return;
+            }
+
+            var module = angular.module(name);
+
+            var moduleData = {
+                name: name,
+                deps: module.requires,
+                components: []
+            };
+
+            processModule(moduleData);
+            metadata.modules.push(moduleData);
+
+            angular.forEach(module.requires, function (mod) {
+                createModule(mod);
+            });
+
+        }
+
+        function addDeps(moduleData, name, depsSrc, type) {
+            if (typeof depsSrc === 'function') {
+                moduleData.components.push({
+                    name: name,
+                    deps: annotate(depsSrc),
+                    type: type
+                });
+                // Array or empty
+            } else if (Array.isArray(depsSrc)) {
+                var deps = depsSrc.slice();
+                deps.pop();
+                moduleData.components.push({
+                    name: name,
+                    deps: deps,
+                    type: type
+                });
+            } else {
+                moduleData.components.push({
+                    name: name,
+                    type: type
+                });
+            }
+        }
+
+        function processModule(moduleData) {
+            var moduleName = moduleData.name;
+            var module = angular.module(moduleName);
+
+            // For old versions of AngularJS the property is called 'invokeQueue'
+            var invokeQueue = module._invokeQueue || module.invokeQueue;
+
+            angular.forEach(invokeQueue, function (item) {
+                var compArgs = item[2];
+                switch (item[0]) {
+                    case '$provide':
+                        switch (item[1]) {
+                            case 'value':
+                            case 'constant':
+                                addDeps(moduleData, compArgs[0], compArgs[1], 'value');
+                                break;
+
+                            default:
+                                addDeps(moduleData, compArgs[0], compArgs[1], 'service');
+                                break;
+                        }
+                        break;
+
+                    case '$filterProvider':
+                        addDeps(moduleData, compArgs[0], compArgs[1], 'filter');
+                        break;
+                    case '$animateProvider':
+                        addDeps(moduleData, compArgs[0], compArgs[1], 'animation');
+                        break;
+                    case '$controllerProvider':
+                        addDeps(moduleData, compArgs[0], compArgs[1], 'controller');
+                        break;
+                    case '$compileProvider':
+                        if (compArgs[1].constructor === Object) {
+                            angular.forEach(compArgs[1], function (key, value) {
+                                addDeps(moduleData, key, value, 'directive');
+                            });
+                        }
+                        addDeps(moduleData, compArgs[0], compArgs[1], 'directive');
+                        break;
+                    case '$injector':
+                        // invoke, ignore
+                        break;
+                    default:
+                        logger.warn('unknown dependency type');
+                        logger.warn(arguments);
+                        break;
+                }
+            });
+
+        }
+
+        function getMetadata(appNames) {
+            appNames.forEach(function (appName) {
+                if (metadata.apps.indexOf(appName) === -1) {
+                    metadata.apps.push(appName);
+                    createModule(appName);
+                }
+            });
+            return metadata;
+        }
+
+        broadcastMessage(getMetadata(appNames), 'dependencyTree');
     };
     ////////////////////////////////////////////////////////////////////
     //      START INSPECTING PAGE FOR ANGULAR - onload
