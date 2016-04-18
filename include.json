@@ -32,7 +32,6 @@
           "comment": "<!-- Birbal scripts -->",
           "path": "/src/message.js"
         },
-        "../js/devtoolsExtended.js",
         "../js/birbalJSInit.js",
         "../js/birbal.app.js",
         "../js/background.service.js",

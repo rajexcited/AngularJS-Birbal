@@ -60,6 +60,7 @@ module.exports = function (grunt) {
                 files: [
                     // angular
                     {src: 'node_modules/angular/angular.min.js', dest: 'lib/angular.min.js'},
+                    {src: 'node_modules/angular-animate/angular-animate.min.js', dest: 'lib/angular-animate.min.js'},
                     // jquery
                     {src: 'node_modules/jquery/dist/jquery.min.js', dest: 'lib/jquery.min.js'},
                     // admin-lte, bootstrap and font-awesome

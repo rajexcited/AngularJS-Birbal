@@ -2,13 +2,12 @@
 (function (angular, birbalJS) {
     "use strict";
 
-    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'measure.digest.app', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app'])
+    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'measure.digest.app', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph'])
         .controller('panelViewController',
             ['$scope', 'backgroundService', '$rootScope', 'digestDataFactory', '$interval', function ($scope, backgroundService, $rootScope, digestDataFactory, $interval) {
                 // default first message on inspect tab load, letting app know I'm ready
                 backgroundService.informBackground(null, 'panelInit', birbalJS.END_POINTS.BACKGROUND);
                 $scope.sidebarActions = {};
-                $scope.floatHeadEnable = true;
                 /////////////////////////////////////////////////////////
                 //            panel action listener
                 /////////////////////////////////////////////////////////
@@ -90,14 +89,14 @@
                 //            settings view
                 /////////////////////////////////////////////////////////
                 $scope.settings = {
-                    digestDebounceTime: digestDataFactory.getDigestDebounceTime(),
-                    showScopeToElement: false
+                    digestDebounceTime: digestDataFactory.getDigestDebounceTime()
+                    //showScopeToElement: true
                 };
 
-                $scope.settings.exportScopesInElementPanel = function () {
-                    var sidebarAction = $scope.settings.showScopeToElement ? 'addScopeToElementPanel' : 'removeScopeToElementPanel';
-                    birbalJS.setElementPanelAction(sidebarAction);
-                };
+                //$scope.settings.exportScopesInElementPanel = function () {
+                //    var sidebarAction = $scope.settings.showScopeToElement ? 'addScopeToElementPanel' : 'removeScopeToElementPanel';
+                //    birbalJS.setElementPanelAction(sidebarAction);
+                //};
 
                 $scope.settings.debounceChanged = function () {
                     if (!$scope.settings.digestDebounceTime || $scope.settings.digestDebounceTime < 0) {
@@ -109,6 +108,7 @@
                 $scope.settings.clearData = function () {
                     digestDataFactory.resetDigestMeasures();
                 };
+                //$scope.settings.exportScopesInElementPanel();
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            slider, filter, dashboard update, sort, configurations
                 /////////////////////////////////////////////////////////////////////////////////////////

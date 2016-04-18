@@ -5,9 +5,9 @@
 (function (angular) {
     "use strict";
 
-    angular.module('dependencyTree.app', [])
-        .factory('dependencyTree', [function () {
-            var setTree, addActive, tree, activeList,
+    angular.module('dependencyTree.app', ['ngDependencyGraph'])
+        .factory('dependencyTree', ['inspectedApp', function (inspectedApp) {
+            var setTree, getTree, addActive, tree, activeList,
                 findAndMergeDepsToTree;
 
             findAndMergeDepsToTree = function () {
@@ -32,7 +32,12 @@
 
             setTree = function (_tree) {
                 tree = _tree;
+                inspectedApp._setData(tree);
                 findAndMergeDepsToTree();
+            };
+
+            getTree = function () {
+                return tree;
             };
 
             addActive = function (_activeList) {
@@ -42,6 +47,7 @@
 
             return {
                 'setTree': setTree,
+                'getTree': getTree,
                 'addActive': addActive
             };
 

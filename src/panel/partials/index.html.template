@@ -6,6 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>AngularJS Birbal</title>
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+    <link rel="stylesheet" href="/lib/ng-dependency-graph/styles/app.css">
+    <link rel="stylesheet" href="/lib/ng-dependency-graph/styles/shepherd-theme-default.css">
     <!-- css -->
     <% _.forEach(files.css, function(cssFilePath) { var htmlComment=cssFilePath.comment; if(htmlComment) { cssFilePath= cssFilePath.path;%>  <%= htmlComment%> <%}%>
     <link rel="stylesheet" href="<%= cssFilePath%>">
@@ -57,6 +60,41 @@
 <% _.forEach(files.js,function(jsFilePath) { var htmlComment=jsFilePath.comment; if(htmlComment) { jsFilePath = jsFilePath.path;%> <%= htmlComment%> <%}%>
 <script src="<%= jsFilePath%>"></script>
 <% }); %>
+
+<!-- graph -->
+  <script src="/lib/typeahead.jquery.js"></script>
+  <script src="/lib/angular-animate.min.js"></script>
+  <script src="/lib/d3.min.js"></script>
+  <script src="/lib/lodash.js"></script>
+  <script src="/lib/tether.min.js"></script>
+  <script src="/lib/shepherd.min.js"></script>
+<!-- inject graph -->
+  <script src="/lib/ng-dependency-graph/scripts/app.module.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/analytics.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/util/util.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/triggerComponents/TriggerComponentsCtrl.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/tour/tour.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/models/Node.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/models/ModuleStats.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/models/Module.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/models/models.module.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/models/Component.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/models/App.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/main/MainCtrl.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/infoPanel/OptionsCtrl.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/infoPanel/InfoPanelCtrl.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/infoPanel/infoPanel.module.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/infoPanel/dgInfoPanelList.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/graph/dgGraph.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/core/storage.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/core/nodeFactory.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/core/inspectedApp.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/core/Graph.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/core/currentView.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/core/Const.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/controls/dgSearchNode.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/controls/controls.module.js"></script>
+  <script src="/lib/ng-dependency-graph/scripts/app/AppCtrl.js"></script>
 
 </body>
 </html>

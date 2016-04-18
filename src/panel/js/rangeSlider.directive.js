@@ -46,7 +46,10 @@
                             return;
                         }
                         if (len === oldLen) {
-                            oldLen=0;
+                            oldLen = 0;
+                            if (len === 0) {
+                                return;
+                            }
                         }
                         // find slider range
                         if (oldLen === 0) {

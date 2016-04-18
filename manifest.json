@@ -15,6 +15,9 @@
       "run_at": "document_start"
     }
   ],
+  "permissions": [
+    "storage"
+  ],
   "icons": {
     "16": "img/angular-icon.png",
     "48": "img/angular-icon.png",
