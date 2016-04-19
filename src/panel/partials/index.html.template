@@ -72,7 +72,6 @@
   <script src="/lib/ng-dependency-graph/scripts/app.module.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/analytics.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/util/util.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/triggerComponents/TriggerComponentsCtrl.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/tour/tour.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/models/Node.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/models/ModuleStats.js"></script>
@@ -81,8 +80,6 @@
   <script src="/lib/ng-dependency-graph/scripts/models/Component.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/models/App.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/main/MainCtrl.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/infoPanel/OptionsCtrl.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/infoPanel/InfoPanelCtrl.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/infoPanel/infoPanel.module.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/infoPanel/dgInfoPanelList.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/graph/dgGraph.js"></script>

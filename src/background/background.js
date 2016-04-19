@@ -159,6 +159,13 @@
         setPageAction(message.tabId);
     });
 
+    receiver.actionOnTask('dependencyTree', function (message) {
+        var tabInfo;
+        tabInfo = tabs.getTabInfo(message.tabId);
+        tabInfo.dependencyTree = message.msgDetails;
+        informPanel(message.tabId, tabInfo.dependencyTree , 'dependencyTree');
+    });
+
     // for devtools panel
     // #7
     receiver.actionOnTask('panelInit', function (message) {
@@ -170,6 +177,7 @@
         // removePanel >> reset panel
         taskForPanel = tabInfo.ngDetect && tabInfo.ngDetect.ngDetected ? 'addPanel' : 'removePanel';
         informPanel(message.tabId, tabInfo.ngDetect, taskForPanel);
+        informPanel(message.tabId, tabInfo.dependencyTree , 'dependencyTree');
     });
 
     // #8

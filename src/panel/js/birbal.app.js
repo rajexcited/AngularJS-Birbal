@@ -18,12 +18,12 @@
                  */
                 function changeViewActionListener(pageName, ngDetectData) {
                     //pageName = (typeof event === 'string') ? event : pageName;
-                    if (pageName === 'nbEnable' && $scope.csInfo.enabled) {
+                    if (pageName === 'nbEnable' && $rootScope.csInfo.enabled) {
                         pageName = $scope.view || 'dashboard';
                     }
                     $scope.view = pageName;
                     //initializing csInfo for template data for first time or after cleanup
-                    angular.extend($scope.csInfo, ngDetectData);
+                    angular.extend($rootScope.csInfo, ngDetectData);
                 }
 
                 $rootScope.$on('changePanelView', function (event, pageName, ngDetectData) {
@@ -33,21 +33,21 @@
                 });
                 $rootScope.$on('ngAppDetails', function (event, ngDetectData) {
                     $scope.$applyAsync(function () {
-                        angular.extend($scope.csInfo, ngDetectData);
+                        angular.extend($rootScope.csInfo, ngDetectData);
                     });
                 });
 
                 $rootScope.$on('clearResources', function clrRscActionListener(event, panelAction) {
                     // clear app data
-                    var isEnabled = !!($scope.csInfo && $scope.csInfo.enabled);
-                    $scope.csInfo = $scope.csInfo || {'enabled': isEnabled};
+                    var isEnabled = !!($rootScope.csInfo && $rootScope.csInfo.enabled);
+                    $rootScope.csInfo = $rootScope.csInfo || {'enabled': isEnabled};
                     $scope.digestExpression = [];
                     $scope.watchOrderExpression = [];
                     if (panelAction === 'removePanel' || panelAction === 'addPanel') {
                         digestDataFactory.resetDigestMeasures();
                         $scope.$applyAsync(function () {
                             $scope.view = '';
-                            $scope.csInfo = {
+                            $rootScope.csInfo = {
                                 'enabled': isEnabled,
                                 'pause': false
                             };
@@ -60,27 +60,27 @@
                 /////////////////////////////////////////////////////////
                 $scope.sidebarActions.disableMe = function () {
                     backgroundService.informBackground({doAnalysis: false}, 'doAnalysis', birbalJS.END_POINTS.BACKGROUND);
-                    $scope.csInfo.enabled = false;
+                    $rootScope.csInfo.enabled = false;
                     // reload page
                     birbalJS.pageAction('reload');
                 };
 
                 $scope.sidebarActions.pauseMyAnalysis = function () {
                     backgroundService.informBackground(null, 'pauseAnalysis');
-                    $scope.csInfo.pause = true;
+                    $rootScope.csInfo.pause = true;
                 };
 
                 $scope.sidebarActions.resumeMyAnalysis = function () {
                     backgroundService.informBackground(null, 'startAnalysis');
-                    $scope.csInfo.pause = false;
+                    $rootScope.csInfo.pause = false;
                 };
 
                 $scope.sidebarActions.changePanelView = changeViewActionListener;
 
                 $scope.sidebarActions.enableMe = function () {
                     // register/enable/refresh
-                    $scope.csInfo.ngModule = $scope.csInfo.ngModule || $scope.csInfo.ngModuleInput;
-                    $scope.csInfo.enabled = true;
+                    $rootScope.csInfo.ngModule = $rootScope.csInfo.ngModule || $rootScope.csInfo.ngModuleInput;
+                    $rootScope.csInfo.enabled = true;
                     backgroundService.informBackground({doAnalysis: true}, 'doAnalysis', birbalJS.END_POINTS.BACKGROUND);
                     birbalJS.pageAction('reload');
                 };

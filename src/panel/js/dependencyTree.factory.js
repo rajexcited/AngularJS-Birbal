@@ -5,44 +5,45 @@
 (function (angular) {
     "use strict";
 
-    angular.module('dependencyTree.app', ['ngDependencyGraph'])
-        .factory('dependencyTree', ['inspectedApp', function (inspectedApp) {
-            var setTree, getTree, addActive, tree, activeList,
-                findAndMergeDepsToTree;
+    angular.module('dependencyTree.app', [])
+        .factory('dependencyTree', ['$rootScope', function ($rootScope) {
+            var setTree, getTree, addActive, createActiveTree, activeList,
+                tree;
 
-            findAndMergeDepsToTree = function () {
+            createActiveTree = function () {
                 if (tree && activeList) {
                     var list = activeList.join(',') + ',';
                     tree.modules.forEach(function (module) {
                         module.components.forEach(function (c) {
-                            if (c.deps) {
-                                c.deps.forEach(function (dep, i, all) {
-                                    if (list.indexOf(':' + dep + ',') !== -1) {
-                                        all[i] = {
-                                            'name': dep,
-                                            'isActive': true
-                                        };
-                                    }
-                                });
+                            if (list.indexOf(':' + c.name + ',') !== -1) {
+                                c.isActive = true;
+                                module.isActive = true;
                             }
                         });
                     });
+                    $rootScope.$broadcast(Const.Events.INIT_MAIN);
                 }
+                console.log(tree);
             };
 
             setTree = function (_tree) {
                 tree = _tree;
-                inspectedApp._setData(tree);
-                findAndMergeDepsToTree();
+                createActiveTree();
             };
 
             getTree = function () {
+                if (!tree) {
+                    return ({
+                        apps: [],
+                        modules: []
+                    });
+                }
                 return tree;
             };
 
             addActive = function (_activeList) {
                 activeList = _activeList;
-                findAndMergeDepsToTree();
+                createActiveTree();
             };
 
             return {

@@ -33,7 +33,16 @@
 /* table */
 table {word-wrap: break-word;}
 /******/
+.dg-graph input {
+    /*same as bootstrap*/
+    color: #333;
+}
 
+.fixed .main-header {
+    top: auto;
+    right: auto;
+    left: auto;
+}
 
 @media (max-width: 767px) {
     /* xtra small */

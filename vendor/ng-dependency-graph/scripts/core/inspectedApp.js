@@ -2,21 +2,15 @@
 
 /*jshint -W061 */
 angular.module('ngDependencyGraph')
-    .factory('inspectedApp', function () {
-
-        var _data;
+    .factory('inspectedApp', function ($rootScope, dependencyTree) {
 
         var service = {
-            waitingForAppData: false,
             getKey: function () {
-                return this.apps && this.apps[0];
-            },
-            _setData: function (data) {
-                _data = data;
-                this.apps = _data.apps;
+                var tree = dependencyTree.getTree();
+                return '' + (tree && tree.apps && tree.apps[0]) + $rootScope.csInfo.enabled;
             },
             getData: function () {
-                return _data;
+                return dependencyTree.getTree();
             }
         };
 

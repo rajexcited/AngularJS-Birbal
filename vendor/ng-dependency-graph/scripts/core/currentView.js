@@ -16,6 +16,7 @@ angular.module('ngDependencyGraph')
       filters: {
         filterModules: Const.FilterModules.DEFAULT_FILTER,
         ignoreModules: Const.FilterModules.DEFAULT_IGNORE,
+        isActiveOnly:!!$rootScope.activeOnly,
         componentsVisible: {
           service: true,
           controller: true
@@ -32,7 +33,7 @@ angular.module('ngDependencyGraph')
         this.scope = scope;
       },
       chooseNode: function(node, translate) {
-        if (node.isModule === true) {
+        if (node&&node.isModule === true) {
           this.setScope(Const.Scope.MODULES);
         } else {
           this.setScope(Const.Scope.COMPONENTS);
@@ -54,6 +55,12 @@ angular.module('ngDependencyGraph')
         var masks;
         this.componentsGraph.resetFilter();
         this.modulesGraph.resetFilter();
+
+        if ($rootScope.csInfo.enabled && $rootScope.activeOnly) {
+          this.componentsGraph.filterNodes(function(node) {
+            return !!node._data.isActive;
+          });
+        }
 
         if (this.filters.componentsVisible && this.scope === 'components') {
           this.componentsGraph.filterNodes(function(node) {

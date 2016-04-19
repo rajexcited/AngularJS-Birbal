@@ -83,9 +83,10 @@
         /*jslint eqeq: false*/
         /* jshint +W116 */
         logger.log('in injectedMsgListener');
-        var winmessage = event.data;
+        var winmessage = event.data,
+            bgtasks = new RegExp('^(ngDetect|csInit|dependencyTree)$');
         logger.log(winmessage);
-        if (winmessage.task === 'ngDetect' || winmessage.task === 'csInit') {
+        if (bgtasks.test(winmessage.task)) {
             // this is coming from angularDetect injector
             if (winmessage.msgDetails && winmessage.msgDetails.ngDetected) {
                 // send message to BG for connecting and inspecting app

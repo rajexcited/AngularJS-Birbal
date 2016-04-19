@@ -168,7 +168,6 @@
     /////////////////////////////////////////////////////////////////
     function instrumentAngular() {
         // finder for early versions of angular which doesn't have definition
-        annotateFinder();
         angular.module('ng')
             .config(function ($provide, $httpProvider) {
 
@@ -582,7 +581,6 @@
                     }
                 }
 
-                sendDependencyTree([getAngularApp()]);
             });
     }
 
@@ -799,6 +797,7 @@
             return metadata;
         }
 
+        annotateFinder();
         broadcastMessage(getMetadata(appNames), 'dependencyTree');
     };
     ////////////////////////////////////////////////////////////////////
@@ -837,25 +836,20 @@
 
     function inspectAngular() {
         logger.log('starting inspection ' + performance.now());
-        //if (annotate) {
-        //    // angular has been instrumented
-        //    return;
-        //}
         contentMessageActions.angularDetected = true;
         // quick messaging
         var msg = {};
         // get ANGULAR basic details
         msg.ngVersion = window.angular && window.angular.version;
         msg.ngDetected = !!msg.ngVersion;
-        msg.ngModule = msg.ngDetected && getAngularApp() || '';
-        msg.ngRootNode = msg.ngDetected && generateXPath(document.querySelector('.ng-scope'));
+        msg.ngModule = '';
+        if (msg.ngDetected) {
+            msg.ngModule = getAngularApp();
+            msg.ngRootNode = generateXPath(document.querySelector('.ng-scope'));
+            sendDependencyTree([msg.ngModule]);
+        }
         // send inspection data
         broadcastMessage(msg, 'ngDetect');
-        // qq: do i need this?
-        //if (!msg.ngDetected) {
-        // disconnect plugin
-        //receiver.answerCall({task: 'stopAnalysis'});
-        //}
         logger.log('ngDetect message or cleanup');
     }
 
