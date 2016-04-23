@@ -7,8 +7,6 @@ angular.module('ngDependencyGraph')
         var componentsGraph;
         var modulesGraph;
 
-        $rootScope.activeOnly = true;
-
         ctrl.startTour = function () {
             tour.start();
         };
@@ -86,6 +84,7 @@ angular.module('ngDependencyGraph')
         init(false);
 
         $scope.$on(Const.Events.INIT_MAIN, function () {
+            $rootScope.activeOnly = !!$rootScope.csInfo.enabled;
             if (inspectedApp.getKey() === lastAppKey) {
                 init(true);
             } else {

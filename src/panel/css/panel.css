@@ -31,36 +31,72 @@
 
 /******/
 /* table */
-table {word-wrap: break-word;}
+table {
+    word-wrap: break-word;
+}
+
 /******/
 .dg-graph input {
     /*same as bootstrap*/
     color: #333;
 }
-.controls{ right:0;}
-.zoom-in-out{
+
+.controls {
+    right: 0;
+}
+
+.zoom-in-out {
     right: 5px;
     top: 10px;
     position: absolute;
     margin: 7px;
     border-radius: 7px;
 }
-.zoom-in-out>.pipe {
-    margin:6px;
+
+.zoom-in-out > .pipe {
+    margin: 6px;
     border-left: 1px solid black;
 }
-.zoom-in-out>.fa-search-minus {
+
+.zoom-in-out > .fa-search-minus {
     margin-left: 5px;
     cursor: pointer;
 }
-.zoom-in-out>.fa-search-plus {
+
+.zoom-in-out > .fa-search-plus {
     cursor: POINTER;
-    margin-right : 5px;
+    margin-right: 5px;
 }
+
 .fixed .main-header {
     top: auto;
     right: auto;
     left: auto;
+}
+
+.info-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: initial;
+}
+
+.info-panel > .selected-node {
+    flex: 1;
+    flex-direction: column;
+    overflow-y: auto;
+    display: flex;
+}
+
+.info-panel > .selected-node .info {
+    display: block;
+}
+
+.info-panel > .options {
+    flex-direction: column;
+    flex-shrink: 0;
+    display: flex;
+    position: initial;
 }
 
 @media (max-width: 767px) {

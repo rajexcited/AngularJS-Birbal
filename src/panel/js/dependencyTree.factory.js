@@ -37,12 +37,8 @@
                             }
                         });
                     });
-                    $rootScope.$broadcast(Const.Events.INIT_MAIN);
-                    //console.log(report);
-                    //var regex = new RegExp(/([^,]+`[^,]+,)/g);
-                    //console.log(list);
-                    //console.log(list.replace(regex,''));
                 }
+                $rootScope.$broadcast(Const.Events.INIT_MAIN);
             };
 
             setTree = function (_tree) {

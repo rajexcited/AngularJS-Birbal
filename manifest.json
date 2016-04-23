@@ -1,6 +1,6 @@
 {
   "name": "AngularJS Birbal",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Angular performance inspection by Birbal eyes. Detailed digest cycles, watch, effect of events, effects of http",
   "content_scripts": [
     {

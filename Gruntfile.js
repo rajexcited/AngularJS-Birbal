@@ -129,10 +129,8 @@ module.exports = function (grunt) {
             }
         },
         clean: {
-            dist: ['dist/**'],
             compress: ['zip/**'],
-            lib: ['lib/**'],
-            template: ['src/panel/partials/index.html']
+            'build-local': ['dist/**', 'lib/**', 'src/panel/partials/index.html']
         },
         connect: {
             example: {
@@ -149,19 +147,10 @@ module.exports = function (grunt) {
     require('time-grunt')(grunt);
     require('jit-grunt')(grunt);
 
-    // Load the plugins to run below registered tasks. - lazy loading using jit-grunt
-    //grunt.loadNpmTasks('grunt-contrib-clean');
-    //grunt.loadNpmTasks('grunt-contrib-uglify');
-    //grunt.loadNpmTasks('grunt-contrib-jshint');
-    //grunt.loadNpmTasks('grunt-contrib-concat');
-    //grunt.loadNpmTasks('grunt-contrib-copy');
-    //grunt.loadNpmTasks('grunt-contrib-compress');
-    //grunt.loadNpmTasks('grunt-template');
-
     // Default task(s).
     grunt.registerTask('default', ['jshint']);
     // creating zip file for distribution
     grunt.registerTask('build-extension', ['jshint', 'clean', 'template', 'concat', 'uglify', 'copy', 'compress']);
     // for development
-    grunt.registerTask('build', ['default', 'clean', 'copy:lib', 'template']);
+    grunt.registerTask('build', ['default', 'clean:build-local', 'copy:lib', 'template']);
 };
