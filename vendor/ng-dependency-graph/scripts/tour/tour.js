@@ -81,6 +81,12 @@ angular.module('ngDependencyGraph')
         buttons: buttons.step
       },
 
+      zoom: {
+        text: 'To zoom in or zoom out<br/> alternate zoom option:  use mouse wheel',
+        attachTo: '.zoom-in-out bottom',
+        buttons: buttons.step
+      },
+
       saving: {
         text: 'The graph is automatically updated with dependencies as you work on your app and refresh the browser.<br/><br/>All options are saved for each of your projects.',
         buttons: buttons.step
