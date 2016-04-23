@@ -63,6 +63,12 @@ angular.module('ngDependencyGraph')
         buttons: buttons.step
       },
 
+      activeDependencyTree: {
+        text: 'Checked \'show active only\' to see dependecied in used. <br/>If you\'d like to see whole tree with more available dependencies uncheck the option.',
+        attachTo: '.options__active-tree left',
+        buttons: buttons.step
+      },
+
       triggerComponents: {
         text: 'You can filter components nodes by component type.',
         attachTo: '.trigger-components right',
@@ -82,7 +88,7 @@ angular.module('ngDependencyGraph')
 
       finish: {
         text: 'That\'s it! :) Hope you enjoy.<br/><br/>You can restart this tour by clicking \'Tutorial\' in the bottom right corner.<br/><br/>Please star if you like it:<br/><br/>' +
-          '<iframe src="https://ghbtns.com/github-btn.html?user=filso&repo=ng-dependency-graph&type=star&count=true" frameborder="0" scrolling="0" width="170px" height="20px"></iframe>',
+          '<iframe src="https://ghbtns.com/github-btn.html?user=rajexcited&repo=AngularJS-Birbal&type=star&count=true" frameborder="0" scrolling="0" width="170px" height="20px"></iframe>',
         attachTo: '.search right',
         buttons: buttons.finish
       }

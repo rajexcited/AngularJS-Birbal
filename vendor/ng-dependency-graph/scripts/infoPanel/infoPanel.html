@@ -36,12 +36,12 @@
       Options
     </div>
     <div class="options__sticky-nodes">
-      <label><input type="checkbox" ng-model="currentView.options.stickyNodesEnabled"></input>
+      <label><input type="checkbox" ng-model="currentView.options.stickyNodesEnabled"/>
       Sticky nodes</label>
     </div>
-    <div>
+    <div class="options__active-tree">
       <label>
-        <input type="checkbox" ng-checked="activeOnly" ng-click="activeOnlyToggle();" ng-disabled="!csInfo.enabled" /> Show Active Dependency Only
+        <input type="checkbox" ng-checked="activeOnly" ng-click="activeOnlyToggle();" ng-disabled="!csInfo.enabled" /> Show Active Dependencies Only
       </label>
     </div>
     <div class="title">
@@ -50,13 +50,13 @@
     <div class="options__ignore">
       <label>
       <span>Ignore:</span>
-      <input type="text" ng-model="currentView.filters.ignoreModules"></input>
+      <input type="text" ng-model="currentView.filters.ignoreModules"/>
       </label>
     </div>
     <div class="options__filter">
       <label>
       <span>Filter:</span>
-      <input type="text" ng-model="currentView.filters.filterModules"></input>
+      <input type="text" ng-model="currentView.filters.filterModules"/>
       </label>
     </div>
 
