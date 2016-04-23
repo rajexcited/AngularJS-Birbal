@@ -37,7 +37,26 @@ table {word-wrap: break-word;}
     /*same as bootstrap*/
     color: #333;
 }
-
+.controls{ right:0;}
+.zoom-in-out{
+    right: 5px;
+    top: 10px;
+    position: absolute;
+    margin: 7px;
+    border-radius: 7px;
+}
+.zoom-in-out>.pipe {
+    margin:6px;
+    border-left: 1px solid black;
+}
+.zoom-in-out>.fa-search-minus {
+    margin-left: 5px;
+    cursor: pointer;
+}
+.zoom-in-out>.fa-search-plus {
+    cursor: POINTER;
+    margin-right : 5px;
+}
 .fixed .main-header {
     top: auto;
     right: auto;

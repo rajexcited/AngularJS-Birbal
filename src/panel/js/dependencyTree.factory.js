@@ -6,24 +6,43 @@
     "use strict";
 
     angular.module('dependencyTree.app', [])
-        .factory('dependencyTree', ['$rootScope', function ($rootScope) {
+        .factory('dependencyTree', ['$rootScope', 'Const', function ($rootScope, Const) {
             var setTree, getTree, addActive, createActiveTree, activeList,
                 tree;
 
             createActiveTree = function () {
                 if (tree && activeList) {
-                    var list = activeList.join(',') + ',';
+                    var list = activeList.join(',') + ',',
+                        report = [[], []];
                     tree.modules.forEach(function (module) {
                         module.components.forEach(function (c) {
-                            if (list.indexOf(':' + c.name + ',') !== -1) {
+                            var name = c.name;
+                            switch (c.type) {
+                                case 'directive':
+                                    name = name + 'Directive';
+                                    break;
+                                case 'filter':
+                                    name = name + 'Filter';
+                                    break;
+                                default:
+                            }
+                            var ind = list.indexOf(':' + name + ',');
+                            if (ind !== -1) {
                                 c.isActive = true;
                                 module.isActive = true;
+                                report[0].push(c.type + ':' + c.name);
+                                list=list.substr(0,ind) + '`'+list.substr(ind);
+                            } else if (list.indexOf(name) === -1) {
+                                report[1].push(c.type + ':' + c.name);
                             }
                         });
                     });
                     $rootScope.$broadcast(Const.Events.INIT_MAIN);
+                    //console.log(report);
+                    //var regex = new RegExp(/([^,]+`[^,]+,)/g);
+                    //console.log(list);
+                    //console.log(list.replace(regex,''));
                 }
-                console.log(tree);
             };
 
             setTree = function (_tree) {

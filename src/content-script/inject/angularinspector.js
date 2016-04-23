@@ -168,6 +168,7 @@
     /////////////////////////////////////////////////////////////////
     function instrumentAngular() {
         // finder for early versions of angular which doesn't have definition
+        annotateFinder();
         angular.module('ng')
             .config(function ($provide, $httpProvider) {
 
@@ -461,7 +462,7 @@
                 $provide.decorator('$controller', function ($delegate) {
                     return (function (name) {
                         if (typeof name === 'string') {
-                            nb.deps.push('ctrl:' + name);
+                            nb.deps.push('controller:' + name);
                         }
                         return $delegate.apply(this, arguments);
                     });
@@ -475,20 +476,12 @@
 
                     factGet = function () {
                         nb.deps.push('factory:' + name);
-                        // getting rid of closure to free memory
                         try {
-                            var getInst = fact$get;
-                            if (l !== undefined) {
-                                factRet.$get[l] = getInst;
-                            } else {
-                                factRet.$get = getInst;
-                            }
-                            return getInst.apply(this, arguments);
+                            return fact$get.apply(this, arguments);
                         } catch (e) {
                             logger.warn(e);
                         } finally {
                             sendActiveDeps();
-                            fact$get = factRet = l = undefined;
                         }
                     };
                     if (angular.isArray(fact$get)) {
@@ -496,7 +489,9 @@
                         fact$get = fact$get[l];
                         factRet.$get[l] = factGet;
                     } else {
-                        factRet.$get = factGet;
+                        var annotated$get = annotate(fact$get);
+                        annotated$get.push(factGet);
+                        factRet.$get = annotated$get;
                     }
                     return factRet;
                 };
@@ -509,20 +504,12 @@
 
                     servGet = function () {
                         nb.deps.push('service:' + name);
-                        // getting rid of closure to free memory
                         try {
-                            var getInst = serv$get;
-                            if (l !== undefined) {
-                                servRet.$get[l] = getInst;
-                            } else {
-                                servRet.$get = getInst;
-                            }
-                            return getInst.apply(this, arguments);
+                            return serv$get.apply(this, arguments);
                         } catch (e) {
                             logger.warn(e);
                         } finally {
                             sendActiveDeps();
-                            serv$get = servRet = l = undefined;
                         }
                     };
                     if (angular.isArray(serv$get)) {
@@ -530,7 +517,9 @@
                         serv$get = serv$get[l];
                         servRet.$get[l] = servGet;
                     } else {
-                        servRet.$get = servGet;
+                        var annotated$get = annotate(serv$get);
+                        annotated$get.push(servGet);
+                        servRet.$get = annotated$get;
                     }
 
                     return servRet;
@@ -542,23 +531,14 @@
                         prvd$get = prvdRet.$get,
                         l, prvdGet;
 
-                    console.info(name);
                     prvdGet = function () {
                         nb.deps.push('provider:' + name);
-                        // getting rid of closure to free memory
                         try {
-                            var getInst = prvd$get;
-                            if (l !== undefined) {
-                                prvdRet.$get[l] = getInst;
-                            } else {
-                                prvdRet.$get = getInst;
-                            }
-                            return getInst.apply(this, arguments);
+                            return prvd$get.apply(this, arguments);
                         } catch (e) {
                             logger.warn(e);
                         } finally {
                             sendActiveDeps();
-                            prvd$get = prvdRet = l = undefined;
                         }
                     };
                     if (angular.isArray(prvd$get)) {
@@ -566,7 +546,9 @@
                         prvd$get = prvd$get[l];
                         prvdRet.$get[l] = prvdGet;
                     } else {
-                        prvdRet.$get = prvdGet;
+                        var annotated$get = annotate(prvd$get);
+                        annotated$get.push(prvdGet);
+                        prvdRet.$get = annotated$get;
                     }
 
                     return prvdRet;
@@ -589,7 +571,7 @@
     //  annotate is use for angular providers
     /////////////////////////////////////////////////////////////////////
     function annotateFinder() {
-        annotate = angular.injector().annotate;
+        annotate = annotate || angular.injector().annotate;
         if (annotate) {
             // defined
             return;

@@ -38,7 +38,7 @@ angular.module('ngDependencyGraph')
         } else {
           this.setScope(Const.Scope.COMPONENTS);
         }
-        
+
         this.selectedNode = node;
         $rootScope.$broadcast(Const.Events.CHOOSE_NODE, node, translate);
       },
@@ -59,6 +59,10 @@ angular.module('ngDependencyGraph')
         if ($rootScope.csInfo.enabled && $rootScope.activeOnly) {
           this.componentsGraph.filterNodes(function(node) {
             return !!node._data.isActive;
+          });
+
+          service.modulesGraph.filterNodes(function(node) {
+              return !!node._data.isActive;
           });
         }
 
@@ -82,7 +86,7 @@ angular.module('ngDependencyGraph')
 
         if (this.filters.filterModules) {
           masks = util.extractMasks(this.filters.filterModules);
-          
+
           masks.forEach(function(mask) {
             service.modulesGraph.filterNodes(function(node) {
               return mask.test(node.name);
@@ -90,7 +94,7 @@ angular.module('ngDependencyGraph')
           });
         }
 
-        // Now filter all components of excluded modules 
+        // Now filter all components of excluded modules
         this.componentsGraph.filterNodes(function(node) {
           return (service.modulesGraph.nodes.indexOf(node.module) !== -1);
         });
