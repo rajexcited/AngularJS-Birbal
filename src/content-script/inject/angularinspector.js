@@ -559,7 +559,7 @@
                         depstimeout = window.setTimeout(function () {
                             broadcastMessage(nb.deps, 'activeDependencies');
                             depstimeout = undefined;
-                        }, 1000);
+                        }, 1.3*1000);
                     }
                 }
 
