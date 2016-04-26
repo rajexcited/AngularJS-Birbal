@@ -2,6 +2,7 @@
 Learn Angular performance effects. It provides extra eye to developer for ngApp.
 
 ##[Chrome Webstore link](https://chrome.google.com/webstore/detail/lpgcgfldhlpcekibknamgefpbifakkai)
+##[Group Discussion](https://groups.google.com/forum/#!forum/angularjs-birbal)
 
 Features include:
   - digest cycle list with details
