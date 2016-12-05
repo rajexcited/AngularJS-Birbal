@@ -8,7 +8,9 @@
 .fixed .content-wrapper {
     padding-top: 10px;
 }
-
+a {
+    cursor: pointer;
+}
 /****/
 /*  animation */
 .animate-if.ng-enter, .animate-if.ng-leave {

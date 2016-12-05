@@ -2,9 +2,9 @@
 (function (angular, birbalJS) {
     "use strict";
 
-    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'measure.digest.app', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph'])
+    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'measure.digest.app', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph', 'saveAsCsv.factory.app'])
         .controller('panelViewController',
-            ['$scope', 'backgroundService', '$rootScope', 'digestDataFactory', '$interval', function ($scope, backgroundService, $rootScope, digestDataFactory, $interval) {
+            ['$scope', 'backgroundService', '$rootScope', 'digestDataFactory', '$interval', 'saveAsCsvFactory', function ($scope, backgroundService, $rootScope, digestDataFactory, $interval, saveAsCsvFactory) {
                 // default first message on inspect tab load, letting app know I'm ready
                 backgroundService.informBackground(null, 'panelInit', birbalJS.END_POINTS.BACKGROUND);
                 $scope.sidebarActions = {};
@@ -117,6 +117,11 @@
                     $scope.digestCycle = digestDataFactory.getAllDigestMeasures();
                     $scope.watchDetails = digestDataFactory.getWatchMeasures();
                 }, 1000);
+
+                $scope.saveAsCSV = function (id) {
+                    var filterCriteria = {'range': $scope.selectedDigestRange, 'orderBy': $scope.digestExpression};
+                    saveAsCsvFactory.downloadFile(id, $rootScope.csInfo.ngModule, 'digestCycle.measures', filterCriteria);
+                };
 
                 /* ION SLIDER */
                 $scope.rangeSlider = {

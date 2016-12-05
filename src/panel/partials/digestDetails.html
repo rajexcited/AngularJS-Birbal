@@ -71,6 +71,22 @@
             <!-- /.widget-user -->
         </div>
         <!-- /.col Digest card-->
+        <div class="col-sm-6">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title">
+                        <a ng-click="saveAsCSV('digestAll');">Save all Digest cycles</a>
+                    </h3>
+                </div><!-- /.box-header -->
+            </div>
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title">
+                        <a ng-click="saveAsCSV('digestFiltered');">Save Filtered Digest cycles</a>
+                    </h3>
+                </div><!-- /.box-header -->
+            </div>
+        </div>
     </div>
 
     <div ng-include="'digestMeasures.html'"></div>
