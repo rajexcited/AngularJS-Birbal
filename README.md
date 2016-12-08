@@ -1,3 +1,5 @@
+Due to lack of time and resource availability, There will not be any further enhancements.
+
 # AngularJS-Birbal
 Learn Angular performance effects. It provides extra eye to developer for ngApp.
 
