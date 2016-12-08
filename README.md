@@ -1,4 +1,4 @@
-Due to lack of time and resource availability, There will not be any further enhancements.
+Adding new feature mocking live Http calls in few weeks.Due to lack of time and resource availability, There will not be any further enhancements. 0.0.8 is going to be last release until I find some help.
 
 # AngularJS-Birbal
 Learn Angular performance effects. It provides extra eye to developer for ngApp.
