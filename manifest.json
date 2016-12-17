@@ -1,7 +1,7 @@
 {
   "name": "AngularJS Birbal",
   "version": "0.0.8",
-  "description": "Angular performance inspection by Birbal eyes. Detailed digest cycles, watch, effect of events, effects of http",
+  "description": "It will detect auto or manual bootstrap. Angular performance inspection by Birbal eyes. Detailed digest cycles, watch, effect of events, effects of http",
   "content_scripts": [
     {
       "matches": [
