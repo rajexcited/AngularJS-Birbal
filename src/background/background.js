@@ -19,12 +19,8 @@
             'log': noop,
             'info': noop,
             'debug': noop,
-            'warn': function (msg) {
-                console.warn(msg);
-            },
-            'error': function (msg) {
-                console.error(msg);
-            }
+            'warn': window.console.warn.bind(console),
+            'error': window.console.error.bind(console)
         };
     }
     /////////////////////////////////////////////////////////

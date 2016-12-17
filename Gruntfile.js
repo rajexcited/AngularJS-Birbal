@@ -41,6 +41,17 @@ module.exports = function (grunt) {
                     'dist/content-script/content-script.min.js': ['src/content-script/content-script.js'],
                     'dist/message.min.js': ['src/message.js']
                 }
+            },
+            'uglify-inspector': {
+                options: {
+                    preserveComments: false,
+                    mangle: false,
+                    compress: false,
+                    beatify: true
+                },
+                files: {
+                    'src/content-script/inject/angularinspector.min.js': ['src/content-script/inject/angularinspector.js']
+                }
             }
         },
         copy: {
@@ -52,7 +63,7 @@ module.exports = function (grunt) {
                     {expand: true, cwd: 'src/panel/css/', src: '*.css', dest: 'zip/src/panel/'},
                     {src: ['src/panel/partials/*.html'], dest: 'zip/'},
                     {src: 'src/devtools/*', dest: 'zip/'},
-                    {src: 'src/content-script/inject/angularinspector.js', dest: 'zip/'}
+                    {src: 'src/content-script/inject/angularinspector.min.js', dest: 'zip/'}
                 ]
             },
             // compile and generate lib folder
@@ -115,22 +126,22 @@ module.exports = function (grunt) {
                 ]
             }
         },
-        'template': {
-            'index': {
-                'options': {
-                    'data': function () {
+        template: {
+            index: {
+                options: {
+                    data: function () {
                         var allIncludes = grunt.file.readJSON('include.json');
                         return allIncludes[ENV];
                     }
                 },
-                'files': {
+                files: {
                     'src/panel/partials/index.html': ['src/panel/partials/index.html.template']
                 }
             }
         },
         clean: {
             compress: ['zip/**'],
-            'build-local': ['dist/**', 'lib/**', 'src/panel/partials/index.html']
+            'build-local': ['dist/**', 'lib/**', 'src/panel/partials/index.html', 'src/**/*.min.js']
         },
         connect: {
             example: {
@@ -150,7 +161,7 @@ module.exports = function (grunt) {
     // Default task(s).
     grunt.registerTask('default', ['jshint']);
     // creating zip file for distribution
-    grunt.registerTask('build-extension', ['jshint', 'clean', 'template', 'concat', 'uglify', 'copy', 'compress']);
+    grunt.registerTask('build-extension', ['clean', 'jshint', 'template', 'concat', 'uglify', 'copy', 'compress']);
     // for development
-    grunt.registerTask('build', ['default', 'clean:build-local', 'copy:lib', 'template']);
+    grunt.registerTask('build', ['clean:build-local', 'default', 'uglify:uglify-inspector', 'copy:lib', 'template']);
 };

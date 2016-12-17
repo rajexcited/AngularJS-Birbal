@@ -1,17 +1,17 @@
 /*global angular, BirbalMessage, window, document*/
-(function (window, document) {
+window.inspectorExecutor = function (window, document) {
     'use strict';
 
     /**
-     Birbal detects angular page, and notify with basic informations
+     * Birbal detects angular page, and notify with basic informations
      */
     var logger, contentMessageActions = {}, receiver, annotate, sendDependencyTree;
     /////////////////////////////////////////////////////////
-    //            LOGGER FOR DEVELOPMENT ONLY
+    //            LOGGER FOR DEVELOPMENT
     /////////////////////////////////////////////////////////
-    // get flag value set by birbal
+    // get flag value set by birbal app
     function noop() {
-        return;
+        return undefined;
     }
 
     if (document.getElementsByTagName('html')[0].getAttribute('birbal-debug') === 'true') {
@@ -22,25 +22,44 @@
             'log': noop,
             'info': noop,
             'debug': noop,
-            'warn': function (msg) {
-                console.warn(msg);
-            },
-            'error': function (msg) {
-                console.error(msg);
-            }
+            'table': noop,
+            'warn': window.console.warn.bind(console),
+            'error': window.console.error.bind(console)
         };
     }
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
 
-    logger.log('loading birbal inspector of AngularJS App.');
+    logger.log('loading birbal inspector of AngularJS App. ');
     /////////////////////////////////////////////////////////
     //            BIRBAL SETUP
     /////////////////////////////////////////////////////////
     // listener and communication
+    function printCircularReferenceError(o) {
+        var cache = [], ck = [], ind = 0;
+        try {
+            JSON.stringify(o, function (key, value) {
+                if (typeof value === 'object' && value !== null) {
+                    ind = cache.indexOf(value);
+                    // Store value in our collection
+                    cache.push(value);
+                    ck.push(key);
+                }
+                return value;
+            });
+        } catch (e) {
+            logger.error.bind(logger, 'Object = ')(o);
+            logger.error(new Error('circular reference found for above object, \tObject' + ck.join('.') + ' is equal to Object' + ck.slice(0, ind + 1).join('.') + '\n' + e.stack));
+        }
+    }
+
     function broadcastMessage(info, task) {
-        var msg = new BirbalMessage(info, 'angular-inspector', 'content-script', task);
-        window.postMessage(msg, '*');
+        try {
+            var msg = new BirbalMessage(info, 'angular-inspector', 'content-script', task);
+            window.postMessage(msg, '*');
+        } catch (e) {
+            printCircularReferenceError(info);
+        }
     }
 
     function contentMsgListener(event) {
@@ -53,7 +72,7 @@
         }
         /*jslint eqeq: false*/
         /* jshint +W116 */
-        logger.log('in contentMsgListener-angular birbal ' + performance.now());
+        logger.log('in contentMsgListener-angular birbal ');
         logger.log(event.data);
         receiver.answerCall(event.data);
     }
@@ -80,7 +99,7 @@
 
         receiverSelf.actionOnTask = function (task, actionCallBack) {
             if (typeof task !== 'string' && typeof actionCallBack !== 'function') {
-                throw new Error('arguments(task, actionCallBack) are not matching');
+                throw new Error('arguments(task, actionCallBack) are not matching.');
             }
             taskCallBackList[task] = actionCallBack;
         };
@@ -131,18 +150,21 @@
             attributes, appname, attrName, len;
 
         appname = ngRootNode.getAttribute('birbal-ng-module');
+        ngRootNode = document.querySelector('.ng-scope');
+        appname = appname || angular.element(ngRootNode).data('ngApp');
         if (!appname) {
-            ngRootNode = document.querySelector('.ng-scope');
-            attributes = ngRootNode.attributes;
-            len = attributes.length;
-            do {
-                len--;
-                attrName = attributes.item(len).name;
-                if (normalizeAngularAttr(attrName) === 'ngApp') {
-                    appname = attributes.item(len).value;
-                    break;
-                }
-            } while (len);
+            attributes = (ngRootNode && ngRootNode.attributes);
+            if (attributes) {
+                len = attributes.length;
+                do {
+                    len--;
+                    attrName = attributes.item(len).name;
+                    if (normalizeAngularAttr(attrName) === 'ngApp') {
+                        appname = attributes.item(len).value;
+                        break;
+                    }
+                } while (len);
+            }
         }
         return appname;
 
@@ -168,11 +190,12 @@
     /////////////////////////////////////////////////////////////////
     function instrumentAngular() {
         // finder for early versions of angular which doesn't have definition
+        logger.log('instrumenting angular');
         annotateFinder();
         angular.module('ng')
             .config(function ($provide, $httpProvider) {
 
-                function fnreplacer(key, value) {
+                function fnreplacer(ignore, value) {
                     if (typeof value === "function") {
                         return 'fn: ' + (value.name || value.toString());
                     }
@@ -201,7 +224,7 @@
                     browserDefer: [],
                     deps: []
                 };
-                window.deps = nb.deps;
+                //window.deps = nb.deps;
                 // instrument scope/rootScope
                 $provide.decorator('$rootScope', function ($delegate) {
                     var scopePrototype, ngWatch, ngWatchCollection, ngDigest, ngApply, ngEmit, ngBroadcast, ngEvalAsync,
@@ -559,7 +582,7 @@
                         depstimeout = window.setTimeout(function () {
                             broadcastMessage(nb.deps, 'activeDependencies');
                             depstimeout = undefined;
-                        }, 1.3*1000);
+                        }, 1.3 * 1000);
                     }
                 }
 
@@ -817,7 +840,7 @@
     }
 
     function inspectAngular() {
-        logger.log('starting inspection ' + performance.now());
+        logger.log('starting inspection ');
         contentMessageActions.angularDetected = true;
         // quick messaging
         var msg = {};
@@ -825,17 +848,58 @@
         msg.ngVersion = window.angular && window.angular.version;
         msg.ngDetected = !!msg.ngVersion;
         msg.ngModule = '';
+        if (contentMessageActions.resumeBootstrap) {
+            logger.log('requesting to resume bootstrap in inspectAngular');
+            contentMessageActions.resumeBootstrap();
+        }
         if (msg.ngDetected) {
             msg.ngModule = getAngularApp();
             msg.ngRootNode = generateXPath(document.querySelector('.ng-scope'));
-            sendDependencyTree([msg.ngModule]);
+            sendDependencyTree(msg.ngModule.split(','));
         }
         // send inspection data
         broadcastMessage(msg, 'ngDetect');
         logger.log('ngDetect message or cleanup');
     }
 
-    /////////
+    function addBirbalModule() {
+        var bodyElm = angular.element(document.body),
+            loader = angular.element(
+                '<div style="opacity: 1; height: 100%; width: 100%; background: #fff; z-index: 2147483647; position: fixed; top: 0; left: 0;">' +
+                '<div style="position: absolute;top: 44%;left: 35%; font-size:3rem"><span>Loading Extension,  Please wait...</span></div></div>'),
+            defaultCss = {
+                'overflow': bodyElm.css('overflow'),
+                'height': bodyElm.css('height'),
+                'width': bodyElm.css('width')
+            };
+        // register birbalApp to do specific task or action
+        angular.module('birbalApp', [])
+            .run([function () {
+            }]);
+
+        contentMessageActions.resumeBootstrap = function (removeLoader) {
+            if (angular.resumeBootstrap) {
+                // bootstrap was on halt
+                angular.resumeBootstrap(['birbalApp']);
+                removeLoader = true;
+            }
+            logger.log('resuming now? ' + !!angular.resumeBootstrap + ' & removing loader?  ' + !!removeLoader);
+            if (removeLoader) {
+                delete contentMessageActions.resumeBootstrap;
+                // remove birbal loader
+                bodyElm.css(defaultCss);
+                loader.remove();
+            }
+        };
+        // init
+        logger.log('adding loader, pausing bootstrap and init');
+        bodyElm.css({'overflow': 'hidden', 'height': '100vh', 'width': '100vw'});
+        bodyElm.append(loader[0]);
+        contentMessageActions.resumeBootstrap();
+    }
+
+    ///////// when page is ready with init DOM
+    window.name = 'NG_DEFER_BOOTSTRAP!';
     if (document.readyState === 'complete') {
         window.setTimeout(inspectAngular, 1);
     } else {
@@ -872,10 +936,39 @@
         document.addEventListener('DOMNodeInserted', areWeThereYet);
     }
 
+    function instrumentBootStrap() {
+        var bootstrapping = angular.bootstrap;
+        logger.log('instrumenting manual bootstrap');
+        function bootstrap(element, module) {
+            try {
+                logger.log('manual bootstrapping');
+                var returnValue = bootstrapping.apply(null, arguments);
+                window.setTimeout(inspectAngular, 1);
+                return returnValue;
+            } catch (e) {
+                logger.error('error in manual bootstrap\n' + e.stack);
+                contentMessageActions.resumeBootstrap(true);
+                throw e;
+            } finally {
+                angular.element(element).data('ng-app', [].concat(module).join(','));
+                angular.bootstrap = bootstrapping;
+                logger.log('reverting it back. is it really? ' + (bootstrap !== angular.bootstrap));
+                bootstrapping = undefined;
+            }
+        }
+
+        angular.bootstrap = bootstrap;
+    }
+
     // wait and call instrumentation or detection
     contentMessageActions.angularDetected = false;
     waitForAngularLoad(function () {
+        // angular detected
+        // add spy to bootstrap to detect manual bootstrap
+        instrumentBootStrap();
+        addBirbalModule();
         if (document.getElementsByTagName('html')[0].getAttribute('birbal-ng-start') === 'true') {
+            // instrument and resume
             instrumentAngular();
         }
     });
@@ -889,4 +982,4 @@
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
 
-}(window, document));
+};

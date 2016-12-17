@@ -22,12 +22,8 @@
             'log': noop,
             'info': noop,
             'debug': noop,
-            'warn': function (msg) {
-                console.warn(msg);
-            },
-            'error': function (msg) {
-                console.error(msg);
-            }
+            'warn': window.console.warn.bind(console),
+            'error': window.console.error.bind(console)
         };
     }
     /////////////////////////////////////////////////////////
@@ -56,12 +52,17 @@
     /////////////////////////////////////////////////////////
     //            BG message listener
     /////////////////////////////////////////////////////////
-    //backgroundConnection.onMessage.addListener(function bgMsgListener(message) {
-    //    // in background message listener
-    //    var newMessage = new birbalJS.Message(message.msgDetails, birbalJS.END_POINTS.CONTENTSCRIPT, birbalJS.END_POINTS.ANGULARINSPECTOR, message.task);
-    //    logger.info(performance.now() + ' cs-' + newMessage.task);
-    //    window.postMessage(newMessage, '*');
-    //});
+    backgroundConnection.onMessage.addListener(function bgMsgListener(message) {
+        // in background message listener
+        if (message.task === 'instrumentNg') {
+            // qq: what's the purpose of this ???
+            var htmlNode = document.getElementsByTagName('html')[0];
+            htmlNode.setAttribute('birbal-ng-start', message.msgDetails.ngStart);
+            htmlNode.setAttribute('birbal-ng-module', message.msgDetails.ngModule);
+        } else {
+            window.postMessage(new birbalJS.Message(message.msgDetails, birbalJS.END_POINTS.CONTENTSCRIPT, birbalJS.END_POINTS.ANGULARINSPECTOR, message.task), '*');
+        }
+    });
 
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
@@ -110,48 +111,33 @@
     //            Inject Script Communication setup
     /////////////////////////////////////////////////////////
     // after all listeners
-    // logger.log('injecting script');
-
-    function injectScript() {
+    (function injectScript() {
         var htmlRootNode, script,
-            name = 'angularinspector', rrt;
+            name = 'angularinspector';
         logger.log('injecting script: ' + name);
-
         htmlRootNode = document.getElementsByTagName('html')[0];
         htmlRootNode.setAttribute('birbal-debug', birbalJS.debugMode.toString());
-        // inject script to the page
+        // inject script to tab
         if (htmlRootNode.querySelector('.birbal-' + name)) {
             logger.log('already exists');
             return;
         }
 
         script = document.createElement('script');
-        script.className = 'birbal-' + name;
-        script.src = chrome.extension.getURL('src/content-script/inject/' + name + '.js');
+        script.setAttribute('name', 'birbal-message');
+        script.setAttribute('type', 'text/javascript');
+        script.innerText = 'BirbalMessage=' + birbalJS.Message.toString().replace(/this\.tabId.+;/, '');
         htmlRootNode.appendChild(script);
 
-        rrt = new RegExp('this\\.tabId.+;');
         script = document.createElement('script');
-        script.innerText = 'BirbalMessage=' + birbalJS.Message.toString().replace(rrt, '');
+        script.className = 'birbal-' + name;
+        script.setAttribute('type', 'text/javascript');
+        script.innerText = '(' + window.inspectorExecutor.toString() + '(window, document))';
         htmlRootNode.appendChild(script);
-        // qq: if remove works, no need of regex to replace above
-        htmlRootNode.removeChild(script);
-    }
+    }());
 
     // #4
-    injectScript();
-    backgroundConnection.onMessage.addListener(function bgMsgListener(message) {
-        // in background message listener
-        var newMessage = new birbalJS.Message(message.msgDetails, birbalJS.END_POINTS.CONTENTSCRIPT, birbalJS.END_POINTS.ANGULARINSPECTOR, message.task);
-        if (newMessage.task === 'instrumentNg') {
-            var htmlNode=document.getElementsByTagName('html')[0];
-            htmlNode.setAttribute('birbal-ng-start', newMessage.msgDetails.ngStart);
-            htmlNode.setAttribute('birbal-ng-module', newMessage.msgDetails.ngModule);
-        } else {
-            window.postMessage(newMessage, '*');
-        }
-    });
-
+    //injectScript();
     logger.log('cleaning old resources if any');
     window.addEventListener('beforeunload', function () {
         // cleanup - closures, event listeners

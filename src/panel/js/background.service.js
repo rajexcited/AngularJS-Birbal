@@ -19,12 +19,8 @@
                     'log': angular.noop,
                     'info': angular.noop,
                     'debug': angular.noop,
-                    'warn': function (msg) {
-                        console.warn(msg);
-                    },
-                    'error': function (msg) {
-                        console.error(msg);
-                    }
+                    'warn': window.console.warn.bind(console),
+                    'error': window.console.error.bind(console)
                 };
             }
             // register logger service

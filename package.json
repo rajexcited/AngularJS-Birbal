@@ -26,8 +26,8 @@
   },
   "scripts": {
     "clean": "npm prune & npm update & grunt clean",
-    "build": "grunt build --dev",
-    "package": "grunt build-extension --prod"
+    "build": "npm run clean & grunt build --dev",
+    "package": "npm run clean & grunt build-extension --prod"
   },
   "repository": {
     "type": "git",
