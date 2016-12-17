@@ -1,5 +1,3 @@
-Adding new feature mocking live Http calls in few weeks.Due to lack of time and resource availability, There will not be any further enhancements. 0.0.8 is going to be last release until I find some help.
-
 # AngularJS-Birbal
 Learn Angular performance effects. It provides extra eye to developer for ngApp.
 
@@ -12,10 +10,13 @@ Features include:
   - watch details
   - effects of custom and browser events 
   - effect of http
-
+  - detects auto(ngApp) or manual bootstrap
+  
 It is in initial phase of developement.
 Goal is to provide angular developers more run-time information of the application.
 
+
+Adding new feature mocking live Http calls in few weeks.Due to lack of time and resource availability, There will not be any further enhancements. 0.0.8 is going to be last release until I find some help.
 ## Roadmap:
   - include automation test and build process.
   - Provide performance statistics for module.
