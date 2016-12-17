@@ -1,6 +1,6 @@
 {
   "name": "AngularJS Birbal",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Angular performance inspection by Birbal eye.detects bootstrap, Detailed digest cycles, watch, effect of events, effects of http",
   "content_scripts": [
     {
