@@ -10,7 +10,8 @@
         PANEL: 'panel',
         BACKGROUND: 'background',
         CONTENTSCRIPT: 'content-script',
-        ANGULARINSPECTOR: 'angular-inspector'
+        ANGULARINSPECTOR: 'angular-inspector',
+        POPUP_HTTP: 'http-mock-popup'
     };
 
     /////////////////////////////////////////////////////////
@@ -27,6 +28,7 @@
     //  Call Consructor
     /////////////////////////////////////////////////////////
     MessageImpl = function (msgDetails, callerId, receiverId, task) {
+        var tabId;
         if (msgDetails) {
             if (!task) {
                 task = msgDetails.task;
@@ -40,12 +42,18 @@
                 receiverId = msgDetails.receiverId;
                 delete msgDetails.receiverId;
             }
+            tabId = msgDetails.tabId
         }
         if (!callerId || !task) {
             throw new Error('callerId or task not defined');
         }
-        var chrome = window.chrome;
-        this.tabId = chrome && chrome.devtools && chrome.devtools.inspectedWindow && chrome.devtools.inspectedWindow.tabId;
+        if (tabId) {
+            msgDetails = msgDetails.info;
+            this.tabId = tabId;
+        } else {
+            var chrome = window.chrome;
+            this.tabId = chrome && chrome.devtools && chrome.devtools.inspectedWindow && chrome.devtools.inspectedWindow.tabId;
+        }
         this.callerId = callerId;
         /* default is background */
         this.receiverId = receiverId || endPoints.BACKGROUND;
@@ -108,7 +116,7 @@
         var self = this;
         self.END_POINTS = endPoints;
         // true for development only    // try to get from config
-        self.debugMode = false;
+        self.debugMode = true;
         // call is used in sending message
         self.Message = MessageImpl;
         self.Receiver = ReceiverImpl;
