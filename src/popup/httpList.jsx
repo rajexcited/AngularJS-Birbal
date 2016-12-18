@@ -2,25 +2,37 @@ class HttpList extends React.Component {
 
     constructor() {
         super();
-        //this.state = {httpList: [{method: 'GET', url: 'http url 1', response: ''}]};
-        this.state = {httpList: []};
+        this.state = {httpList: [], listErrorIndicator: []};
         this.getStoredHttpList(this);
     }
 
-    addNewHttp(httpMock) {
-        var newList = this.state.httpList;
+    getErrorIndicator(item) {
+        if (JSON.stringify(item).indexOf('httpRequired') !== -1) {
+            return "list-group-item-danger";
+        }
+        return "";
+    }
+
+    addNewHttp(httpMock, httpErrorState) {
+        var newList = this.state.httpList,
+            newErrors = this.state.listErrorIndicator;
         newList.push(httpMock);
-        this.setState({httpList: newList}, function () {
+        // find any error and update it
+        newErrors.push(this.getErrorIndicator(httpErrorState));
+        this.setState({httpList: newList, listErrorIndicator: newErrors}, function () {
             // store http to storage
             updateHttpList(newList.filter((item)=>(!!item)));
         });
     }
 
-    updateExistingHttp(ind, httpMock) {
+    updateExistingHttp(ind, httpMock, httpErrorState) {
         console.log(arguments);
-        var aList = this.state.httpList;
+        var aList = this.state.httpList,
+            newErrors = this.state.listErrorIndicator;
         aList[ind] = httpMock;
-        this.setState({httpList: aList}, function () {
+        // find any error and update it
+        newErrors[ind] = this.getErrorIndicator(httpErrorState);
+        this.setState({httpList: aList, listErrorIndicator: newErrors}, function () {
             // store http to storage
             updateHttpList(aList.filter((item)=>(!!item)));
         });
@@ -31,14 +43,26 @@ class HttpList extends React.Component {
         getHttpMockFromStorage().then(function (httpList) {
             // on async resolve
             if (httpList) {
-                THIS.setState({httpList: THIS.state.httpList.concat(httpList)});
+                var listErrorIndicator = [];
+                httpList.forEach(()=> (listErrorIndicator.push('')));
+                THIS.setState({
+                    httpList: THIS.state.httpList.concat(httpList),
+                    listErrorIndicator: THIS.state.listErrorIndicator.concat(listErrorIndicator)
+                });
             }
         });
     }
 
+    initErrorState(ind, httpErrorState) {
+        var newErrors = this.state.listErrorIndicator;
+        newErrors[ind] = this.getErrorIndicator(httpErrorState);
+        this.setState({listErrorIndicator: newErrors});
+    }
+
     remove(ind, e) {
         this.state.httpList[ind] = undefined;
-        this.setState({httpList: this.state.httpList}, function () {
+        this.state.listErrorIndicator[ind] = undefined;
+        this.setState({httpList: this.state.httpList, listErrorIndicator: this.state.listErrorIndicator}, function () {
             // store http to storage
             updateHttpList(this.state.httpList.filter((item)=>(!!item)));
         });
@@ -59,7 +83,9 @@ class HttpList extends React.Component {
                         if (http) {
                             return (
                                 <div data-list-item-id={'item-'+ind}>
-                                    <button type="button" className="list-group-item" id={"url"+ind}
+                                    <button type="button"
+                                            className={"list-group-item "+THIS.state.listErrorIndicator[ind]}
+                                            id={"url"+ind}
                                             data-toggle="collapse"
                                             data-target={"#collapse-url"+ind} aria-expanded="true"
                                             onClick={THIS.handleClick} aria-controls={"collapse-url"+ind}>
@@ -74,10 +100,9 @@ class HttpList extends React.Component {
                                         <span className="badge">{http.method}</span>
                                     </button>
                                     <HttpFormPanel name={"url"+ind} responseData={http.response} url={http.url}
-                                                   status={http.status}
-                                                   method={http.method} headerList={http.headers}
-                                                   save={THIS.updateExistingHttp.bind(THIS,ind)}
-                                                   saveBtnText="Save"></HttpFormPanel>
+                                                   status={http.status} method={http.method} headerList={http.headers}
+                                                   save={THIS.updateExistingHttp.bind(THIS,ind)} saveBtnText="Save"
+                                                   updateInitErrorState={THIS.initErrorState.bind(THIS,ind)}></HttpFormPanel>
                                 </div>
                             );
                         }
@@ -95,15 +120,16 @@ class HttpNewForm extends React.Component {
         this.state = {resetToggle: true};
     }
 
-    add(httpMock) {
-        this.props.httpList.addNewHttp(httpMock);
+    add(httpMock, httpErrorState) {
+        this.props.httpList.addNewHttp(httpMock, httpErrorState);
+        // dummy state to update the component with default values
         this.setState({resetToggle: !this.state.resetToggle});
     }
 
     render() {
         return (
             <HttpFormPanel name="new" saveBtnText="Add" save={this.add.bind(this)} responseData="" url="" status=""
-                           trigger-reset={this.state.resetToggle}> </HttpFormPanel>
+                           noValidate="true" trigger-reset={this.state.resetToggle}> </HttpFormPanel>
         );
     }
 }

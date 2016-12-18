@@ -1,7 +1,7 @@
 {
   "name": "angularjs-birbal",
   "version": "0.0.9",
-  "description": "chrome extension for inspecting angular apps. dependecies and performance analysis. AddOn features: Dependency graph, http mocks.",
+  "description": "chrome extension to analyze Angular app - performance and structure dependency. AddOn features: Dependency graph, http mocks(Allow to mock Http calls for ongoing development).",
   "devDependencies": {
     "grunt": "^0.4.5",
     "time-grunt": "^1.3.0",
@@ -22,7 +22,7 @@
     "font-awesome": "^4.3.0",
     "angular": "^1.4.7",
     "angular-animate": "^1.4.7",
-    "angular-mocks": "",
+    "angular-mocks": "^1.4.7",
     "jquery": "^2.1.4",
     "floatthead": "^1.4.0",
     "ion-rangeslider": "^2.1.2",

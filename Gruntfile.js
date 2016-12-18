@@ -66,22 +66,22 @@ module.exports = function (grunt) {
                     {src: 'src/content-script/inject/angularinspector.min.js', dest: 'zip/'}
                 ]
             },
-            // compile and generate lib folder
-            lib: {
+            'lib-angular-mock': {
                 options: {
-                    process: function (content, srcpath) {
-                        if (srcpath.indexOf('angular-mocks.js') !== -1) {
-                            return content.replace('(function(window, angular) {', 'window.injectMock=(function(window, angular) {')
-                                .replace('})(window, window.angular);', '});');
-                        }
-                        return content;
+                    process: function (content) {
+                        return content.replace('(function(window, angular) {', 'window.injectMock=(function(window, angular) {')
+                            .replace('})(window, window.angular);', '});');
                     }
                 },
+                src: 'node_modules/angular-mocks/angular-mocks.js',
+                dest: 'lib/angular-mocks.js'
+            },
+            // compile and generate lib folder
+            lib: {
                 files: [
                     // angular
                     {src: 'node_modules/angular/angular.min.js', dest: 'lib/angular.min.js'},
                     {src: 'node_modules/angular-animate/angular-animate.min.js', dest: 'lib/angular-animate.min.js'},
-                    {src: 'node_modules/angular-mocks/angular-mocks.js', dest: 'lib/angular-mocks.js'},
                     // jquery
                     {src: 'node_modules/jquery/dist/jquery.min.js', dest: 'lib/jquery.min.js'},
                     // admin-lte, bootstrap and font-awesome
@@ -191,5 +191,5 @@ module.exports = function (grunt) {
     // creating zip file for distribution
     grunt.registerTask('build-extension', ['jshint', 'template', 'concat', 'uglify', 'copy', 'compress']);
     // for development
-    grunt.registerTask('build', ['jshint', 'uglify:uglify-inspector', 'copy:lib', 'template']);
+    grunt.registerTask('build', ['jshint', 'uglify:uglify-inspector', 'copy:lib', 'copy:lib-angular-mock', 'template']);
 };

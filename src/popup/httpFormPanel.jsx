@@ -11,7 +11,29 @@ class HttpFormPanel extends React.Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.resetForm = this.resetForm.bind(this);
         // init or reset the form
-        this.resetForm();
+        var THIS = this;
+        this.resetForm(()=> {
+            if (THIS.props.updateInitErrorState) {
+                var httpErrorState = THIS.getState();
+                birbalJS.logger.log(THIS.props);
+                THIS.props.updateInitErrorState(httpErrorState);
+            }
+        });
+    }
+
+    getState() {
+        var errorState = {}, elm;
+        // required state
+        for (var name in this.elm) {
+            elm = this.elm[name];
+            // initialize
+            errorState[name] = "";
+            if (elm.dataset && elm.dataset.httpRequired === 'true' && !(elm.value || elm.getValue && elm.getValue())) {
+                errorState[name] = errorState[name].concat(',httpRequired');
+            }
+        }
+
+        return errorState;
     }
 
     handleSubmit(e) {
@@ -23,12 +45,25 @@ class HttpFormPanel extends React.Component {
             headers: this.elm.headers.getValue(),
             method: this.elm.httpMethod.getValue()
         };
-        this.props.save(httpMock);
+        var httpErrorState = this.getState();
+        this.props.save(httpMock, httpErrorState);
         // reset the form
         this.resetForm();
     }
 
-    resetForm() {
+    validateForm() {
+        var httpErrorState = this.getState();
+        for (var name in httpErrorState) {
+            if (httpErrorState[name].length !== 0) {
+                ReactDOM.findDOMNode(this.elm[name]).parentElement.classList.add('has-error');
+            } else {
+                birbalJS.logger.log.bind(this, 'element of no error: ').call(this, ReactDOM.findDOMNode(this.elm[name]));
+                ReactDOM.findDOMNode(this.elm[name]).parentElement.classList.remove('has-error');
+            }
+        }
+    }
+
+    resetForm(callback) {
         var THIS = this;
         window.setTimeout(function () {
             THIS.setState({
@@ -38,6 +73,12 @@ class HttpFormPanel extends React.Component {
             THIS.elm.url.value = THIS.props.url || "";
             THIS.elm.responseData.value = THIS.props.responseData || "";
             THIS.elm.status.value = THIS.props.status || "";
+            if (typeof callback === 'function') {
+                callback();
+            }
+            if (!THIS.props.noValidate) {
+                THIS.validateForm();
+            }
         }, 200);
     }
 
@@ -67,8 +108,9 @@ class HttpFormPanel extends React.Component {
                                           ref={(dropdown) => { this.elm.httpMethod = dropdown; }}/>
 
                                 <input type="text" className="form-control" aria-label="request URL"
-                                       placeholder="Enter URL or regex URL" defaultValue={this.props.url}
-                                       ref={(input) => { this.elm.url = input; }}/>
+                                       onBlur={this.validateForm.bind(this)}
+                                       data-http-required="true" placeholder="Enter URL or regex URL"
+                                       defaultValue={this.props.url} ref={(input) => { this.elm.url = input; }}/>
                             </div>
                         </div>
                         <div className="nav-container">
@@ -90,11 +132,12 @@ class HttpFormPanel extends React.Component {
                             {/*<!-- Tab panes -->*/}
                             <div className="all-tab-contents">
                                 <div className="tab-content">
-                                    <div role="tabpanel" className="tab-pane fade active in"
+                                    <div role="tabpanel" className={"tab-pane fade active in"}
                                          id={"status-"+this.props.name}>
-                                        <input type="text" className="form-control" aria-label="http response status"
-                                               placeholder="Enter Http Status number"
+                                        <input type="number" className="form-control" aria-label="http response status"
+                                               placeholder="Enter Http Status number" data-http-required="true"
                                                defaultValue={this.props.status}
+                                               onBlur={this.validateForm.bind(this)}
                                                ref={(input) => { this.elm.status= input; }}
                                         />
                                     </div>
