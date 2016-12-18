@@ -1,23 +1,26 @@
 # AngularJS-Birbal
-Learn Angular performance effects. It provides extra eye to developer for ngApp.
+Learn Angular App. It's an analysis tool. performance analysis, architecture analysis, avoid server calls using Http mock.
 
 ##[Chrome Webstore link](https://chrome.google.com/webstore/detail/lpgcgfldhlpcekibknamgefpbifakkai)
-##[Group Discussion](https://groups.google.com/forum/#!forum/angularjs-birbal)
+##[Group Discussion Forum](https://groups.google.com/forum/#!forum/angularjs-birbal)
 
-Features include:
-  - digest cycle list with details
-  - filter capability to debug and analyze
+Features included (Highlights):
+  - digest cycle list with details in table format
+  - filter capability to debug and analyze watchers
   - watch details
   - effects of custom and browser events 
   - effect of http
   - detects auto(ngApp) or manual bootstrap
-  
-It is in initial phase of developement.
-Goal is to provide angular developers more run-time information of the application.
+  - dependency graph of available modules to application
+  - active dependency graph of modules injected for page or page-actions
+  - Mock $http calls and develop faster without server.
 
 
-Adding new feature mocking live Http calls in few weeks.Due to lack of time and resource availability, There will not be any further enhancements. 0.0.8 is going to be last release until I find some help.
+To provide angular developers more run-time information of the application.
+Due to lack of time and resource availability, There will not be any further enhancements 0.0.9
+
 ## Roadmap:
+  - add examples
   - include automation test and build process.
   - Provide performance statistics for module.
   - ngView and ngRoute statistics
@@ -33,20 +36,19 @@ This project is setup using NodeJS/npm and grunt.
 ### Getting Started:
   - Clone the repository: ``` git clone https://github.com/rajexcited/AngularJS-Birbal.git ``` 
   - run below commands in project folder.
-  
       ```    
       npm install
       npm run build
       ```
 
   - use 'load unpacked extension' option from chrome extension developer mode.
+
   - to update, install, manage dependencies and clean dist, use this command
     ```
     npm run clean
     ```
 
   - run example and inspect this extension,
-
     ```
     npm run build
     grunt connect:example
