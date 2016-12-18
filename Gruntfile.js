@@ -8,7 +8,7 @@ module.exports = function (grunt) {
         pkg: grunt.file.readJSON('package.json'),
         jshint: {
             // define the files to lint
-            files: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js'],
+            files: ['Gruntfile.js', 'src/**/*(!*.generated).js', 'test/**/*.js'],
             // configure JSHint (documented at http://www.jshint.com/docs/)
             options: {
                 // more options here if you want to override JSHint defaults
@@ -68,10 +68,20 @@ module.exports = function (grunt) {
             },
             // compile and generate lib folder
             lib: {
+                options: {
+                    process: function (content, srcpath) {
+                        if (srcpath.indexOf('angular-mocks.js') !== -1) {
+                            return content.replace('(function(window, angular) {', 'window.injectMock=(function(window, angular) {')
+                                .replace('})(window, window.angular);', '});');
+                        }
+                        return content;
+                    }
+                },
                 files: [
                     // angular
                     {src: 'node_modules/angular/angular.min.js', dest: 'lib/angular.min.js'},
                     {src: 'node_modules/angular-animate/angular-animate.min.js', dest: 'lib/angular-animate.min.js'},
+                    {src: 'node_modules/angular-mocks/angular-mocks.js', dest: 'lib/angular-mocks.js'},
                     // jquery
                     {src: 'node_modules/jquery/dist/jquery.min.js', dest: 'lib/jquery.min.js'},
                     // admin-lte, bootstrap and font-awesome
@@ -88,7 +98,22 @@ module.exports = function (grunt) {
                         src: ['node_modules/font-awesome/css/font-awesome.min.css', 'node_modules/admin-lte/bootstrap/css/bootstrap.min.css', 'node_modules/admin-lte/dist/css/AdminLTE.min.css', 'node_modules/admin-lte/dist/css/skins/skin-blue.min.css'],
                         dest: 'lib/admin-lte/css/'
                     },
-                    {src: 'fonts/*.woff2', dest: 'lib/admin-lte/', expand: true, cwd: 'node_modules/font-awesome/'},
+                    {
+                        src: 'node_modules/admin-lte/bootstrap/fonts/glyphicons-halflings-regular.ttf',
+                        dest: 'lib/admin-lte/fonts/glyphicons-halflings-regular.ttf'
+                    },
+                    {
+                        src: 'node_modules/admin-lte/bootstrap/fonts/glyphicons-halflings-regular.woff',
+                        dest: 'lib/admin-lte/fonts/glyphicons-halflings-regular.woff'
+                    },
+                    {
+                        src: 'node_modules/admin-lte/bootstrap/fonts/glyphicons-halflings-regular.woff2',
+                        dest: 'lib/admin-lte/fonts/glyphicons-halflings-regular.woff2'
+                    },
+                    {
+                        src: 'node_modules/font-awesome/fonts/fontawesome-webfont.woff2',
+                        dest: 'lib/admin-lte/fonts/fontawesome-webfont.woff2'
+                    },
                     // ion-rangeslider
                     {
                         expand: true,
@@ -102,6 +127,9 @@ module.exports = function (grunt) {
                         ],
                         dest: 'lib/ion-rangeslider/'
                     },
+                    // react
+                    {src: 'node_modules/react/dist/react.min.js', dest: 'lib/react.min.js'},
+                    {src: 'node_modules/react-dom/dist/react-dom.min.js', dest: 'lib/react-dom.min.js'},
                     // other vendor files
                     {expand: true, cwd: 'vendor/', src: '**', dest: 'lib/'}
                 ]
@@ -141,7 +169,7 @@ module.exports = function (grunt) {
         },
         clean: {
             compress: ['zip/**'],
-            'build-local': ['dist/**', 'lib/**', 'src/panel/partials/index.html', 'src/**/*.min.js']
+            'build-local': ['dist/**', 'lib/**', 'src/panel/partials/index.html', 'src/**/*.min.js', 'src/**/*.generated.js']
         },
         connect: {
             example: {
@@ -161,7 +189,7 @@ module.exports = function (grunt) {
     // Default task(s).
     grunt.registerTask('default', ['jshint']);
     // creating zip file for distribution
-    grunt.registerTask('build-extension', ['clean', 'jshint', 'template', 'concat', 'uglify', 'copy', 'compress']);
+    grunt.registerTask('build-extension', ['jshint', 'template', 'concat', 'uglify', 'copy', 'compress']);
     // for development
-    grunt.registerTask('build', ['clean:build-local', 'default', 'uglify:uglify-inspector', 'copy:lib', 'template']);
+    grunt.registerTask('build', ['jshint', 'uglify:uglify-inspector', 'copy:lib', 'template']);
 };

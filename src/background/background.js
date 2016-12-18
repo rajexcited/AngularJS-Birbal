@@ -19,6 +19,7 @@
             'log': noop,
             'info': noop,
             'debug': noop,
+            'table': noop,
             'warn': window.console.warn.bind(console),
             'error': window.console.error.bind(console)
         };
@@ -26,7 +27,7 @@
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
     logger.log('background.js loading');
-
+    logger.error.bind(logger, 'last error of extension: ').call(logger, chrome.runtime.lastError);
     /////////////////////////////////////////////////////////
     //            TABS - CONNECTIONS and PROTOTYPE
     /////////////////////////////////////////////////////////
@@ -53,15 +54,16 @@
             tabHolder[tabId][portName] = port;
         };
 
-        tabself.removePort = function (port, portName) {
-            var tabId = port.sender.tab && port.sender.tab.id,
+        tabself.removePort = function (portOrTabId, portName) {
+            var port = isNaN(portOrTabId) ? portOrTabId : undefined,
+                tabId = (port && port.sender.tab && port.sender.tab.id) || portOrTabId,
                 tab;
 
             // delete connection
             if (tabId && tabHolder[tabId]) {
                 delete tabHolder[tabId][portName];
-            } else {
-                // qq: do i need this?
+            } else if (port) {
+                // unlikely need of this block
                 // tabId is not available
                 // iterate through and delete
                 for (tab in tabHolder) {
@@ -73,9 +75,20 @@
                 }
             }
 
-            if (!tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
-                // clean up tab resource
-                delete tabHolder[tabId];
+            if (tabId && !tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
+                var tabInfo = tabself.getTabInfo(tabId);
+                tabInfo.removedSince = Date.now();
+                chrome.alarms.create("delete-tab", {when: tabInfo.removedSince + 2 * 1000});
+                chrome.alarms.onAlarm.addListener(function callback(alarm) {
+                    if (alarm.name === 'delete-tab' && (Date.now() - tabInfo.removedSince) > 2000) {
+                        // reloading tab should be recover within 2 sec
+                        if (tabId && !tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
+                            // clean up tab resource after time expires
+                            logger.log.bind(logger, 'removed tab' + tabId + '- ').call(logger, alarm);
+                            delete tabHolder[tabId];
+                        }
+                    }
+                });
             }
             // removed tabId
             return tabId;
@@ -126,6 +139,26 @@
         logger.log(msg);
     }
 
+    /**
+     * sends call message to http popup
+     * @param tabId{number} must
+     * @param info{object} must
+     * @param task{string} optional
+     */
+    function informPopupHttp(tabId, info, task) {
+        var popupPort, msg;
+
+        popupPort = tabs.getPort(tabId, birbalJS.END_POINTS.POPUP_HTTP);
+        msg = new birbalJS.Message(info, birbalJS.END_POINTS.BACKGROUND, birbalJS.END_POINTS.POPUP_HTTP, task);
+        if (popupPort) {
+            popupPort.postMessage(msg);
+        } else {
+            logger.error('SEVERE ERROR: pop up in tab Connection doesnot exists. incorrect tabId #' + tabId + '. Connection is closed. Cleaning resource......');
+            tabs.removePort(tabId, birbalJS.END_POINTS.POPUP_HTTP);
+        }
+        logger.log(msg);
+    }
+
     /////////////////////////////////////////////////////////
     //            receiver action listener for task
     /////////////////////////////////////////////////////////
@@ -135,6 +168,9 @@
     receiver.actionOnTask('csInit', function (message) {
         // if page refresh is mark, start analysis
         var tabInfo = tabs.getTabInfo(message.tabId);
+        if (tabInfo.mockHttp && tabInfo.mockHttp.list) {
+            informContentScript(message.tabId, tabInfo.mockHttp.list, 'mockHttplist');
+        }
         if (tabInfo.doAnalysis) {
             //informContentScript(message.tabId, tabInfo.ngDetect, 'startAnalysis');
             informPanel(message.tabId, tabInfo.ngDetect, 'addPanel');
@@ -159,7 +195,7 @@
         var tabInfo;
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.dependencyTree = message.msgDetails;
-        informPanel(message.tabId, tabInfo.dependencyTree , 'dependencyTree');
+        informPanel(message.tabId, tabInfo.dependencyTree, 'dependencyTree');
     });
 
     // for devtools panel
@@ -173,7 +209,7 @@
         // removePanel >> reset panel
         taskForPanel = tabInfo.ngDetect && tabInfo.ngDetect.ngDetected ? 'addPanel' : 'removePanel';
         informPanel(message.tabId, tabInfo.ngDetect, taskForPanel);
-        informPanel(message.tabId, tabInfo.dependencyTree , 'dependencyTree');
+        informPanel(message.tabId, tabInfo.dependencyTree, 'dependencyTree');
     });
 
     // #8
@@ -181,16 +217,40 @@
         // enable or disable
         var tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.doAnalysis = message.msgDetails.doAnalysis;
-        informContentScript(message.tabId, {'ngStart': tabInfo.doAnalysis, 'ngModule': tabInfo.ngDetect.ngModule}, 'instrumentNg');
+        informContentScript(message.tabId, {
+            'ngStart': tabInfo.doAnalysis,
+            'ngModule': tabInfo.ngDetect.ngModule
+        }, 'instrumentNg');
     });
+
+    // for http popup in tab
+    // #9
+    receiver.actionOnTask('popupInit', function (message) {
+        var tabInfo = tabs.getTabInfo(message.tabId);
+        logger.log.bind(logger, 'popup init ').call(logger, message);
+        tabInfo.mockHttp = tabInfo.mockHttp || {list: [], isModified: true};
+    });
+    // #10
+    receiver.actionOnTask('retrieveMockList', function (message) {
+        var tabInfo = tabs.getTabInfo(message.tabId),
+            list = tabInfo.mockHttp && tabInfo.mockHttp.list;
+        logger.table.bind(logger, 'responding with mock list- ').call(logger, list);
+        informPopupHttp(message.tabId, list, message.task + "-response");
+    });
+
+    // #11
+    receiver.actionOnTask('updateMockList', function (message) {
+        var tabInfo = tabs.getTabInfo(message.tabId);
+        tabInfo.mockHttp = tabInfo.mockHttp || {};
+        tabInfo.mockHttp.isModified = true;
+        tabInfo.mockHttp.list = message.msgDetails;
+        logger.table.bind(logger, 'updating mock list-  ').call(logger, message.msgDetails);
+    });
+
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
 
-    // Fired when the extension is first installed, when the extension is updated to a new version, and when Chrome is updated to a new version.
-    //chrome.runtime.onInstalled.addListener(function onInstalledCallback(details) {
-    //    logger.log('on' + details.reason + 'Callback: ');
-    //    logger.log(details);
-    //});
+    // init tabs as extension loaded
     tabs = new TabsImpl();
     /////////////////////////////////////////////////////////
     //            On port connection
@@ -214,7 +274,10 @@
             tabs.addPort(tabId, connectingPort, connectingPort.name);
             tabInfo = tabs.getTabInfo(tabId);
             if (tabInfo.doAnalysis) {
-                informContentScript(tabId, {'ngStart': tabInfo.doAnalysis, 'ngModule': tabInfo.ngDetect.ngModule}, 'instrumentNg');
+                informContentScript(tabId, {
+                    'ngStart': tabInfo.doAnalysis,
+                    'ngModule': tabInfo.ngDetect.ngModule
+                }, 'instrumentNg');
             }
         }
 
@@ -226,6 +289,19 @@
             receiver.answerCall(message, sender, connectingPort, destinationPortFinder);
         });
 
+        function handlePopupDisconnection(tabId) {
+            if (connectingPort.name === birbalJS.END_POINTS.POPUP_HTTP) {
+                logger.log('popup http is disconnected.');
+                var tabInfo = tabs.getTabInfo(tabId);
+                tabInfo.mockHttp = tabInfo.mockHttp || {list: [], isModified: true};
+                if (tabInfo.mockHttp.isModified) {
+                    logger.log('sending injector the updated list.');
+                    tabInfo.mockHttp.isModified = false;
+                    informContentScript(tabId, tabInfo.mockHttp.list, 'mockHttplist');
+                }
+            }
+        }
+
         // #20
         /**
          * disconnect event
@@ -234,10 +310,16 @@
         connectingPort.onDisconnect.addListener(function onDisconnectCallback(disconnectingPort) {
             logger.log('onDisconnectCallback');
             var tabId = tabs.removePort(disconnectingPort, connectingPort.name);
+            handlePopupDisconnection(tabId);
             // notify other connections to same tab
             logger.log(tabs.length + ' - After DisconnectCallback, removed tab #' + tabId + ': ' + connectingPort.name);
         });
         /////////////////////////////////
+    });
+
+    chrome.runtime.onSuspend.addListener(function callback() {
+        logger.log(arguments);
+        // notify all tabs - CS/INJECTOR, PANEL, POPUP
     });
 
     setPageAction = function (tabId) {

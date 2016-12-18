@@ -17,7 +17,8 @@
     }
   ],
   "permissions": [
-    "storage"
+    "storage",
+    "alarms"
   ],
   "icons": {
     "16": "img/angular-icon.png",
@@ -35,6 +36,9 @@
     "default_title": "AngularJS Birbal",
     "default_icon": "img/angular-icon.png"
   },
+  "web_accessible_resources": [
+    "lib/angular-mocks.js"
+  ],
   "devtools_page": "src/devtools/devToolsPage.html",
   "content_security_policy": "default-src 'self'  chrome-extension-resource: ;   style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval';  connect-src *; frame-src *;",
   "manifest_version": 2

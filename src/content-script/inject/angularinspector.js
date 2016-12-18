@@ -1,11 +1,11 @@
 /*global angular, BirbalMessage, window, document*/
 window.inspectorExecutor = function (window, document) {
     'use strict';
-
+    window.name = 'NG_DEFER_BOOTSTRAP!';
     /**
      * Birbal detects angular page, and notify with basic informations
      */
-    var logger, contentMessageActions = {}, receiver, annotate, sendDependencyTree;
+    var logger, contentMessageActions = {}, receiver, annotate, sendDependencyTree, httpBackendPromise, updateHttpBackend;
     /////////////////////////////////////////////////////////
     //            LOGGER FOR DEVELOPMENT
     /////////////////////////////////////////////////////////
@@ -29,6 +29,13 @@ window.inspectorExecutor = function (window, document) {
     }
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
+    updateHttpBackend = function (list) {
+        httpBackendPromise = new Promise(function (resolve) {
+            resolve(list);
+        });
+    };
+    //init
+    updateHttpBackend([]);
 
     logger.log('loading birbal inspector of AngularJS App. ');
     /////////////////////////////////////////////////////////
@@ -133,6 +140,16 @@ window.inspectorExecutor = function (window, document) {
     receiver.actionOnTask('stopAnalysis', function () {
         contentMessageActions.stop = true;
         //window.location.reload();
+    });
+
+    /**
+     * update mock http list
+     */
+    receiver.actionOnTask('mockHttplist', function (message) {
+        // update http list
+        logger.log('http list update request');
+        logger.table.bind('mock http list: ').call(logger, message);
+        updateHttpBackend(message.msgDetails);
     });
 
     /////////////////////////////////////////////////////////
@@ -725,8 +742,7 @@ window.inspectorExecutor = function (window, document) {
                 });
                 // Array or empty
             } else if (Array.isArray(depsSrc)) {
-                var deps = depsSrc.slice();
-                deps.pop();
+                var deps = depsSrc.slice(0, -1);
                 moduleData.components.push({
                     name: name,
                     deps: deps,
@@ -862,6 +878,111 @@ window.inspectorExecutor = function (window, document) {
         logger.log('ngDetect message or cleanup');
     }
 
+    function handleHttpInjector() {
+        var oldList, backend;
+        logger.log('register birbal app to http backend mock service');
+        // register birbalApp to do specific task or action
+        angular.module('birbalApp', ['ngMockE2E'])
+            .config(['$provide', function ($provide) {
+                logger.log('inititializing decorator');
+                $provide.decorator('$httpBackend', [function () {
+                    logger.log('skinning mock version of httpbackend with backend? ' + !!backend);
+
+                    function myBackend() {
+                        backend.apply(null, arguments);
+                    }
+
+                    Object.getOwnPropertyNames(backend).forEach(function (prop) {
+                        try {
+                            if (typeof backend[prop] === 'function') {
+                                myBackend[prop] = function () {
+                                    return backend[prop].apply(this, arguments);
+                                };
+                            } else {
+                                myBackend[prop] = backend[prop];
+                            }
+                        } catch (e) {
+                        }
+                    });
+
+                    return myBackend;
+                }]);
+            }]);
+
+
+        function isModified(list) {
+            var len = list.length;
+            if (list) {
+                // list exists - now verify any changes
+                if (!oldList || oldList.length !== len) {
+                    // shallow compare
+                    return false;
+                } else {
+                    // lengths are same
+                    var listMap = list.map(function (item) {
+                        return JSON.stringify(item);
+                    });
+                    var oldListMap = oldList.map(function (item) {
+                        return JSON.stringify(item);
+                    });
+                    var checker = [], i, ind;
+                    for (i = 0; i < len; i++) {
+                        ind = oldListMap.indexOf(listMap[i]);
+                        if (ind !== -1 && checker.indexOf(ind) === -1) {
+                            checker.push(ind);
+                        }
+                    }
+                    if (checker.length !== len) {
+                        // diff data
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function toHeaderObject(headerArray) {
+            headerArray.forEach(function (item) {
+                var hh = item.split(':');
+                bb[hh[0]] = hh[1];
+            });
+        }
+
+        function useNewBackend() {
+            // reset the definition off http mock
+            backend = angular.injector(['ngMockE2E']).get('$httpBackend');
+        }
+
+        /*expose to injector action task*/
+        updateHttpBackend = function (list) {
+            logger.log('update list request recieved');
+            if (!isModified(list)) {
+                logger.log('list is modified - updating definitions');
+                oldList = list;
+                useNewBackend();
+                list.forEach(function (httpItem) {
+                    backend.when(httpItem.method.toUpperCase(), httpItem.url, toHeaderObject(httpItem.headers))
+                        .respond(Number(httpItem.status), httpItem.response);
+                });
+                backend.whenGET(/.*/).passThrough();
+                backend.whenPOST(/.*/).passThrough();
+                backend.whenPUT(/.*/).passThrough();
+                backend.whenDELETE(/.*/).passThrough();
+                backend.whenJSONP(/.*/).passThrough();
+                backend.whenPATCH(/.*/).passThrough();
+                backend.whenHEAD(/.*/).passThrough();
+            }
+        };
+        // page load setup
+        // scene#1:  prelist
+        logger.log.bind(logger, 'promise to init list: ').call(logger, httpBackendPromise);
+        httpBackendPromise.then(function (list) {
+            return updateHttpBackend(list);
+        });
+        // clean up
+        httpBackendPromise = undefined;
+    }
+
     function addBirbalModule() {
         var bodyElm = angular.element(document.body),
             loader = angular.element(
@@ -872,10 +993,10 @@ window.inspectorExecutor = function (window, document) {
                 'height': bodyElm.css('height'),
                 'width': bodyElm.css('width')
             };
-        // register birbalApp to do specific task or action
-        angular.module('birbalApp', [])
-            .run([function () {
-            }]);
+
+        window.injectMock(window, window.angular);
+        window.injectMock = undefined;
+        handleHttpInjector();
 
         contentMessageActions.resumeBootstrap = function (removeLoader) {
             if (angular.resumeBootstrap) {
@@ -899,7 +1020,6 @@ window.inspectorExecutor = function (window, document) {
     }
 
     ///////// when page is ready with init DOM
-    window.name = 'NG_DEFER_BOOTSTRAP!';
     if (document.readyState === 'complete') {
         window.setTimeout(inspectAngular, 1);
     } else {
@@ -964,6 +1084,7 @@ window.inspectorExecutor = function (window, document) {
     contentMessageActions.angularDetected = false;
     waitForAngularLoad(function () {
         // angular detected
+        logger.log('window name to findout auto bootstrap is started or not. ' + window.name);
         // add spy to bootstrap to detect manual bootstrap
         instrumentBootStrap();
         addBirbalModule();
