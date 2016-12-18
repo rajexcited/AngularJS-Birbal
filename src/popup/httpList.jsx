@@ -140,3 +140,7 @@ window.updateHttpList = function (list) {
     list = list || [];
     birbalJS.requestBackGround(list, 'updateMockList');
 };
+
+$('#close-me').on('click', function () {
+    window.close();
+});

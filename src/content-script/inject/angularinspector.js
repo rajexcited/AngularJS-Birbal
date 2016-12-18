@@ -1,7 +1,7 @@
 /*global angular, BirbalMessage, window, document*/
 window.inspectorExecutor = function (window, document) {
     'use strict';
-
+    window.name = 'NG_DEFER_BOOTSTRAP!';
     /**
      * Birbal detects angular page, and notify with basic informations
      */
@@ -878,23 +878,15 @@ window.inspectorExecutor = function (window, document) {
         logger.log('ngDetect message or cleanup');
     }
 
-    function addBirbalModule() {
-        var bodyElm = angular.element(document.body),
-            loader = angular.element(
-                '<div style="opacity: 1; height: 100%; width: 100%; background: #fff; z-index: 2147483647; position: fixed; top: 0; left: 0;">' +
-                '<div style="position: absolute;top: 44%;left: 35%; font-size:3rem"><span>Loading Extension,  Please wait...</span></div></div>'),
-            defaultCss = {
-                'overflow': bodyElm.css('overflow'),
-                'height': bodyElm.css('height'),
-                'width': bodyElm.css('width')
-            };
-
-        window.injectMock(window, window.angular);
+    function handleHttpInjector() {
+        var oldList, backend;
+        logger.log('register birbal app to http backend mock service');
         // register birbalApp to do specific task or action
         angular.module('birbalApp', ['ngMockE2E'])
             .config(['$provide', function ($provide) {
-                $provide.decorator('$httpBackend', ['$delegate', function ($delegate) {
-                    var backend = $delegate;
+                logger.log('inititializing decorator');
+                $provide.decorator('$httpBackend', [function () {
+                    logger.log('skinning mock version of httpbackend with backend? ' + !!backend);
 
                     function myBackend() {
                         backend.apply(null, arguments);
@@ -913,78 +905,98 @@ window.inspectorExecutor = function (window, document) {
                         }
                     });
 
-                    myBackend.useNewBackend = function () {
-                        backend = angular.injector(['ngMockE2E']).get('$httpBackend');
-                    };
-
                     return myBackend;
                 }]);
-            }])
-            .run(['$httpBackend', function ($httpBackend) {
-                var oldList;
+            }]);
 
-                function isEqual(list) {
-                    var len = list.length;
-                    if (list) {
-                        // list exists - now verify any changes
-                        if (!oldList || oldList.length !== len) {
-                            // shallow compare
-                            return false;
-                        } else {
-                            // lengths are same
-                            var listMap = list.map(function (item) {
-                                return JSON.stringify(item);
-                            });
-                            var oldListMap = oldList.map(function (item) {
-                                return JSON.stringify(item);
-                            });
-                            var checker = [], i, ind;
-                            for (i = 0; i < len; i++) {
-                                ind = oldListMap.indexOf(listMap[i]);
-                                if (ind !== -1 && checker.indexOf(ind) === -1) {
-                                    checker.push(ind);
-                                }
-                            }
-                            if (checker.length !== len) {
-                                // diff data
-                                return false;
-                            }
+
+        function isModified(list) {
+            var len = list.length;
+            if (list) {
+                // list exists - now verify any changes
+                if (!oldList || oldList.length !== len) {
+                    // shallow compare
+                    return false;
+                } else {
+                    // lengths are same
+                    var listMap = list.map(function (item) {
+                        return JSON.stringify(item);
+                    });
+                    var oldListMap = oldList.map(function (item) {
+                        return JSON.stringify(item);
+                    });
+                    var checker = [], i, ind;
+                    for (i = 0; i < len; i++) {
+                        ind = oldListMap.indexOf(listMap[i]);
+                        if (ind !== -1 && checker.indexOf(ind) === -1) {
+                            checker.push(ind);
                         }
                     }
-                    return true;
-                }
-
-                function toHeaderObject(headerArray) {
-                    headerArray.forEach(function (item) {
-                        var hh = item.split(':');
-                        bb[hh[0]] = hh[1];
-                    });
-                }
-
-                updateHttpBackend = function (list) {
-                    if (!isEqual(list)) {
-                        oldList = list;
-                        $httpBackend.useNewBackend();
-                        list.forEach(function (httpItem) {
-                            $httpBackend.when(httpItem.method.toUpperCase(), httpItem.url, toHeaderObject(httpItem.headers))
-                                .respond(Number(httpItem.status), httpItem.response);
-                        });
-                        $httpBackend.whenGET(/.*/).passThrough();
-                        $httpBackend.whenPOST(/.*/).passThrough();
-                        $httpBackend.whenPUT(/.*/).passThrough();
-                        $httpBackend.whenDELETE(/.*/).passThrough();
-                        $httpBackend.whenJSONP(/.*/).passThrough();
-                        $httpBackend.whenPATCH(/.*/).passThrough();
-                        $httpBackend.whenHEAD(/.*/).passThrough();
+                    if (checker.length !== len) {
+                        // diff data
+                        return false;
                     }
-                };
-                // page load setup
-                // scene#1:  prelist
-                httpBackendPromise.then(function (list) {
-                    return updateHttpBackend(list);
+                }
+            }
+            return true;
+        }
+
+        function toHeaderObject(headerArray) {
+            headerArray.forEach(function (item) {
+                var hh = item.split(':');
+                bb[hh[0]] = hh[1];
+            });
+        }
+
+        function useNewBackend() {
+            // reset the definition off http mock
+            backend = angular.injector(['ngMockE2E']).get('$httpBackend');
+        }
+
+        /*expose to injector action task*/
+        updateHttpBackend = function (list) {
+            logger.log('update list request recieved');
+            if (!isModified(list)) {
+                logger.log('list is modified - updating definitions');
+                oldList = list;
+                useNewBackend();
+                list.forEach(function (httpItem) {
+                    backend.when(httpItem.method.toUpperCase(), httpItem.url, toHeaderObject(httpItem.headers))
+                        .respond(Number(httpItem.status), httpItem.response);
                 });
-                httpBackendPromise = undefined;
-            }]);
+                backend.whenGET(/.*/).passThrough();
+                backend.whenPOST(/.*/).passThrough();
+                backend.whenPUT(/.*/).passThrough();
+                backend.whenDELETE(/.*/).passThrough();
+                backend.whenJSONP(/.*/).passThrough();
+                backend.whenPATCH(/.*/).passThrough();
+                backend.whenHEAD(/.*/).passThrough();
+            }
+        };
+        // page load setup
+        // scene#1:  prelist
+        logger.log.bind(logger, 'promise to init list: ').call(logger, httpBackendPromise);
+        httpBackendPromise.then(function (list) {
+            return updateHttpBackend(list);
+        });
+        // clean up
+        httpBackendPromise = undefined;
+    }
+
+    function addBirbalModule() {
+        var bodyElm = angular.element(document.body),
+            loader = angular.element(
+                '<div style="opacity: 1; height: 100%; width: 100%; background: #fff; z-index: 2147483647; position: fixed; top: 0; left: 0;">' +
+                '<div style="position: absolute;top: 44%;left: 35%; font-size:3rem"><span>Loading Extension,  Please wait...</span></div></div>'),
+            defaultCss = {
+                'overflow': bodyElm.css('overflow'),
+                'height': bodyElm.css('height'),
+                'width': bodyElm.css('width')
+            };
+
+        window.injectMock(window, window.angular);
+        window.injectMock = undefined;
+        handleHttpInjector();
 
         contentMessageActions.resumeBootstrap = function (removeLoader) {
             if (angular.resumeBootstrap) {
@@ -1008,7 +1020,6 @@ window.inspectorExecutor = function (window, document) {
     }
 
     ///////// when page is ready with init DOM
-    window.name = 'NG_DEFER_BOOTSTRAP!';
     if (document.readyState === 'complete') {
         window.setTimeout(inspectAngular, 1);
     } else {
@@ -1073,6 +1084,7 @@ window.inspectorExecutor = function (window, document) {
     contentMessageActions.angularDetected = false;
     waitForAngularLoad(function () {
         // angular detected
+        logger.log('window name to findout auto bootstrap is started or not. ' + window.name);
         // add spy to bootstrap to detect manual bootstrap
         instrumentBootStrap();
         addBirbalModule();

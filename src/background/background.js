@@ -27,7 +27,7 @@
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
     logger.log('background.js loading');
-    logger.error.bind(logger, 'last error of extension: ').call(logger, chrom.runtime.lastError);
+    logger.error.bind(logger, 'last error of extension: ').call(logger, chrome.runtime.lastError);
     /////////////////////////////////////////////////////////
     //            TABS - CONNECTIONS and PROTOTYPE
     /////////////////////////////////////////////////////////
@@ -168,6 +168,9 @@
     receiver.actionOnTask('csInit', function (message) {
         // if page refresh is mark, start analysis
         var tabInfo = tabs.getTabInfo(message.tabId);
+        if (tabInfo.mockHttp && tabInfo.mockHttp.list) {
+            informContentScript(message.tabId, tabInfo.mockHttp.list, 'mockHttplist');
+        }
         if (tabInfo.doAnalysis) {
             //informContentScript(message.tabId, tabInfo.ngDetect, 'startAnalysis');
             informPanel(message.tabId, tabInfo.ngDetect, 'addPanel');
