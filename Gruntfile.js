@@ -68,6 +68,15 @@ module.exports = function (grunt) {
             },
             // compile and generate lib folder
             lib: {
+                options: {
+                    process: function (content, srcpath) {
+                        if (srcpath.indexOf('angular-mocks.js') !== -1) {
+                            return content.replace('(function(window, angular) {', 'window.injectMock=(function(window, angular) {')
+                                .replace('})(window, window.angular);', '});');
+                        }
+                        return content;
+                    }
+                },
                 files: [
                     // angular
                     {src: 'node_modules/angular/angular.min.js', dest: 'lib/angular.min.js'},

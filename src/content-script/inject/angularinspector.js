@@ -880,6 +880,8 @@ window.inspectorExecutor = function (window, document) {
                 'height': bodyElm.css('height'),
                 'width': bodyElm.css('width')
             };
+
+        window.injectMock(window, window.angular);
         // register birbalApp to do specific task or action
         angular.module('birbalApp', [])
             .run([function () {
