@@ -128,7 +128,7 @@
         script = document.createElement('script');
         script.setAttribute('name', 'birbal-message');
         script.setAttribute('type', 'text/javascript');
-        script.innerText = 'BirbalMessage=' + birbalJS.Message.toString().replace(/this\.tabId.+;/, '');
+        script.innerText = 'BirbalMessage=' + birbalJS.Message.toString();//.replace(/this\.tabId.+;/g, '');
         htmlRootNode.appendChild(script);
 
         script = document.createElement('script');

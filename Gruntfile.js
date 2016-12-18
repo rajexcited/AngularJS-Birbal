@@ -63,7 +63,8 @@ module.exports = function (grunt) {
                     {expand: true, cwd: 'src/panel/css/', src: '*.css', dest: 'zip/src/panel/'},
                     {src: ['src/panel/partials/*.html'], dest: 'zip/'},
                     {src: 'src/devtools/*', dest: 'zip/'},
-                    {src: 'src/content-script/inject/angularinspector.min.js', dest: 'zip/'}
+                    {src: 'src/content-script/inject/angularinspector.min.js', dest: 'zip/'},
+                    {expand: true, cwd: 'src/popup', src: ['**/*.js', '*.html'], dest: 'zip/src/popup'}
                 ]
             },
             'lib-angular-mock': {

@@ -210,7 +210,7 @@ window.inspectorExecutor = function (window, document) {
         logger.log('instrumenting angular');
         annotateFinder();
         angular.module('ng')
-            .config(function ($provide, $httpProvider) {
+            .config(['$provide', '$httpProvider', function ($provide, $httpProvider) {
 
                 function fnreplacer(ignore, value) {
                     if (typeof value === "function") {
@@ -243,7 +243,7 @@ window.inspectorExecutor = function (window, document) {
                 };
                 //window.deps = nb.deps;
                 // instrument scope/rootScope
-                $provide.decorator('$rootScope', function ($delegate) {
+                $provide.decorator('$rootScope', ['$delegate', function ($delegate) {
                     var scopePrototype, ngWatch, ngWatchCollection, ngDigest, ngApply, ngEmit, ngBroadcast, ngEvalAsync,
                         watchCollectionExp;
 
@@ -434,7 +434,7 @@ window.inspectorExecutor = function (window, document) {
                     };
 
                     return $delegate;
-                });
+                }]);
 
                 //qq: how can i analyze http with my digest cycle
                 // register the interceptor as a service
@@ -488,7 +488,7 @@ window.inspectorExecutor = function (window, document) {
                 }
 
                 // $browser to capture async task
-                $provide.decorator('$browser', function ($delegate) {
+                $provide.decorator('$browser', ['$delegate', function ($delegate) {
                     var ngDefer = $delegate.defer;
                     var wrapper = function () {
                         ngDefer.apply(null, arguments);
@@ -498,15 +498,15 @@ window.inspectorExecutor = function (window, document) {
                     wrapper.cancel = ngDefer.cancel;
                     $delegate.defer = wrapper;
                     return $delegate;
-                });
-                $provide.decorator('$controller', function ($delegate) {
+                }]);
+                $provide.decorator('$controller', ['$delegate', function ($delegate) {
                     return (function (name) {
                         if (typeof name === 'string') {
                             nb.deps.push('controller:' + name);
                         }
                         return $delegate.apply(this, arguments);
                     });
-                });
+                }]);
 
                 ngPFactory = $provide.factory;
                 $provide.factory = function (name) {
@@ -603,7 +603,7 @@ window.inspectorExecutor = function (window, document) {
                     }
                 }
 
-            });
+            }]);
     }
 
     ////////////////////////////////////////////////////////////////////
