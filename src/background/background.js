@@ -27,7 +27,7 @@
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
     logger.log('background.js loading');
-
+    logger.error.bind(logger, 'last error of extension: ').call(logger, chrom.runtime.lastError);
     /////////////////////////////////////////////////////////
     //            TABS - CONNECTIONS and PROTOTYPE
     /////////////////////////////////////////////////////////
@@ -76,8 +76,19 @@
             }
 
             if (tabId && !tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
-                // clean up tab resource
-                delete tabHolder[tabId];
+                var tabInfo = tabself.getTabInfo(tabId);
+                tabInfo.removedSince = Date.now();
+                chrome.alarms.create("delete-tab", {when: tabInfo.removedSince + 2 * 1000});
+                chrome.alarms.onAlarm.addListener(function callback(alarm) {
+                    if (alarm.name === 'delete-tab' && (Date.now() - tabInfo.removedSince) > 2000) {
+                        // reloading tab should be recover within 2 sec
+                        if (tabId && !tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
+                            // clean up tab resource after time expires
+                            logger.log.bind(logger, 'removed tab' + tabId + '- ').call(logger, alarm);
+                            delete tabHolder[tabId];
+                        }
+                    }
+                });
             }
             // removed tabId
             return tabId;
@@ -213,14 +224,14 @@
     // #9
     receiver.actionOnTask('popupInit', function (message) {
         var tabInfo = tabs.getTabInfo(message.tabId);
-        logger.log.bind(logger, 'popup init ').call(logger,message);
+        logger.log.bind(logger, 'popup init ').call(logger, message);
         tabInfo.mockHttp = tabInfo.mockHttp || {list: [], isModified: true};
     });
     // #10
     receiver.actionOnTask('retrieveMockList', function (message) {
         var tabInfo = tabs.getTabInfo(message.tabId),
             list = tabInfo.mockHttp && tabInfo.mockHttp.list;
-        logger.table.bind(logger, 'responding with mock list- ').call(logger,list);
+        logger.table.bind(logger, 'responding with mock list- ').call(logger, list);
         informPopupHttp(message.tabId, list, message.task + "-response");
     });
 
@@ -230,7 +241,7 @@
         tabInfo.mockHttp = tabInfo.mockHttp || {};
         tabInfo.mockHttp.isModified = true;
         tabInfo.mockHttp.list = message.msgDetails;
-        logger.table.bind(logger, 'updating mock list-  ').call(logger,message.msgDetails);
+        logger.table.bind(logger, 'updating mock list-  ').call(logger, message.msgDetails);
     });
 
     /////////////////////////////////////////////////////////
@@ -301,6 +312,11 @@
             logger.log(tabs.length + ' - After DisconnectCallback, removed tab #' + tabId + ': ' + connectingPort.name);
         });
         /////////////////////////////////
+    });
+
+    chrome.runtime.onSuspend.addListener(function callback() {
+        logger.log(arguments);
+        // notify all tabs - CS/INJECTOR, PANEL, POPUP
     });
 
     setPageAction = function (tabId) {

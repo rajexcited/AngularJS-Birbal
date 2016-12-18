@@ -132,11 +132,11 @@ window.showEditHttpPanel = function (event) {
 
 window.getHttpMockFromStorage = function () {
     return new Promise(function (resolve) {
-        birbalJS.requestBackGround(null, 'getHttpList', (list)=>(resolve(list)));
+        birbalJS.requestBackGround(null, 'retrieveMockList', (list)=>(resolve(list)));
     });
 };
 
 window.updateHttpList = function (list) {
     list = list || [];
-    birbalJS.requestBackGround(list, 'replaceHttpList');
+    birbalJS.requestBackGround(list, 'updateMockList');
 };

@@ -17,7 +17,8 @@
     }
   ],
   "permissions": [
-    "storage"
+    "storage",
+    "alarms"
   ],
   "icons": {
     "16": "img/angular-icon.png",

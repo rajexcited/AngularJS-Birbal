@@ -5,7 +5,7 @@ window.inspectorExecutor = function (window, document) {
     /**
      * Birbal detects angular page, and notify with basic informations
      */
-    var logger, contentMessageActions = {}, receiver, annotate, sendDependencyTree;
+    var logger, contentMessageActions = {}, receiver, annotate, sendDependencyTree, httpBackendPromise, updateHttpBackend;
     /////////////////////////////////////////////////////////
     //            LOGGER FOR DEVELOPMENT
     /////////////////////////////////////////////////////////
@@ -29,6 +29,13 @@ window.inspectorExecutor = function (window, document) {
     }
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
+    updateHttpBackend = function (list) {
+        httpBackendPromise = new Promise(function (resolve) {
+            resolve(list);
+        });
+    };
+    //init
+    updateHttpBackend([]);
 
     logger.log('loading birbal inspector of AngularJS App. ');
     /////////////////////////////////////////////////////////
@@ -139,8 +146,10 @@ window.inspectorExecutor = function (window, document) {
      * update mock http list
      */
     receiver.actionOnTask('mockHttplist', function (message) {
+        // update http list
         logger.log('http list update request');
         logger.table.bind('mock http list: ').call(logger, message);
+        updateHttpBackend(message.msgDetails);
     });
 
     /////////////////////////////////////////////////////////
@@ -733,8 +742,7 @@ window.inspectorExecutor = function (window, document) {
                 });
                 // Array or empty
             } else if (Array.isArray(depsSrc)) {
-                var deps = depsSrc.slice();
-                deps.pop();
+                var deps = depsSrc.slice(0, -1);
                 moduleData.components.push({
                     name: name,
                     deps: deps,
@@ -883,8 +891,99 @@ window.inspectorExecutor = function (window, document) {
 
         window.injectMock(window, window.angular);
         // register birbalApp to do specific task or action
-        angular.module('birbalApp', [])
-            .run([function () {
+        angular.module('birbalApp', ['ngMockE2E'])
+            .config(['$provide', function ($provide) {
+                $provide.decorator('$httpBackend', ['$delegate', function ($delegate) {
+                    var backend = $delegate;
+
+                    function myBackend() {
+                        backend.apply(null, arguments);
+                    }
+
+                    Object.getOwnPropertyNames(backend).forEach(function (prop) {
+                        try {
+                            if (typeof backend[prop] === 'function') {
+                                myBackend[prop] = function () {
+                                    return backend[prop].apply(this, arguments);
+                                };
+                            } else {
+                                myBackend[prop] = backend[prop];
+                            }
+                        } catch (e) {
+                        }
+                    });
+
+                    myBackend.useNewBackend = function () {
+                        backend = angular.injector(['ngMockE2E']).get('$httpBackend');
+                    };
+
+                    return myBackend;
+                }]);
+            }])
+            .run(['$httpBackend', function ($httpBackend) {
+                var oldList;
+
+                function isEqual(list) {
+                    var len = list.length;
+                    if (list) {
+                        // list exists - now verify any changes
+                        if (!oldList || oldList.length !== len) {
+                            // shallow compare
+                            return false;
+                        } else {
+                            // lengths are same
+                            var listMap = list.map(function (item) {
+                                return JSON.stringify(item);
+                            });
+                            var oldListMap = oldList.map(function (item) {
+                                return JSON.stringify(item);
+                            });
+                            var checker = [], i, ind;
+                            for (i = 0; i < len; i++) {
+                                ind = oldListMap.indexOf(listMap[i]);
+                                if (ind !== -1 && checker.indexOf(ind) === -1) {
+                                    checker.push(ind);
+                                }
+                            }
+                            if (checker.length !== len) {
+                                // diff data
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                }
+
+                function toHeaderObject(headerArray) {
+                    headerArray.forEach(function (item) {
+                        var hh = item.split(':');
+                        bb[hh[0]] = hh[1];
+                    });
+                }
+
+                updateHttpBackend = function (list) {
+                    if (!isEqual(list)) {
+                        oldList = list;
+                        $httpBackend.useNewBackend();
+                        list.forEach(function (httpItem) {
+                            $httpBackend.when(httpItem.method.toUpperCase(), httpItem.url, toHeaderObject(httpItem.headers))
+                                .respond(Number(httpItem.status), httpItem.response);
+                        });
+                        $httpBackend.whenGET(/.*/).passThrough();
+                        $httpBackend.whenPOST(/.*/).passThrough();
+                        $httpBackend.whenPUT(/.*/).passThrough();
+                        $httpBackend.whenDELETE(/.*/).passThrough();
+                        $httpBackend.whenJSONP(/.*/).passThrough();
+                        $httpBackend.whenPATCH(/.*/).passThrough();
+                        $httpBackend.whenHEAD(/.*/).passThrough();
+                    }
+                };
+                // page load setup
+                // scene#1:  prelist
+                httpBackendPromise.then(function (list) {
+                    return updateHttpBackend(list);
+                });
+                httpBackendPromise = undefined;
             }]);
 
         contentMessageActions.resumeBootstrap = function (removeLoader) {
