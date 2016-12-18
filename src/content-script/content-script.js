@@ -22,6 +22,7 @@
             'log': noop,
             'info': noop,
             'debug': noop,
+            'table': noop,
             'warn': window.console.warn.bind(console),
             'error': window.console.error.bind(console)
         };
@@ -60,6 +61,7 @@
             htmlNode.setAttribute('birbal-ng-start', message.msgDetails.ngStart);
             htmlNode.setAttribute('birbal-ng-module', message.msgDetails.ngModule);
         } else {
+            logger.table(message);
             window.postMessage(new birbalJS.Message(message.msgDetails, birbalJS.END_POINTS.CONTENTSCRIPT, birbalJS.END_POINTS.ANGULARINSPECTOR, message.task), '*');
         }
     });

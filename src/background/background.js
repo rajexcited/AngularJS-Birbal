@@ -19,6 +19,7 @@
             'log': noop,
             'info': noop,
             'debug': noop,
+            'table': noop,
             'warn': window.console.warn.bind(console),
             'error': window.console.error.bind(console)
         };
@@ -210,17 +211,26 @@
 
     // for http popup in tab
     // #9
+    receiver.actionOnTask('popupInit', function (message) {
+        var tabInfo = tabs.getTabInfo(message.tabId);
+        logger.log.bind(logger, 'popup init ').call(logger,message);
+        tabInfo.mockHttp = tabInfo.mockHttp || {list: [], isModified: true};
+    });
+    // #10
     receiver.actionOnTask('retrieveMockList', function (message) {
         var tabInfo = tabs.getTabInfo(message.tabId),
             list = tabInfo.mockHttp && tabInfo.mockHttp.list;
+        logger.table.bind(logger, 'responding with mock list- ').call(logger,list);
         informPopupHttp(message.tabId, list, message.task + "-response");
     });
-    // #10
+
+    // #11
     receiver.actionOnTask('updateMockList', function (message) {
         var tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.mockHttp = tabInfo.mockHttp || {};
         tabInfo.mockHttp.isModified = true;
         tabInfo.mockHttp.list = message.msgDetails;
+        logger.table.bind(logger, 'updating mock list-  ').call(logger,message.msgDetails);
     });
 
     /////////////////////////////////////////////////////////

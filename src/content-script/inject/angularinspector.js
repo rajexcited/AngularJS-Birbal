@@ -135,6 +135,14 @@ window.inspectorExecutor = function (window, document) {
         //window.location.reload();
     });
 
+    /**
+     * update mock http list
+     */
+    receiver.actionOnTask('mockHttplist', function (message) {
+        logger.log('http list update request');
+        logger.table.bind('mock http list: ').call(logger, message);
+    });
+
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
 

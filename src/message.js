@@ -42,7 +42,7 @@
                 receiverId = msgDetails.receiverId;
                 delete msgDetails.receiverId;
             }
-            tabId = msgDetails.tabId
+            tabId = msgDetails.tabId;
         }
         if (!callerId || !task) {
             throw new Error('callerId or task not defined');

@@ -3,8 +3,8 @@
     'use strict';
 
     var backgroundConnection;
-    angular.module('background-service-app', ['measure.digest.app', 'measure.http.app','dependencyTree.app'])
-        .service('backgroundService', ['$rootScope', 'digestDataFactory', 'httpRecordFactory', 'dependencyTree', function ($rootScope, digestDataFactory, httpRecordFactory,dependencyTree) {
+    angular.module('background-service-app', ['measure.digest.app', 'measure.http.app', 'dependencyTree.app'])
+        .service('backgroundService', ['$rootScope', 'digestDataFactory', 'httpRecordFactory', 'dependencyTree', function ($rootScope, digestDataFactory, httpRecordFactory, dependencyTree) {
             /////////////////////////////////////////////////////////
             //            LOGGER FOR DEVELOPMENT ONLY
             /////////////////////////////////////////////////////////
@@ -19,6 +19,7 @@
                     'log': angular.noop,
                     'info': angular.noop,
                     'debug': angular.noop,
+                    'table': angular.noop,
                     'warn': window.console.warn.bind(console),
                     'error': window.console.error.bind(console)
                 };

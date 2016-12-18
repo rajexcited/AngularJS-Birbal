@@ -5,7 +5,7 @@
     /////////////////////////////////////////////////////////
     //            LOGGER FOR content-script
     /////////////////////////////////////////////////////////
-    var looger;
+    var logger;
     // define 'noop' by default
     function noop() {
         return;
@@ -19,6 +19,7 @@
             'log': noop,
             'info': noop,
             'debug': noop,
+            'table': noop,
             'warn': window.console.warn.bind(console),
             'error': window.console.error.bind(console)
         };
@@ -48,10 +49,11 @@
                 info: info
             }, birbalJS.END_POINTS.POPUP_HTTP, birbalJS.END_POINTS.BACKGROUND, task);
             backgroundConnection.postMessage(message);
+            logger.log(message);
         });
     }
 
-    informBackground(null, 'popup-init');
+    informBackground(null, 'popupInit');
 
     /*******************************************************************************************
      * **********************************************            ********************************
