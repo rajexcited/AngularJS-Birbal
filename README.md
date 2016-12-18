@@ -48,11 +48,15 @@ This project is setup using NodeJS/npm and grunt.
     npm run clean
     ```
 
-  - run example and inspect this extension,
+  - run example and inspect this extension.
     ```
     npm run build
     grunt connect:example
     ```
+  - Additional example is angular-phonecat.
+  https://github.com/angular/angular-phonecat
+  
+ 
 
 ####Inspirational Projects:
 - [AngularJS Batarang] (https://github.com/angular/batarang)
