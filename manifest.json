@@ -1,6 +1,8 @@
 {
   "name": "AngularJS Birbal",
   "version": "0.0.9",
+  "description": "Angular performance inspection by Birbal eye.detects bootstrap, Detailed digest cycles, watch, effect of events, effects of http",
+  "version": "0.0.9",
   "description": "Angular app analysis - performance and structure dependency through Birbal eye. Allow to mock Http calls for ongoing development.",
   "content_scripts": [
     {
