@@ -53,15 +53,16 @@
             tabHolder[tabId][portName] = port;
         };
 
-        tabself.removePort = function (port, portName) {
-            var tabId = port.sender.tab && port.sender.tab.id,
+        tabself.removePort = function (portOrTabId, portName) {
+            var port = isNaN(portOrTabId) ? portOrTabId : undefined,
+                tabId = (port && port.sender.tab && port.sender.tab.id) || portOrTabId,
                 tab;
 
             // delete connection
             if (tabId && tabHolder[tabId]) {
                 delete tabHolder[tabId][portName];
-            } else {
-                // qq: do i need this?
+            } else if (port) {
+                // unlikely need of this block
                 // tabId is not available
                 // iterate through and delete
                 for (tab in tabHolder) {
@@ -73,7 +74,7 @@
                 }
             }
 
-            if (!tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
+            if (tabId && !tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
                 // clean up tab resource
                 delete tabHolder[tabId];
             }
@@ -126,6 +127,26 @@
         logger.log(msg);
     }
 
+    /**
+     * sends call message to http popup
+     * @param tabId{number} must
+     * @param info{object} must
+     * @param task{string} optional
+     */
+    function informPopupHttp(tabId, info, task) {
+        var popupPort, msg;
+
+        popupPort = tabs.getPort(tabId, birbalJS.END_POINTS.POPUP_HTTP);
+        msg = new birbalJS.Message(info, birbalJS.END_POINTS.BACKGROUND, birbalJS.END_POINTS.POPUP_HTTP, task);
+        if (popupPort) {
+            popupPort.postMessage(msg);
+        } else {
+            logger.error('SEVERE ERROR: pop up in tab Connection doesnot exists. incorrect tabId #' + tabId + '. Connection is closed. Cleaning resource......');
+            tabs.removePort(tabId, birbalJS.END_POINTS.POPUP_HTTP);
+        }
+        logger.log(msg);
+    }
+
     /////////////////////////////////////////////////////////
     //            receiver action listener for task
     /////////////////////////////////////////////////////////
@@ -159,7 +180,7 @@
         var tabInfo;
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.dependencyTree = message.msgDetails;
-        informPanel(message.tabId, tabInfo.dependencyTree , 'dependencyTree');
+        informPanel(message.tabId, tabInfo.dependencyTree, 'dependencyTree');
     });
 
     // for devtools panel
@@ -173,7 +194,7 @@
         // removePanel >> reset panel
         taskForPanel = tabInfo.ngDetect && tabInfo.ngDetect.ngDetected ? 'addPanel' : 'removePanel';
         informPanel(message.tabId, tabInfo.ngDetect, taskForPanel);
-        informPanel(message.tabId, tabInfo.dependencyTree , 'dependencyTree');
+        informPanel(message.tabId, tabInfo.dependencyTree, 'dependencyTree');
     });
 
     // #8
@@ -181,16 +202,31 @@
         // enable or disable
         var tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.doAnalysis = message.msgDetails.doAnalysis;
-        informContentScript(message.tabId, {'ngStart': tabInfo.doAnalysis, 'ngModule': tabInfo.ngDetect.ngModule}, 'instrumentNg');
+        informContentScript(message.tabId, {
+            'ngStart': tabInfo.doAnalysis,
+            'ngModule': tabInfo.ngDetect.ngModule
+        }, 'instrumentNg');
     });
+
+    // for http popup in tab
+    // #9
+    receiver.actionOnTask('retrieveMockList', function (message) {
+        var tabInfo = tabs.getTabInfo(message.tabId),
+            list = tabInfo.mockHttp && tabInfo.mockHttp.list;
+        informPopupHttp(message.tabId, list, message.task + "-response");
+    });
+    // #10
+    receiver.actionOnTask('updateMockList', function (message) {
+        var tabInfo = tabs.getTabInfo(message.tabId);
+        tabInfo.mockHttp = tabInfo.mockHttp || {};
+        tabInfo.mockHttp.isModified = true;
+        tabInfo.mockHttp.list = message.msgDetails;
+    });
+
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
 
-    // Fired when the extension is first installed, when the extension is updated to a new version, and when Chrome is updated to a new version.
-    //chrome.runtime.onInstalled.addListener(function onInstalledCallback(details) {
-    //    logger.log('on' + details.reason + 'Callback: ');
-    //    logger.log(details);
-    //});
+    // init tabs as extension loaded
     tabs = new TabsImpl();
     /////////////////////////////////////////////////////////
     //            On port connection
@@ -214,7 +250,10 @@
             tabs.addPort(tabId, connectingPort, connectingPort.name);
             tabInfo = tabs.getTabInfo(tabId);
             if (tabInfo.doAnalysis) {
-                informContentScript(tabId, {'ngStart': tabInfo.doAnalysis, 'ngModule': tabInfo.ngDetect.ngModule}, 'instrumentNg');
+                informContentScript(tabId, {
+                    'ngStart': tabInfo.doAnalysis,
+                    'ngModule': tabInfo.ngDetect.ngModule
+                }, 'instrumentNg');
             }
         }
 
@@ -226,6 +265,19 @@
             receiver.answerCall(message, sender, connectingPort, destinationPortFinder);
         });
 
+        function handlePopupDisconnection(tabId) {
+            if (connectingPort.name === birbalJS.END_POINTS.POPUP_HTTP) {
+                logger.log('popup http is disconnected.');
+                var tabInfo = tabs.getTabInfo(tabId);
+                tabInfo.mockHttp = tabInfo.mockHttp || {list: [], isModified: true};
+                if (tabInfo.mockHttp.isModified) {
+                    logger.log('sending injector the updated list.');
+                    tabInfo.mockHttp.isModified = false;
+                    informContentScript(tabId, tabInfo.mockHttp.list, 'mockHttplist');
+                }
+            }
+        }
+
         // #20
         /**
          * disconnect event
@@ -234,6 +286,7 @@
         connectingPort.onDisconnect.addListener(function onDisconnectCallback(disconnectingPort) {
             logger.log('onDisconnectCallback');
             var tabId = tabs.removePort(disconnectingPort, connectingPort.name);
+            handlePopupDisconnection(tabId);
             // notify other connections to same tab
             logger.log(tabs.length + ' - After DisconnectCallback, removed tab #' + tabId + ': ' + connectingPort.name);
         });
