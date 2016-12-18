@@ -116,7 +116,7 @@
         var self = this;
         self.END_POINTS = endPoints;
         // true for development only    // try to get from config
-        self.debugMode = true;
+        self.debugMode = false;
         // call is used in sending message
         self.Message = MessageImpl;
         self.Receiver = ReceiverImpl;
