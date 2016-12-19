@@ -80,7 +80,7 @@
                             end = st + ws[wslen].runtime;
                             // conditions can be reduced
                             // async is in range of watch or watch is in range of async
-                            ws[wslen].startsAsync = !!((asyncRange.min >= st && asyncRange.min < end) || (asyncRange.max > st && asyncRange.max <= end) || (st >= asyncRange.min && st < asyncRange.max) || (end > asyncRange.min && end <= asyncRange.max));
+                            ws[wslen].startsAsync = !!(asyncRange && ((asyncRange.min >= st && asyncRange.min < end) || (asyncRange.max > st && asyncRange.max <= end) || (st >= asyncRange.min && st < asyncRange.max) || (end > asyncRange.min && end <= asyncRange.max)));
                         }
                     }
                 });
@@ -344,7 +344,6 @@
                         ev[i].name = evmap[i] + '  ( ' + n + ' times)';
                         ev.splice(l, 1);
                         evmap.splice(l, 1);
-                        l++;
                     }
                 }
                 aMeasure.events.emitTotal = t;
@@ -365,7 +364,6 @@
                         ev[i].name = evmap[i] + '  ( ' + n + ' times)';
                         ev.splice(l, 1);
                         evmap.splice(l, 1);
-                        l++;
                     }
                 }
                 aMeasure.events.broadcastTotal = t;
