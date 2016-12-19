@@ -1,7 +1,7 @@
 /*global angular, BirbalMessage, window, document*/
 window.inspectorExecutor = function (window, document) {
     'use strict';
-    window.name = 'NG_DEFER_BOOTSTRAP!';
+    window.name = 'NG_DEFER_BOOTSTRAP!'.concat(window.name);
     /**
      * Birbal detects angular page, and notify with basic informations
      */
@@ -36,7 +36,6 @@ window.inspectorExecutor = function (window, document) {
     };
     //init
     updateHttpBackend([]);
-
     logger.log('loading birbal inspector of AngularJS App. ');
     /////////////////////////////////////////////////////////
     //            BIRBAL SETUP
@@ -826,7 +825,8 @@ window.inspectorExecutor = function (window, document) {
     //      START INSPECTING PAGE FOR ANGULAR - onload
     /////////////////////////////////////////////////////////////////////
     function generateXPath(element) {
-        if (element.id === undefined) {
+        logger.log.bind(logger, 'request xPath: ').call(logger, element);
+        if (!element || element.id === undefined) {
             return;
         }
         if (element.id !== '') {
@@ -842,6 +842,7 @@ window.inspectorExecutor = function (window, document) {
         for (var i = 0; i < siblings.length; i++) {
             var sibling = siblings[i];
             if (sibling === element) {
+                logger.log.bind(logger, 'xPath of parent: ').call(logger, element.parentNode);
                 var parentX = generateXPath(element.parentNode);
                 if (!parentX) {
                     parentX = '';
@@ -995,10 +996,6 @@ window.inspectorExecutor = function (window, document) {
                 'width': bodyElm.css('width')
             };
 
-        window.injectMock(window, window.angular);
-        window.injectMock = undefined;
-        handleHttpInjector();
-
         contentMessageActions.resumeBootstrap = function (removeLoader) {
             if (angular.resumeBootstrap) {
                 // bootstrap was on halt
@@ -1017,6 +1014,20 @@ window.inspectorExecutor = function (window, document) {
         logger.log('adding loader, pausing bootstrap and init');
         bodyElm.css({'overflow': 'hidden', 'height': '100vh', 'width': '100vw'});
         bodyElm.append(loader[0]);
+
+        initMock();
+
+        function initMock() {
+            try {
+                window.injectMock(window, window.angular);
+                window.injectMock = undefined;
+                handleHttpInjector();
+            } catch (e) {
+                logger.error(e);
+                window.setTimeout(initMock, 30);
+            }
+        }
+
         contentMessageActions.resumeBootstrap();
     }
 
@@ -1088,10 +1099,13 @@ window.inspectorExecutor = function (window, document) {
         logger.log('window name to findout auto bootstrap is started or not. ' + window.name);
         // add spy to bootstrap to detect manual bootstrap
         instrumentBootStrap();
+        logger.log('instrumented bootstrap');
         addBirbalModule();
+        logger.log('bootstrap instrumented and added birbal module.');
         if (document.getElementsByTagName('html')[0].getAttribute('birbal-ng-start') === 'true') {
             // instrument and resume
             instrumentAngular();
+            logger.log('instrumented NG');
         }
     });
 

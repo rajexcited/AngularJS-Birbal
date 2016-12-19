@@ -34,19 +34,19 @@
     /////////////////////////////////////////////////////////
     // use birbalJS to allow panel tab or view to perform any actions on inspected window or tab.
     var actionEvalMap = {};
-    actionEvalMap.reload = function () {
+    actionEvalMap.reload = function (window) {
         window.location.reload();
     };
 
     birbalJS.pageAction = function (_action) {
         if (typeof actionEvalMap[_action] === 'function') {
-            var args = Array.prototype.map.call(arguments, function (a) {
+            var args = ['window'].concat(Array.prototype.map.call(arguments, function (a) {
                 return a;
-            }).slice(1);
+            }).slice(1));
             chrome.devtools.inspectedWindow.eval('(' +
                 actionEvalMap[_action].toString() +
-                '(window, ' +
-                JSON.stringify(args) +
+                '( ' +
+                args.join(',') +
                 '));');
         }
     };
