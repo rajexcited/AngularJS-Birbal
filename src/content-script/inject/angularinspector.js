@@ -42,10 +42,10 @@ window.inspectorExecutor = function (window, document) {
     //            BIRBAL SETUP
     /////////////////////////////////////////////////////////
     // listener and communication
-    function printCircularReferenceError(o) {
+    function toValidJSON(o) {
         var cache = [], ck = [], ind = 0;
         try {
-            JSON.stringify(o, function (key, value) {
+            return JSON.parse(JSON.stringify(o, function (key, value) {
                 if (typeof value === 'object' && value !== null) {
                     ind = cache.indexOf(value);
                     // Store value in our collection
@@ -53,19 +53,20 @@ window.inspectorExecutor = function (window, document) {
                     ck.push(key);
                 }
                 return value;
-            });
+            }));
         } catch (e) {
             logger.error.bind(logger, 'Object = ')(o);
-            logger.error(new Error('circular reference found for above object, \tObject' + ck.join('.') + ' is equal to Object' + ck.slice(0, ind + 1).join('.') + '\n' + e.stack));
+            throw new Error('circular reference found, \tObject' + ck.join('.') + ' is equal to Object' + ck.slice(0, ind + 1).join('.') + '\n' + e.stack);
         }
     }
 
     function broadcastMessage(info, task) {
         try {
             var msg = new BirbalMessage(info, 'angular-inspector', 'content-script', task);
-            window.postMessage(msg, '*');
+            window.postMessage(toValidJSON(msg), '*');
         } catch (e) {
-            printCircularReferenceError(info);
+            logger.error.bind(logger, 'Object = ')(o);
+            logger.error.bind(logger, 'broadcast error: ').call(logger, e);
         }
     }
 
