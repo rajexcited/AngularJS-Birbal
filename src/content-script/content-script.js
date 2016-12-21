@@ -94,9 +94,16 @@
             if (winmessage.msgDetails && winmessage.msgDetails.ngDetected) {
                 // send message to BG for connecting and inspecting app
                 logger.log('birbal finds angular app in page');
-            } else {
+            } else if (winmessage.task === 'ngDetect') {
                 // send message to BG to clean up resources and connections.
                 logger.log('birbal doesnot find angular app. cleanup resources. Bye');
+                window.setTimeout(function () {
+                    backgroundConnection.disconnect();
+
+                    window.removeEventListener('message', injectedMsgListener);
+                    backgroundConnection = undefined;
+                    logger = undefined;
+                }, 200);
             }
             informBackground(winmessage.msgDetails, winmessage.task, birbalJS.END_POINTS.BACKGROUND);
         } else {

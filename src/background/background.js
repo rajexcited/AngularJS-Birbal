@@ -75,24 +75,24 @@
                 }
             }
 
-            if (tabId && !tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
-                var tabInfo = tabself.getTabInfo(tabId);
-                tabInfo.removedSince = Date.now();
-                chrome.alarms.create("delete-tab", {when: tabInfo.removedSince + 2 * 1000});
-                chrome.alarms.onAlarm.addListener(function callback(alarm) {
-                    if (alarm.name === 'delete-tab' && (Date.now() - tabInfo.removedSince) > 2000) {
-                        // reloading tab should be recover within 2 sec
-                        if (tabId && !tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
-                            // clean up tab resource after time expires
-                            logger.log.bind(logger, 'removed tab' + tabId + '- ').call(logger, alarm);
-                            delete tabHolder[tabId];
-                        }
-                    }
-                });
+            if (tabId && tabHolder[tabId] && !tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
+                // scheduling to remove tab
+                chrome.alarms.create("delete-tab-" + tabId, {when: Date.now() + 2 * 1000});
             }
             // removed tabId
             return tabId;
         };
+
+        chrome.alarms.onAlarm.addListener(function callback(alarm) {
+            var tabId = window.parseInt(alarm.name.replace('delete-tab-', ''));
+            // reloading tab should be recover within 2 sec
+            if (tabId && !tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
+                // clean up tab resource after time expires
+                logger.log.bind(logger, 'removing tab ').call(logger, tabHolder[tabId]);
+                delete tabHolder[tabId];
+            }
+        });
+
     }
 
     /////////////////////////////////////////////////////////
@@ -172,7 +172,6 @@
             informContentScript(message.tabId, tabInfo.mockHttp.list, 'mockHttplist');
         }
         if (tabInfo.doAnalysis) {
-            //informContentScript(message.tabId, tabInfo.ngDetect, 'startAnalysis');
             informPanel(message.tabId, tabInfo.ngDetect, 'addPanel');
         }
         setPageAction(message.tabId);
@@ -318,7 +317,7 @@
     });
 
     chrome.runtime.onSuspend.addListener(function callback() {
-        logger.log(arguments);
+        logger.log.bind(logger, 'on Suspend ').call(logger, arguments);
         // notify all tabs - CS/INJECTOR, PANEL, POPUP
     });
 
