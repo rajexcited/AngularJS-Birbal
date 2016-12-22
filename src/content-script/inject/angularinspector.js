@@ -874,6 +874,8 @@ window.inspectorExecutor = function (window, document) {
             msg.ngModule = getAngularApp();
             msg.ngRootNode = generateXPath(document.querySelector('.ng-scope'));
             sendDependencyTree(msg.ngModule.split(','));
+        } else {
+            window.name = window.name.replace(/^NG_DEFER_BOOTSTRAP!/, '');
         }
         // send inspection data
         broadcastMessage(msg, 'ngDetect');
@@ -986,35 +988,16 @@ window.inspectorExecutor = function (window, document) {
     }
 
     function addBirbalModule() {
-        var bodyElm = angular.element(document.body),
-            loader = angular.element(
-                '<div style="opacity: 1; height: 100%; width: 100%; background: #fff; z-index: 2147483647; position: fixed; top: 0; left: 0;">' +
-                '<div style="position: absolute;top: 44%;left: 35%; font-size:3rem"><span>Loading Extension,  Please wait...</span></div></div>'),
-            defaultCss = {
-                'overflow': bodyElm.css('overflow'),
-                'height': bodyElm.css('height'),
-                'width': bodyElm.css('width')
-            };
-
-        contentMessageActions.resumeBootstrap = function (removeLoader) {
+        contentMessageActions.resumeBootstrap = function () {
             if (angular.resumeBootstrap) {
                 // bootstrap was on halt
+                logger.log('resuming now');
                 angular.resumeBootstrap(['birbalApp']);
-                removeLoader = true;
-            }
-            logger.log('resuming now? ' + !!angular.resumeBootstrap + ' & removing loader?  ' + !!removeLoader);
-            if (removeLoader) {
                 delete contentMessageActions.resumeBootstrap;
-                // remove birbal loader
-                bodyElm.css(defaultCss);
-                loader.remove();
             }
         };
         // init
         logger.log('adding loader, pausing bootstrap and init');
-        bodyElm.css({'overflow': 'hidden', 'height': '100vh', 'width': '100vw'});
-        bodyElm.append(loader[0]);
-
         initMock();
 
         function initMock() {
