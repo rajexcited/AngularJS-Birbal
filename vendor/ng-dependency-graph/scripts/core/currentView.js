@@ -56,7 +56,7 @@ angular.module('ngDependencyGraph')
         this.componentsGraph.resetFilter();
         this.modulesGraph.resetFilter();
 
-        if ($rootScope.csInfo.enabled && $rootScope.activeOnly) {
+        if ($rootScope.activeOnly) {
           this.componentsGraph.filterNodes(function(node) {
             return !!node._data.isActive;
           });

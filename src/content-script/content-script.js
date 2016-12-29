@@ -87,7 +87,7 @@
         /* jshint +W116 */
         logger.log('in injectedMsgListener');
         var winmessage = event.data,
-            bgtasks = new RegExp('^(ngDetect|csInit|dependencyTree)$');
+            bgtasks = new RegExp('^(ngDetect|csInit|dependencyTree|activeDependencies)$');
         logger.log(winmessage);
         if (bgtasks.test(winmessage.task)) {
             // this is coming from angularDetect injector
@@ -99,7 +99,6 @@
                 logger.log('birbal doesnot find angular app. cleanup resources. Bye');
                 window.setTimeout(function () {
                     backgroundConnection.disconnect();
-
                     window.removeEventListener('message', injectedMsgListener);
                     backgroundConnection = undefined;
                     logger = undefined;

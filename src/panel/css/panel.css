@@ -99,6 +99,25 @@ table {
     position: initial;
 }
 
+.btn-grey {
+    color: #fff;
+    background-color: #333;
+    border-color: #3f3b3b;
+}
+
+.btn-grey:hover {
+    color: #fff;
+    background-color: #555;
+    border-color: #4f4d43;
+}
+
+.btn-grey:focus {
+    color: #fff;
+    outline: 0;
+    background-color: #444;
+    border-color: #202221;
+}
+
 @media (max-width: 767px) {
     /* xtra small */
     /* TODO remove from ADMINLTE.min.css - overriding   */

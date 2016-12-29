@@ -1,14 +1,19 @@
 <div ng-switch="csInfo.ngDetected">
     <span ng-switch-when="true">
         <p> Detected AngularJS version {{ csInfo.ngVersion.full}} ({{ csInfo.ngVersion.codeName}}) </p>
-        <br>
-        <button type="button" class="btn btn-primary btn-lg" ng-if="csInfo.ngModule"
-                ng-click="sidebarActions.enableMe();">
-            <span>Open Module &quot; {{csInfo.ngModule}} &quot;</span>
-        </button>
+        <br/>
+        <span ng-if="csInfo.ngModule">
+            <button type="button" class="btn btn-primary btn-lg" ng-click="sidebarActions.enableMe();">
+                <span>Open Module &quot; {{csInfo.ngModule}} &quot;</span>
+            </button> <br/><br/>
+            <button type="button" class="btn btn-grey btn-md"
+                    ng-click="sidebarActions.changePanelView('dependencyGraph');">
+                <span>Go to Active / Passive Dependency graph</span>
+            </button>
+        </span>
         <span ng-if="!csInfo.ngModule">
             <div class="col-lg-3 col-md-4">
-                <p> We did not find <b>[ng-app]</b>. </p>
+                <p> We did not find <b>ngApp</b>. </p>
             </div>
             <div class="col-lg-4 col-md-4">
                 <form name="askNgAppNameForm">
@@ -17,7 +22,8 @@
                         <input type="text" class="form-control" id="initpage-appInput" placeholder="My App name..."
                                ng-required ng-model="csInfo.ngModuleInput">
                         <span class="input-group-btn">
-                            <button type="submit" class="btn btn-primary btn-flat" ng-click="sidebarActions.enableMe();">
+                            <button type="submit" class="btn btn-primary btn-flat"
+                                    ng-click="sidebarActions.enableMe();">
                                 <span>Open Module</span>
                             </button>
                         </span>

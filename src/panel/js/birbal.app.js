@@ -20,6 +20,11 @@
                     //pageName = (typeof event === 'string') ? event : pageName;
                     if (pageName === 'nbEnable' && $rootScope.csInfo.enabled) {
                         pageName = $scope.view || 'dashboard';
+                    } else if (pageName === 'dependencyGraph') {
+                        if (angular.element('.sidebar-collapse').length === 0) {
+                            // collapse main header
+                            angular.element('.main-header a[data-toggle="offcanvas"]').click();
+                        }
                     }
                     $scope.view = pageName;
                     //initializing csInfo for template data for first time or after cleanup

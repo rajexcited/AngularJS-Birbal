@@ -3,8 +3,7 @@
 /*jshint -W061 */
 angular.module('ngDependencyGraph')
     .factory('inspectedApp', function ($rootScope, dependencyTree) {
-
-        var service = {
+        return {
             getKey: function () {
                 var tree = dependencyTree.getTree();
                 return '' + (tree && tree.apps && tree.apps[0]) + $rootScope.csInfo.enabled;
@@ -13,6 +12,4 @@ angular.module('ngDependencyGraph')
                 return dependencyTree.getTree();
             }
         };
-
-        return service;
     });
