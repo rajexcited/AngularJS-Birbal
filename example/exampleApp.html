@@ -23,24 +23,9 @@
             cursor: pointer;
         }
     </style>
-    <script type="text/javascript">
-        (function () {
-            'use strict';
-            var curr = document.querySelector('[include-child-on-load]');
-            var par = curr.parentNode;
-            curr.remove();
-            document.addEventListener('DOMNodeInserted', function (event) {
-                if (event.srcElement.tagName === 'SCRIPT' && event.srcElement.className === 'birbal-angularinspector') {
-                    event.srcElement.addEventListener('load', function (event2) {
-                        par.appendChild(curr);
-                    });
-                }
-            });
-        }());
-    </script>
 </head>
 <body>
-<div include-child-on-load="birbal-angularinspector">
+<div>
     <div ng-app="myApp">
         <div ng-controller="myController">
             <div>
@@ -58,15 +43,7 @@
                     <tbody>
                     <tr ng-repeat="row in myTable.data | filter: search">
                         <td>{{$index}}</td>
-                        <td ng-repeat="colVal in row">
-                            <div class="edit">
-                                <div class="editIcon fa fa-pencil" ng-click="editing=true" ng-show="!editing">
-                                    &nbsp;</div>
-                                <button ng-show="editing" ng-click="editing=false">Ok</button>
-                                <span ng-show="!editing"> {{colVal}} </span>
-                                <input type="text" ng-model="colVal" ng-show="editing"
-                                       size="{{colVal.length<11 ? 5 : 20}}">
-                            </div>
+                        <td ng-repeat="(colName,colVal) in row" edit-cell="">
                         </td>
                     </tr>
                     </tbody>

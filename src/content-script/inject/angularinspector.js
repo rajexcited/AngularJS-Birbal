@@ -224,8 +224,7 @@ window.inspectorExecutor = function (window, document) {
                 }
 
                 // initialize nb to send measures
-                var nb, ngPFactory, ngPService, ngPProvider, depstimeout,
-                    perf = window.performance;
+                var nb, perf = window.performance;
                 nb = {
                     digest: {
                         scope: {},
@@ -238,10 +237,8 @@ window.inspectorExecutor = function (window, document) {
                     },
                     http: {},
                     asyncEval: [],
-                    browserDefer: [],
-                    deps: []
+                    browserDefer: []
                 };
-                //window.deps = nb.deps;
                 // instrument scope/rootScope
                 $provide.decorator('$rootScope', ['$delegate', function ($delegate) {
                     var scopePrototype, ngWatch, ngWatchCollection, ngDigest, ngApply, ngEmit, ngBroadcast, ngEvalAsync,
@@ -499,110 +496,6 @@ window.inspectorExecutor = function (window, document) {
                     $delegate.defer = wrapper;
                     return $delegate;
                 }]);
-                $provide.decorator('$controller', ['$delegate', function ($delegate) {
-                    return (function (name) {
-                        if (typeof name === 'string') {
-                            nb.deps.push('controller:' + name);
-                        }
-                        return $delegate.apply(this, arguments);
-                    });
-                }]);
-
-                ngPFactory = $provide.factory;
-                $provide.factory = function (name) {
-                    var factRet = ngPFactory.apply(this, arguments),
-                        fact$get = factRet.$get,
-                        l, factGet;
-
-                    factGet = function () {
-                        nb.deps.push('factory:' + name);
-                        try {
-                            return fact$get.apply(this, arguments);
-                        } catch (e) {
-                            logger.warn(e);
-                        } finally {
-                            sendActiveDeps();
-                        }
-                    };
-                    if (angular.isArray(fact$get)) {
-                        l = fact$get.length - 1;
-                        fact$get = fact$get[l];
-                        factRet.$get[l] = factGet;
-                    } else {
-                        var annotated$get = annotate(fact$get);
-                        annotated$get.push(factGet);
-                        factRet.$get = annotated$get;
-                    }
-                    return factRet;
-                };
-
-                ngPService = $provide.service;
-                $provide.service = function (name) {
-                    var servRet = ngPService.apply(this, arguments),
-                        serv$get = servRet.$get,
-                        l, servGet;
-
-                    servGet = function () {
-                        nb.deps.push('service:' + name);
-                        try {
-                            return serv$get.apply(this, arguments);
-                        } catch (e) {
-                            logger.warn(e);
-                        } finally {
-                            sendActiveDeps();
-                        }
-                    };
-                    if (angular.isArray(serv$get)) {
-                        l = serv$get.length - 1;
-                        serv$get = serv$get[l];
-                        servRet.$get[l] = servGet;
-                    } else {
-                        var annotated$get = annotate(serv$get);
-                        annotated$get.push(servGet);
-                        servRet.$get = annotated$get;
-                    }
-
-                    return servRet;
-                };
-
-                ngPProvider = $provide.provider;
-                $provide.provider = function (name) {
-                    var prvdRet = ngPProvider.apply(this, arguments),
-                        prvd$get = prvdRet.$get,
-                        l, prvdGet;
-
-                    prvdGet = function () {
-                        nb.deps.push('provider:' + name);
-                        try {
-                            return prvd$get.apply(this, arguments);
-                        } catch (e) {
-                            logger.warn(e);
-                        } finally {
-                            sendActiveDeps();
-                        }
-                    };
-                    if (angular.isArray(prvd$get)) {
-                        l = prvd$get.length - 1;
-                        prvd$get = prvd$get[l];
-                        prvdRet.$get[l] = prvdGet;
-                    } else {
-                        var annotated$get = annotate(prvd$get);
-                        annotated$get.push(prvdGet);
-                        prvdRet.$get = annotated$get;
-                    }
-
-                    return prvdRet;
-                };
-
-                function sendActiveDeps() {
-                    if (!depstimeout) {
-                        depstimeout = window.setTimeout(function () {
-                            broadcastMessage(nb.deps, 'activeDependencies');
-                            depstimeout = undefined;
-                        }, 1.3 * 1000);
-                    }
-                }
-
             }]);
     }
 
@@ -789,12 +682,16 @@ window.inspectorExecutor = function (window, document) {
                         addDeps(moduleData, compArgs[0], compArgs[1], 'controller');
                         break;
                     case '$compileProvider':
-                        if (compArgs[1].constructor === Object) {
-                            angular.forEach(compArgs[1], function (key, value) {
-                                addDeps(moduleData, key, value, 'directive');
-                            });
+                        if (item[1] === 'directive') {
+                            if (compArgs[1].constructor === Object) {
+                                // old angular version may support it. but removing support from here
+                                logger.error('syntax incorrect - directive is not a func, ' + compArgs[0]);
+                            } else {
+                                addDeps(moduleData, compArgs[0], compArgs[1], 'directive');
+                            }
+                        } else {
+                            addDeps(moduleData, compArgs[0], null, 'directive');
                         }
-                        addDeps(moduleData, compArgs[0], compArgs[1], 'directive');
                         break;
                     case '$injector':
                         // invoke, ignore
@@ -815,6 +712,8 @@ window.inspectorExecutor = function (window, document) {
                     createModule(appName);
                 }
             });
+            window.metadata = metadata;
+            logger.warn.bind(logger, 'dependency metaData:  ').call(logger, metadata);
             return metadata;
         }
 
@@ -1075,6 +974,120 @@ window.inspectorExecutor = function (window, document) {
         angular.bootstrap = bootstrap;
     }
 
+    function instrumentActiveDependency() {
+        annotateFinder();
+        logger.log('instrumenting dependency');
+        angular.module('ng')
+            .config(['$provide', function ($provide) {
+                var ngPFactory, ngPService, ngPProvider, depstimeout,
+                    deps = [];
+                logger.log('dependency config');
+                $provide.decorator('$controller', ['$delegate', function ($delegate) {
+                    return (function (name) {
+                        if (typeof name === 'string') {
+                            deps.push('controller:' + name);
+                        }
+                        return $delegate.apply(this, arguments);
+                    });
+                }]);
+
+                ngPFactory = $provide.factory;
+                $provide.factory = function (name) {
+                    var factRet = ngPFactory.apply(this, arguments),
+                        fact$get = factRet.$get,
+                        l, factGet;
+
+                    factGet = function () {
+                        deps.push('factory:' + name);
+                        try {
+                            return fact$get.apply(this, arguments);
+                        } catch (e) {
+                            logger.warn(e);
+                        } finally {
+                            sendActiveDeps();
+                        }
+                    };
+                    if (angular.isArray(fact$get)) {
+                        l = fact$get.length - 1;
+                        fact$get = fact$get[l];
+                        factRet.$get[l] = factGet;
+                    } else {
+                        var annotated$get = annotate(fact$get);
+                        annotated$get.push(factGet);
+                        factRet.$get = annotated$get;
+                    }
+                    return factRet;
+                };
+
+                ngPService = $provide.service;
+                $provide.service = function (name) {
+                    var servRet = ngPService.apply(this, arguments),
+                        serv$get = servRet.$get,
+                        l, servGet;
+
+                    servGet = function () {
+                        deps.push('service:' + name);
+                        try {
+                            return serv$get.apply(this, arguments);
+                        } catch (e) {
+                            logger.warn(e);
+                        } finally {
+                            sendActiveDeps();
+                        }
+                    };
+                    if (angular.isArray(serv$get)) {
+                        l = serv$get.length - 1;
+                        serv$get = serv$get[l];
+                        servRet.$get[l] = servGet;
+                    } else {
+                        var annotated$get = annotate(serv$get);
+                        annotated$get.push(servGet);
+                        servRet.$get = annotated$get;
+                    }
+
+                    return servRet;
+                };
+
+                ngPProvider = $provide.provider;
+                $provide.provider = function (name) {
+                    var prvdRet = ngPProvider.apply(this, arguments),
+                        prvd$get = prvdRet.$get,
+                        l, prvdGet;
+
+                    prvdGet = function () {
+                        deps.push('provider:' + name);
+                        try {
+                            return prvd$get.apply(this, arguments);
+                        } catch (e) {
+                            logger.warn(e);
+                        } finally {
+                            sendActiveDeps();
+                        }
+                    };
+                    if (angular.isArray(prvd$get)) {
+                        l = prvd$get.length - 1;
+                        prvd$get = prvd$get[l];
+                        prvdRet.$get[l] = prvdGet;
+                    } else {
+                        var annotated$get = annotate(prvd$get);
+                        annotated$get.push(prvdGet);
+                        prvdRet.$get = annotated$get;
+                    }
+
+                    return prvdRet;
+                };
+
+                function sendActiveDeps() {
+                    if (!depstimeout) {
+                        depstimeout = window.setTimeout(function () {
+                            broadcastMessage(deps, 'activeDependencies');
+                            depstimeout = undefined;
+                        }, 1.3 * 1000);
+                    }
+                }
+            }]);
+    }
+
     // wait and call instrumentation or detection
     contentMessageActions.angularDetected = false;
     waitForAngularLoad(function () {
@@ -1083,6 +1096,7 @@ window.inspectorExecutor = function (window, document) {
         // add spy to bootstrap to detect manual bootstrap
         instrumentBootStrap();
         logger.log('instrumented bootstrap');
+        instrumentActiveDependency();
         addBirbalModule();
         logger.log('bootstrap instrumented and added birbal module.');
         if (document.getElementsByTagName('html')[0].getAttribute('birbal-ng-start') === 'true') {

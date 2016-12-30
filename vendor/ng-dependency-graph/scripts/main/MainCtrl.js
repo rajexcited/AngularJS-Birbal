@@ -84,7 +84,7 @@ angular.module('ngDependencyGraph')
         init(false);
 
         $scope.$on(Const.Events.INIT_MAIN, function () {
-            $rootScope.activeOnly = !!$rootScope.csInfo.enabled;
+            $rootScope.activeOnly = true;
             if (inspectedApp.getKey() === lastAppKey) {
                 init(true);
             } else {

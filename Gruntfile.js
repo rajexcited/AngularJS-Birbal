@@ -1,7 +1,7 @@
 module.exports = function (grunt) {
 
     // prod will get published.
-    var ENV = (grunt.option('prod') && 'prod') || (grunt.option('dev') && 'dev');
+    var ENV = (grunt.option('prod') && 'prod') || 'dev';
 
     // Project configuration.
     grunt.initConfig({
@@ -170,14 +170,15 @@ module.exports = function (grunt) {
         },
         clean: {
             compress: ['zip/**'],
-            'build-local': ['dist/**', 'lib/**', 'src/panel/partials/index.html', 'src/**/*.min.js', 'src/**/*.generated.js']
+            'build-local': ['dist/**', 'lib/**', 'src/panel/partials/index.html', 'src/**/*.min.js', 'src/**/*.generated.js'],
+            'inject': ['src/content-script/inject/*.min.js']
         },
         connect: {
             example: {
                 options: {
-                    port: 8000,
+                    port: 8080,
                     keepalive: true,
-                    open: 'http://localhost:8000/example/exampleApp.html'
+                    open: 'http://localhost:8080/example/exampleApp.html'
                 }
             }
         }
@@ -189,8 +190,10 @@ module.exports = function (grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['jshint']);
+    // generate injector script
+    grunt.registerTask('build-inject', ['clean:inject', 'uglify:uglify-inspector']);
     // creating zip file for distribution
     grunt.registerTask('build-extension', ['jshint', 'template', 'concat', 'uglify', 'copy', 'compress']);
     // for development
-    grunt.registerTask('build', ['jshint', 'uglify:uglify-inspector', 'copy:lib', 'copy:lib-angular-mock', 'template']);
+    grunt.registerTask('build', ['jshint', 'build-inject', 'copy:lib', 'copy:lib-angular-mock', 'template']);
 };

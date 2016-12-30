@@ -70,7 +70,7 @@
   <script src="/lib/shepherd.min.js"></script>
 <!-- inject graph -->
   <script src="/lib/ng-dependency-graph/scripts/app.module.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/analytics.js"></script>
+
   <script src="/lib/ng-dependency-graph/scripts/util/util.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/tour/tour.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/models/Node.js"></script>
