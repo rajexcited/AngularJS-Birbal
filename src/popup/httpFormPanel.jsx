@@ -227,7 +227,6 @@ class HttpFormPanel extends React.Component {
                                          id={"status-"+this.props.name}>
                                         <input type="number" className="form-control" aria-label="http response status"
                                                placeholder="Enter Http Status number" data-http-required="true"
-                                               defaultValue={this.props.status}
                                                onFocus={this.showHelpPanel.bind(this,"status")}
                                                onBlur={this.validateForm.bind(this,"status")}
                                                ref={(input) => { this.elm.status= input; }}
@@ -235,7 +234,6 @@ class HttpFormPanel extends React.Component {
                                     </div>
                                     <div role="tabpanel" className="tab-pane fade" id={"response-"+this.props.name}>
                                         <textarea placeholder="Write your response output"
-                                                  defaultValue={this.props.responseData}
                                                   onFocus={this.showHelpPanel.bind(this,"response")}
                                                   ref={(textarea) => { this.elm.responseData= textarea; }}></textarea>
                                     </div>
