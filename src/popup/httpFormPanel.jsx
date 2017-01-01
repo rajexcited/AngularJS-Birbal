@@ -47,16 +47,15 @@ class HttpFormPanel extends React.Component {
         // 2. verify regexp signature
         // 3. retrieve flags
         // 4. retrieve pattern
-        // 5. validate regexp
 
         function retrievePattern(str) {
             // single quote
             // double quote
-            var regmatched = str.match(/(['"\/])(.+)\1(?:\s*,\s*['"][a-z]*['"])$/);
+            var regmatched = str.match(/(['"\/])(.+)\1(?:\s*,\s*['"]\w*['"])$/);
             if (regmatched) {
                 return regmatched[2];
             }
-            regmatched = str.match(/(['"\/])(.+)\1(?:,['"][a-z]*['"])?$/);
+            regmatched = str.match(/(['"\/])(.+)\1(?:\s*,\s*['"]\w*['"])?$/);
             return regmatched && regmatched[2];
         }
 
@@ -70,8 +69,6 @@ class HttpFormPanel extends React.Component {
         var pattern = retrievePattern(value);
         //#3
         var flags = value.replace(pattern, '').replace(/['\"\/,]/g, '').trim();
-        //#5
-        new RegExp(pattern, flags);
         birbalJS.logger.log.bind(null, 'regex  ').call(null, {pattern: pattern, flags: flags});
         return {pattern: pattern, flags: flags};
     }
@@ -79,9 +76,14 @@ class HttpFormPanel extends React.Component {
     validateURLRegexp(errorState) {
         // 1. get value
         // 2. verify and validate regExp expression
+        // 5. validate regexp
         try {
             //#1
-            this.getRegExpArgs(this.elm.url.value);
+            var regexObject = this.getRegExpArgs(this.elm.url.value);
+            //#5
+            if (regexObject) {
+                new RegExp(regexObject.pattern, regexObject.flags);
+            }
         } catch (e) {
             // not valid
             errorState.url = errorState.url.concat(',regexInvalid');
@@ -125,13 +127,14 @@ class HttpFormPanel extends React.Component {
     }
 
     validateForm() {
-        var httpErrorState = this.getState();
+        var httpErrorState = this.getState(),
+            classList;
         for (var name in httpErrorState) {
+            classList = ReactDOM.findDOMNode(this.elm[name]).parentElement.classList;
             if (httpErrorState[name].length !== 0) {
-                ReactDOM.findDOMNode(this.elm[name]).parentElement.classList.add('has-error');
+                classList.add('has-error');
             } else {
-                birbalJS.logger.log.bind(this, 'element of no error: ').call(this, ReactDOM.findDOMNode(this.elm[name]));
-                ReactDOM.findDOMNode(this.elm[name]).parentElement.classList.remove('has-error');
+                classList.remove('has-error');
             }
         }
     }

@@ -7,7 +7,7 @@ class HttpList extends React.Component {
     }
 
     getErrorIndicator(item) {
-        if (JSON.stringify(item).indexOf('httpRequired') !== -1) {
+        if (JSON.stringify(item).search(/required|invalid/i) !== -1) {
             return "list-group-item-danger";
         }
         return "";

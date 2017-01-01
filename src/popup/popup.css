@@ -1,0 +1,230 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 600px;
+    width: 800px;
+}
+
+h3 {
+    padding-bottom: 5px;
+}
+
+.list-group-item-label {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 90%;
+}
+
+.http-panel-heading {
+    position: relative;
+}
+
+.add-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 7px 15px;
+}
+
+.panel-collapse {
+    height: 524px;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel {
+    margin-top: 20px;
+}
+
+a {
+    cursor: pointer;
+}
+
+.nav-container .nav.nav-pills {
+    padding: 15px 0;
+}
+
+textarea {
+    resize: none;
+    width: 100%;
+    height: 100%;
+}
+
+.nav-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.all-tab-contents {
+    display: flex;
+    flex-grow: 1;
+}
+
+.tab-content {
+    width: 100%;
+}
+
+.tab-pane {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.headers-input {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%
+}
+
+.headers-input > div.row {
+    padding-bottom: 8px;
+}
+
+.glyphicon-remove {
+    transform: scale(1.3);
+    vertical-align: -webkit-baseline-middle;
+}
+
+button.list-group-item:focus span.remove, button.list-group-item:hover span.remove {
+    visibility: visible;
+}
+
+span.remove {
+    visibility: hidden;
+    vertical-align: text-top;
+    margin-right: 6px;
+    z-index: 1;
+}
+
+span.remove > span.badge {
+    display: none;
+    margin-top: -9px;
+}
+
+span.remove:hover > span.badge, span.remove:focus > span.badge {
+    display: inline-block;
+}
+
+span.open-me {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background: #f5f5f5;
+    text-align: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    opacity: 0;
+}
+
+@keyframes ease-in-quick-out {
+    0% {
+        opacity: 0;
+    }
+    45% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+button.list-group-item:focus span.open-me, button.list-group-item:hover span.open-me {
+    animation: ease-in-quick-out 0.6s 1;
+}
+
+/*turn off spinners*/
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.input-group .twitter-typeahead {
+    display: table-cell !important;
+}
+
+.input-group .form-control.tt-input:not(:first-child) {
+    border-radius: 4px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.tt-hint {
+    color: #999;
+}
+
+.tt-menu {
+    min-width: 160px;
+    margin-top: -1px;
+    padding: 5px 0;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    background-clip: padding-box;
+}
+
+.tt-suggestion {
+    padding: 3px 20px;
+}
+
+.tt-suggestion:hover {
+    cursor: pointer;
+    color: #fff;
+    background-color: #428bca;
+}
+
+.ui-widget-content.draggable {
+    cursor: move;
+}
+
+.http-input-help {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.http-input-help > .ui-widget-content {
+    cursor: move;
+    pointer-events: all;
+    width: 350px;
+}
+
+.http-input-help > .ui-widget-content.method,
+.http-input-help > .ui-widget-content.url,
+.http-input-help > .ui-widget-content.status {
+    left: 83px;
+    top: 364px;
+}
+
+.http-input-help > .ui-widget-content.headers,
+.http-input-help > .ui-widget-content.response {
+    left: 338px;
+    top: 0px;
+}
+
+.hide-me {
+    display: none;
+}
+
+.http-input-help .glyphicon-info-sign {
+    padding-right: 5px;
+}
+
+.list-group .list-item {
+    margin-bottom: 2px;
+}
