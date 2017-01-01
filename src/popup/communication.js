@@ -71,7 +71,7 @@
         if (callback) {
             // ref var instead of anonymous to add or remove after completing its purpose
             // clean up
-            var ref = (message)=> {
+            var ref = function (message) {
                 if (message.task === task.concat('-response')) {
                     backgroundConnection.onMessage.removeListener(ref);
                     callback(message.msgDetails);
@@ -80,6 +80,15 @@
             backgroundConnection.onMessage.addListener(ref);
         }
         informBackground(info, task);
+    };
+
+    birbalJS.toURL = function (url) {
+        if (url && url instanceof Object) {
+            url.toString.bind(url, function () {
+                return 'new RegExp("' + this.pattern + '", "' + this.flags + '")';
+            });
+        }
+        return url;
     };
 
 }(chrome, birbalJS));

@@ -30,7 +30,7 @@ class HttpFormPanel extends React.Component {
             // regex used to determine if a string contains the substring `q`
             // contains the substring `q`, add it to the `matches` array
             if (new RegExp(q, 'i').test(str)) {
-                matches.push(str.concat("()"));
+                matches.push(str.concat('("", "")'));
             }
             cb(matches);
         }

@@ -44,7 +44,10 @@ class HttpList extends React.Component {
             // on async resolve
             if (httpList) {
                 var listErrorIndicator = [];
-                httpList.forEach(()=> (listErrorIndicator.push('')));
+                httpList.forEach((http)=> {
+                    http.url = birbalJS.toURL(http.url);
+                    listErrorIndicator.push('');
+                });
                 THIS.setState({
                     httpList: THIS.state.httpList.concat(httpList),
                     listErrorIndicator: THIS.state.listErrorIndicator.concat(listErrorIndicator)
@@ -92,7 +95,7 @@ class HttpList extends React.Component {
                                               onClick={THIS.remove.bind(THIS,ind)}>
                                             <span className="badge">Trash it </span>
                                         </span>
-                                        {http.url}
+                                        {http.url.toString()}
                                         <span className="open-me">Open</span>
                                     </span>
                                         <span className="badge">{http.method}</span>
