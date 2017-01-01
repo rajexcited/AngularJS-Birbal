@@ -84,9 +84,9 @@
 
     birbalJS.toURL = function (url) {
         if (url && url instanceof Object) {
-            url.toString.bind(url, function () {
+            url.toString = function () {
                 return 'new RegExp("' + this.pattern + '", "' + this.flags + '")';
-            });
+            };
         }
         return url;
     };

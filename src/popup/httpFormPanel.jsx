@@ -52,7 +52,7 @@ class HttpFormPanel extends React.Component {
         function retrievePattern(str) {
             // single quote
             // double quote
-            var regmatched = str.match(/(['"\/])(.+)\1(?:,['"][a-z]*['"])$/);
+            var regmatched = str.match(/(['"\/])(.+)\1(?:\s*,\s*['"][a-z]*['"])$/);
             if (regmatched) {
                 return regmatched[2];
             }
@@ -69,7 +69,7 @@ class HttpFormPanel extends React.Component {
         //#4
         var pattern = retrievePattern(value);
         //#3
-        var flags = value.replace(pattern, '').replace(/['"\/,]/g, '');
+        var flags = value.replace(pattern, '').replace(/['\"\/,]/g, '').trim();
         //#5
         new RegExp(pattern, flags);
         birbalJS.logger.log.bind(null, 'regex  ').call(null, {pattern: pattern, flags: flags});
@@ -107,15 +107,15 @@ class HttpFormPanel extends React.Component {
     handleSubmit(e) {
         e.preventDefault();
         var httpMock = {
-            url: this.elm.url.value,
             status: this.elm.status.value,
             response: this.elm.responseData.value,
             headers: this.elm.headers.getValue(),
             method: this.elm.httpMethod.getValue()
         };
         try {
-            httpMock.url = this.getRegExpArgs(httpMock.url);
-        } catch (e) {
+            httpMock.url = birbalJS.toURL(this.getRegExpArgs(this.elm.url.value));
+        } finally {
+            httpMock.url = httpMock.url || this.elm.url.value;
         }
         var httpErrorState = this.getState();
         this.hideHelpPanel();
@@ -144,7 +144,7 @@ class HttpFormPanel extends React.Component {
                 httpMethod: THIS.props.method || THIS.HTTP_METHODS[0],
                 headerList: THIS.props.headerList || []
             });
-            THIS.elm.url.value = THIS.props.url || "";
+            THIS.elm.url.value = (THIS.props.url && THIS.props.url.toString()) || "";
             THIS.elm.responseData.value = THIS.props.responseData || "";
             THIS.elm.status.value = THIS.props.status || "";
             if (typeof callback === 'function') {
@@ -195,7 +195,7 @@ class HttpFormPanel extends React.Component {
                                        onFocus={this.showHelpPanel.bind(this,"url")}
                                        onBlur={this.validateForm.bind(this,"url")} data-http-required="true"
                                        placeholder="Enter URL or RegExp key word"
-                                       defaultValue={this.props.url} ref={(input) => { this.elm.url = input; }}/>
+                                       ref={(input) => { this.elm.url = input; }}/>
                             </div>
                         </div>
                         <div className="nav-container">

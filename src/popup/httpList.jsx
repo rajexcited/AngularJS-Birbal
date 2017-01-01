@@ -95,7 +95,7 @@ class HttpList extends React.Component {
                                               onClick={THIS.remove.bind(THIS,ind)}>
                                             <span className="badge">Trash it </span>
                                         </span>
-                                        {http.url.toString()}
+                                        {http.url && http.url.toString()}
                                         <span className="open-me">Open</span>
                                     </span>
                                         <span className="badge">{http.method}</span>
