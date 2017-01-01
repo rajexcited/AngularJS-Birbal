@@ -713,7 +713,7 @@ window.inspectorExecutor = function (window, document) {
                 }
             });
             window.metadata = metadata;
-            logger.warn.bind(logger, 'dependency metaData:  ').call(logger, metadata);
+            logger.info.bind(logger, 'dependency metaData:  ').call(logger, metadata);
             return metadata;
         }
 

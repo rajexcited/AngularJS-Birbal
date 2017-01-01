@@ -102,7 +102,7 @@ class HttpList extends React.Component {
                                     </button>
                                     <HttpFormPanel name={"url"+ind} responseData={http.response} url={http.url}
                                                    status={http.status} method={http.method} headerList={http.headers}
-                                                   save={THIS.updateExistingHttp.bind(THIS,ind)} saveBtnText="Save"
+                                                   save={THIS.updateExistingHttp.bind(THIS,ind)} saveBtnText="Update"
                                                    updateInitErrorState={THIS.initErrorState.bind(THIS,ind)}></HttpFormPanel>
                                 </div>
                             );

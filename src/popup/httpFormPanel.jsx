@@ -35,6 +35,7 @@ class HttpFormPanel extends React.Component {
             cb(matches);
         }
 
+        // registered typeahead
         $(this.elm.url).typeahead(null, {source: findMatches});
         birbalJS.logger.info('componentDidMount for ' + this.props.name);
         var THIS = this;
@@ -47,7 +48,6 @@ class HttpFormPanel extends React.Component {
         // 2. verify regexp signature
         // 3. retrieve flags
         // 4. retrieve pattern
-
         function retrievePattern(str) {
             // single quote
             // double quote
@@ -102,7 +102,6 @@ class HttpFormPanel extends React.Component {
             }
         }
         this.validateURLRegexp(errorState);
-
         return errorState;
     }
 
@@ -194,10 +193,10 @@ class HttpFormPanel extends React.Component {
                                 <Dropdown className="input-group-btn" items={this.HTTP_METHODS}
                                           selectedItem={this.state.httpMethod}
                                           ref={(dropdown) => { this.elm.httpMethod = dropdown; }}/>
-                                <input className="form-control" type="text" aria-label="request URL"
+                                <input className="form-control" type="text" aria-label="request URL or RegExp"
                                        onFocus={this.showHelpPanel.bind(this,"url")}
-                                       onBlur={this.validateForm.bind(this,"url")} data-http-required="true"
-                                       placeholder="Enter URL or RegExp key word"
+                                       onBlur={this.validateForm.bind(this)} data-http-required="true"
+                                       placeholder="Enter URL or RegExp key word" defaultValue={this.props.url}
                                        ref={(input) => { this.elm.url = input; }}/>
                             </div>
                         </div>
@@ -211,7 +210,7 @@ class HttpFormPanel extends React.Component {
                                 </li>
                                 <li role="presentation">
                                     <a aria-controls="response" role="tab" data-toggle="tab"
-                                       onClick={this.hideHelpPanel.bind(this,"headers")}
+                                       onClick={this.showHelpPanel.bind(this,"response")}
                                        data-target={"#response-"+this.props.name}>Response</a>
                                 </li>
                                 <li role="presentation">
@@ -228,7 +227,7 @@ class HttpFormPanel extends React.Component {
                                         <input type="number" className="form-control" aria-label="http response status"
                                                placeholder="Enter Http Status number" data-http-required="true"
                                                onFocus={this.showHelpPanel.bind(this,"status")}
-                                               onBlur={this.validateForm.bind(this,"status")}
+                                               onBlur={this.validateForm.bind(this)}
                                                ref={(input) => { this.elm.status= input; }}
                                         />
                                     </div>
@@ -239,6 +238,7 @@ class HttpFormPanel extends React.Component {
                                     </div>
                                     <div role="tabpanel" className="tab-pane fade" id={"headers-"+this.props.name}>
                                         <HeaderInputList headerList={this.state.headerList}
+                                                         onClick={this.showHelpPanel.bind(this,"response")}
                                                          ref={(headers) => { this.elm.headers= headers; }}/>
                                     </div>
                                 </div>

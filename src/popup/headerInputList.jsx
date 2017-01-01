@@ -65,7 +65,6 @@ class HeaderInputList extends React.Component {
             // event
             this.state.headers[i][k] = e.target.value;
         }
-
         this.setState({headers: this.state.headers});
     }
 
@@ -75,7 +74,7 @@ class HeaderInputList extends React.Component {
 
     render() {
         var THIS = this;
-        return (<div className="headers-input">
+        return (<div className="headers-input" onClick={this.props.onClick.bind(this)}>
             {
                 THIS.state.headers.map(function (item, ind) {
                     return (
