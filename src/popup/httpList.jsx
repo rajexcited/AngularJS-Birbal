@@ -26,7 +26,7 @@ class HttpList extends React.Component {
     }
 
     updateExistingHttp(ind, httpMock, httpErrorState) {
-        console.log(arguments);
+        birbalJS.logger.log(arguments);
         var aList = this.state.httpList,
             newErrors = this.state.listErrorIndicator;
         aList[ind] = httpMock;

@@ -856,6 +856,13 @@ window.inspectorExecutor = function (window, document) {
             backend = angular.injector(['ngMockE2E']).get('$httpBackend');
         }
 
+        function toURLStringOrRegExp(url) {
+            if (url && url instanceof Object) {
+                return new RegExp(url.pattern, url.flags);
+            }
+            return url;
+        }
+
         /*expose to injector action task*/
         updateHttpBackend = function (list) {
             logger.log('update list request recieved');
@@ -864,7 +871,7 @@ window.inspectorExecutor = function (window, document) {
                 oldList = list;
                 useNewBackend();
                 list.forEach(function (httpItem) {
-                    backend.when(httpItem.method.toUpperCase(), httpItem.url, toHeaderObject(httpItem.headers))
+                    backend.when(httpItem.method.toUpperCase(), toURLStringOrRegExp(httpItem.url), toHeaderObject(httpItem.headers))
                         .respond(Number(httpItem.status), httpItem.response);
                 });
                 backend.whenGET(/.*/).passThrough();
