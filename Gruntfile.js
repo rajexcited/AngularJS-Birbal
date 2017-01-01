@@ -171,7 +171,8 @@ module.exports = function (grunt) {
         clean: {
             compress: ['zip/**'],
             'build-local': ['dist/**', 'lib/**', 'src/panel/partials/index.html', 'src/**/*.min.js', 'src/**/*.generated.js'],
-            'inject': ['src/content-script/inject/*.min.js']
+            popup: ['src/popup/*.generated.js'],
+            inject: ['src/content-script/inject/*.min.js']
         },
         connect: {
             example: {

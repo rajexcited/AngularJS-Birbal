@@ -82,13 +82,11 @@ class HttpList extends React.Component {
                     this.state.httpList.map(function (http, ind) {
                         if (http) {
                             return (
-                                <div data-list-item-id={'item-'+ind}>
-                                    <button type="button"
+                                <div className="list-item" data-list-item-id={'item-'+ind}>
+                                    <button type="button" id={"url"+ind} data-toggle="collapse" aria-expanded="true"
                                             className={"list-group-item "+THIS.state.listErrorIndicator[ind]}
-                                            id={"url"+ind}
-                                            data-toggle="collapse"
-                                            data-target={"#collapse-url"+ind} aria-expanded="true"
-                                            onClick={THIS.handleClick} aria-controls={"collapse-url"+ind}>
+                                            data-target={"#collapse-url"+ind} onClick={THIS.handleClick}
+                                            aria-controls={"collapse-url"+ind}>
                                     <span className="list-group-item-label">
                                         <span className="glyphicon glyphicon-trash remove"
                                               onClick={THIS.remove.bind(THIS,ind)}>
@@ -148,6 +146,7 @@ $(function () {
 
 window.showEditHttpPanel = function (event) {
     var targetId = "#collapse-" + event.currentTarget.id;
+    $(targetId).trigger("openingForm");
     window.setTimeout(function () {
         var target = $(targetId);
         $('html, body').animate({
@@ -170,3 +169,17 @@ window.updateHttpList = function (list) {
 $('#close-me').on('click', function () {
     window.close();
 });
+
+$(".http-input-help .ui-widget-content").draggable({containment: ".http-input-help", scroll: false}).resizable();
+
+$(".http-input-help")
+    .on("help-panel:hide", function (event, panelName) {
+        var panelSelector = panelName ? "." + panelName : "";
+        birbalJS.logger.log("panelSelector = " + panelSelector);
+        $(".http-input-help .ui-widget-content" + panelSelector).addClass("hide-me");
+    })
+    .on("help-panel:show", function (event, panelName) {
+        var panelSelector = "." + panelName;
+        birbalJS.logger.log("panelSelector = " + panelSelector);
+        $(".http-input-help .ui-widget-content" + panelSelector).removeClass("hide-me");
+    });

@@ -31,7 +31,7 @@
   },
   "scripts": {
     "clean": "npm prune & npm update & grunt clean",
-    "babel": "babel src/popup/*.jsx --out-file src/popup/react-components.generated.js --presets=react",
+    "babel": "grunt clean:popup & babel src/popup/*.jsx --out-file src/popup/react-components.generated.js --presets=react",
     "build": "npm run clean & npm run babel & grunt build --dev",
     "package": "npm run clean & npm run babel & grunt build-extension --prod"
   },

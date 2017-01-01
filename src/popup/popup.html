@@ -155,6 +155,87 @@
             margin: 0;
         }
 
+        .input-group .twitter-typeahead {
+            display: table-cell !important;
+        }
+
+        .input-group .form-control.tt-input:not(:first-child) {
+            border-radius: 4px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .tt-hint {
+            color: #999;
+        }
+
+        .tt-menu {
+            min-width: 160px;
+            margin-top: -1px;
+            padding: 5px 0;
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+            -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+            background-clip: padding-box;
+        }
+
+        .tt-suggestion {
+            padding: 3px 20px;
+        }
+
+        .tt-suggestion:hover {
+            cursor: pointer;
+            color: #fff;
+            background-color: #428bca;
+        }
+
+        .ui-widget-content.draggable {
+            cursor: move;
+        }
+
+        .http-input-help {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .http-input-help > .ui-widget-content {
+            cursor: move;
+            pointer-events: all;
+            width: 350px;
+        }
+
+        .http-input-help > .ui-widget-content.method,
+        .http-input-help > .ui-widget-content.url,
+        .http-input-help > .ui-widget-content.status {
+            left: 83px;
+            top: 364px;
+        }
+
+        .http-input-help > .ui-widget-content.headers,
+        .http-input-help > .ui-widget-content.response {
+            left: 338px;
+            top: 0px;
+        }
+
+        .hide-me {
+            display: none;
+        }
+
+        .http-input-help .glyphicon-info-sign {
+            padding-right: 5px;
+        }
+
+        .list-group .list-item {
+            margin-bottom: 2px;
+        }
     </style>
 </head>
 <body>
@@ -187,11 +268,79 @@
         <div class="col-xs-12" id="http-list">
         </div>
     </div>
+    <div class="row">
+        <div class="col-xs-12 http-input-help">
+            <div class="panel panel-info url hide-me ui-widget-content">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        <span>How to input URL?</span>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    You can use url string or use regex url. Use RegExp constructor -
+                    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp"
+                       target="_blank">link to more details</a>
+                    Example of regex, new RegExp('regexUrl','g')
+                </div>
+            </div>
+            <div class="panel panel-info method hide-me ui-widget-content">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        <span>How to change Method?</span>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    Default is <b>GET</b>. You can make other selection from dropdown next to URL input.
+                </div>
+            </div>
+            <div class="panel panel-info status hide-me ui-widget-content">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        <span>Http Status Code</span>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    Use http status code - <a href="https://en.wikipedia.org/wiki/List_of_HTTP_status_codes">list of
+                    codes</a>
+                    Allows only number.
+                </div>
+            </div>
+            <div class="panel panel-info response hide-me ui-widget-content">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        <span>Http Response</span>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    Accepts any kind of response. string, json, xml, etc.<br/>
+                    But it doesn't validate here.
+                </div>
+            </div>
+            <div class="panel panel-info headers hide-me ui-widget-content">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        <span>Http Response Headers</span>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    add http response headers.
+                    <a href="https://en.wikipedia.org/wiki/List_of_HTTP_header_fields" target="_blank">more details</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="/lib/jquery.min.js" type="text/javascript"></script>
 <script src="/lib/react.min.js" type="text/javascript"></script>
 <script src="/lib/react-dom.min.js" type="text/javascript"></script>
+<script src="/lib/typeahead.jquery.js" type="text/javascript"></script>
+<script src="/lib/jquery-ui.draggable-resizable.min.js" type="text/javascript"></script>
 <script src="/lib/admin-lte/js/bootstrap.min.js" type="text/javascript"></script>
 <script src="/src/message.js" type="text/javascript"></script>
 <script src="communication.js" type="text/javascript"></script>

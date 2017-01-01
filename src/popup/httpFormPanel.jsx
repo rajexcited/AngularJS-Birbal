@@ -21,6 +21,73 @@ class HttpFormPanel extends React.Component {
         });
     }
 
+    componentDidMount() {
+        function findMatches(q, cb) {
+            // an array that will be populated with substring matches
+            var matches = [],
+                str = "new RegExp";
+
+            // regex used to determine if a string contains the substring `q`
+            // contains the substring `q`, add it to the `matches` array
+            if (new RegExp(q, 'i').test(str)) {
+                matches.push(str.concat("()"));
+            }
+            cb(matches);
+        }
+
+        $(this.elm.url).typeahead(null, {source: findMatches});
+        birbalJS.logger.info('componentDidMount for ' + this.props.name);
+        var THIS = this;
+        $("#collapse-" + this.props.name).on("openingForm", function () {
+            THIS.showHelpPanel("method");
+        });
+    }
+
+    getRegExpArgs(value) {
+        // 2. verify regexp signature
+        // 3. retrieve flags
+        // 4. retrieve pattern
+        // 5. validate regexp
+
+        function retrievePattern(str) {
+            // single quote
+            // double quote
+            var regmatched = str.match(/(['"\/])(.+)\1(?:,['"][a-z]*['"])$/);
+            if (regmatched) {
+                return regmatched[2];
+            }
+            regmatched = str.match(/(['"\/])(.+)\1(?:,['"][a-z]*['"])?$/);
+            return regmatched && regmatched[2];
+        }
+
+        //#1 & #2
+        value = value.match(/^new RegExp\((.*)\)$/);
+        if (!value) {
+            return;
+        }
+        value = value[1];
+        //#4
+        var pattern = retrievePattern(value);
+        //#3
+        var flags = value.replace(pattern, '').replace(/['"\/,]/g, '');
+        //#5
+        new RegExp(pattern, flags);
+        birbalJS.logger.log.bind(null, 'regex  ').call(null, {pattern: pattern, flags: flags});
+        return {pattern: pattern, flags: flags};
+    }
+
+    validateURLRegexp(errorState) {
+        // 1. get value
+        // 2. verify and validate regExp expression
+        try {
+            //#1
+            this.getRegExpArgs(this.elm.url.value);
+        } catch (e) {
+            // not valid
+            errorState.url = errorState.url.concat(',regexInvalid');
+        }
+    }
+
     getState() {
         var errorState = {}, elm;
         // required state
@@ -32,6 +99,7 @@ class HttpFormPanel extends React.Component {
                 errorState[name] = errorState[name].concat(',httpRequired');
             }
         }
+        this.validateURLRegexp(errorState);
 
         return errorState;
     }
@@ -45,7 +113,12 @@ class HttpFormPanel extends React.Component {
             headers: this.elm.headers.getValue(),
             method: this.elm.httpMethod.getValue()
         };
+        try {
+            httpMock.url = this.getRegExpArgs(httpMock.url);
+        } catch (e) {
+        }
         var httpErrorState = this.getState();
+        this.hideHelpPanel();
         this.props.save(httpMock, httpErrorState);
         // reset the form
         this.resetForm();
@@ -65,6 +138,7 @@ class HttpFormPanel extends React.Component {
 
     resetForm(callback) {
         var THIS = this;
+        this.hideHelpPanel();
         window.setTimeout(function () {
             THIS.setState({
                 httpMethod: THIS.props.method || THIS.HTTP_METHODS[0],
@@ -80,6 +154,17 @@ class HttpFormPanel extends React.Component {
                 THIS.validateForm();
             }
         }, 200);
+    }
+
+    showHelpPanel(panelName) {
+        var panelList = panelName ? [panelName] : panelName;
+        $(".http-input-help").trigger("help-panel:hide");
+        $(".http-input-help").trigger("help-panel:show", panelList);
+    }
+
+    hideHelpPanel(panelName) {
+        var panelList = panelName ? [panelName] : panelName;
+        $(".http-input-help").trigger("help-panel:hide", panelList);
     }
 
     render() {
@@ -106,10 +191,10 @@ class HttpFormPanel extends React.Component {
                                 <Dropdown className="input-group-btn" items={this.HTTP_METHODS}
                                           selectedItem={this.state.httpMethod}
                                           ref={(dropdown) => { this.elm.httpMethod = dropdown; }}/>
-
-                                <input type="text" className="form-control" aria-label="request URL"
-                                       onBlur={this.validateForm.bind(this)}
-                                       data-http-required="true" placeholder="Enter URL or regex URL"
+                                <input className="form-control" type="text" aria-label="request URL"
+                                       onFocus={this.showHelpPanel.bind(this,"url")}
+                                       onBlur={this.validateForm.bind(this,"url")} data-http-required="true"
+                                       placeholder="Enter URL or RegExp key word"
                                        defaultValue={this.props.url} ref={(input) => { this.elm.url = input; }}/>
                             </div>
                         </div>
@@ -118,14 +203,17 @@ class HttpFormPanel extends React.Component {
                             <ul className="nav nav-pills" role="tablist">
                                 <li role="presentation" className="active">
                                     <a aria-controls="status" role="tab" data-toggle="tab"
+                                       onClick={this.hideHelpPanel.bind(this,"headers")}
                                        data-target={"#status-"+this.props.name}>Status</a>
                                 </li>
                                 <li role="presentation">
                                     <a aria-controls="response" role="tab" data-toggle="tab"
+                                       onClick={this.hideHelpPanel.bind(this,"headers")}
                                        data-target={"#response-"+this.props.name}>Response</a>
                                 </li>
                                 <li role="presentation">
                                     <a aria-controls="headers" role="tab" data-toggle="tab"
+                                       onClick={this.showHelpPanel.bind(this,"headers")}
                                        data-target={"#headers-"+this.props.name}>Request Headers</a>
                                 </li>
                             </ul>
@@ -137,18 +225,18 @@ class HttpFormPanel extends React.Component {
                                         <input type="number" className="form-control" aria-label="http response status"
                                                placeholder="Enter Http Status number" data-http-required="true"
                                                defaultValue={this.props.status}
-                                               onBlur={this.validateForm.bind(this)}
+                                               onFocus={this.showHelpPanel.bind(this,"status")}
+                                               onBlur={this.validateForm.bind(this,"status")}
                                                ref={(input) => { this.elm.status= input; }}
                                         />
                                     </div>
-                                    <div role="tabpanel" className="tab-pane fade"
-                                         id={"response-"+this.props.name}>
+                                    <div role="tabpanel" className="tab-pane fade" id={"response-"+this.props.name}>
                                         <textarea placeholder="Write your response output"
                                                   defaultValue={this.props.responseData}
+                                                  onFocus={this.showHelpPanel.bind(this,"response")}
                                                   ref={(textarea) => { this.elm.responseData= textarea; }}></textarea>
                                     </div>
-                                    <div role="tabpanel" className="tab-pane fade"
-                                         id={"headers-"+this.props.name}>
+                                    <div role="tabpanel" className="tab-pane fade" id={"headers-"+this.props.name}>
                                         <HeaderInputList headerList={this.state.headerList}
                                                          ref={(headers) => { this.elm.headers= headers; }}/>
                                     </div>
