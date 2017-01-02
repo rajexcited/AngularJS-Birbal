@@ -54,7 +54,7 @@ window.inspectorExecutor = function (window, document) {
                 return value;
             }));
         } catch (e) {
-            logger.error.bind(logger, 'Object = ')(o);
+            logger.error.bind(logger, 'collected data Object = ')(o);
             throw new Error('circular reference found, \tObject' + ck.join('.') + ' is equal to Object' + ck.slice(0, ind + 1).join('.') + '\n' + e.stack);
         }
     }
@@ -62,9 +62,9 @@ window.inspectorExecutor = function (window, document) {
     function broadcastMessage(info, task) {
         try {
             var msg = new BirbalMessage(info, 'angular-inspector', 'content-script', task);
+            //TODO how can I remove this overhead - do it in error not pre check
             window.postMessage(toValidJSON(msg), '*');
         } catch (e) {
-            logger.error.bind(logger, 'Object = ')(o);
             logger.error.bind(logger, 'broadcast error: ').call(logger, e);
         }
     }
@@ -236,9 +236,20 @@ window.inspectorExecutor = function (window, document) {
                         broadcast: []
                     },
                     http: {},
-                    asyncEval: [],
+                    asyncEval: {time: [], expr: []},
                     browserDefer: []
                 };
+
+                function sendDigestInfo() {
+                    var digestInfo = JSON.stringify(nb.digest);
+                    window.setTimeout(function () {
+                        digestInfo = JSON.parse(digestInfo);
+                        digestInfo.domUpdateTime = (perf.now() - digestInfo.endTime);
+                        logger.info("digest ended, DOM update time taken in ms is " + digestInfo.domUpdateTime);
+                        broadcastMessage(digestInfo, 'digestMeasures');
+                    }, 2);
+                }
+
                 // instrument scope/rootScope
                 $provide.decorator('$rootScope', ['$delegate', function ($delegate) {
                     var scopePrototype, ngWatch, ngWatchCollection, ngDigest, ngApply, ngEmit, ngBroadcast, ngEvalAsync,
@@ -350,15 +361,6 @@ window.inspectorExecutor = function (window, document) {
                                 asyncQueue: '',
                                 postDigestQueue: toStringForm(scope.$$postDigestQueue)
                             };
-                            nb.digest.asyncQueue = scope.$$asyncQueue.map(function (a) {
-                                var m = a;
-                                if (typeof a === 'object') {
-                                    m = {};
-                                    m.expression = a.expression;
-                                    m.scope = a.scope.$id;
-                                }
-                                return toStringForm(m);
-                            });
                             nb.digest.startTime = perf.now();
                             ngDigest.apply(scope, arguments);
                         } catch (e) {
@@ -373,14 +375,16 @@ window.inspectorExecutor = function (window, document) {
                             nb.digest.applyEndTime = nb.applyEndTime;
                             nb.digest.events = nb.events;
                             nb.digest.async = {
-                                evalAsync: nb.asyncEval,
+                                evalAsync: nb.asyncEval.time,
                                 browserDefer: nb.browserDefer
                             };
-                            broadcastMessage(nb.digest, 'digestMeasures');
+                            nb.digest.asyncQueue = nb.asyncEval.expr;
+                            sendDigestInfo();
                             nb.applyStartTime = nb.applyEndTime = undefined;
                             nb.events.emit.length = 0;
                             nb.events.broadcast.length = 0;
-                            nb.asyncEval.length = 0;
+                            nb.asyncEval.time.length = 0;
+                            nb.asyncEval.expr.length = 0;
                             nb.browserDefer.length = 0;
                         }
                     };
@@ -425,9 +429,20 @@ window.inspectorExecutor = function (window, document) {
                         return broadcastret;
                     };
                     ngEvalAsync = scopePrototype.$evalAsync;
-                    scopePrototype.$evalAsync = function () {
+                    function asyncExprStringify(a) {
+                        var m = a;
+                        if (a && typeof a === 'object') {
+                            m = {};
+                            m.expression = a.expression;
+                            m.scope = a.scope.$id;
+                        }
+                        return toStringForm(m);
+                    }
+
+                    scopePrototype.$evalAsync = function (expr) {
                         ngEvalAsync.apply(this, arguments);
-                        nb.asyncEval.push(perf.now());
+                        nb.asyncEval.time.push(perf.now());
+                        nb.asyncEval.expr.push(asyncExprStringify(expr));
                     };
 
                     return $delegate;

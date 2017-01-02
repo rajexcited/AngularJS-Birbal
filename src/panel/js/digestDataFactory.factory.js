@@ -482,35 +482,35 @@
                     m,
                     toInd = -1;
 
-
-                while (len--) {
-                    m = digestDetails.measures[len];
-                    if (toInd === -1) {
-                        if (Math.round(m.endTime / 1000) > timeTo) {
-                            continue;
+                if (len) {
+                    while (len--) {
+                        m = digestDetails.measures[len];
+                        if (toInd === -1) {
+                            if (Math.round(m.endTime / 1000) > timeTo) {
+                                continue;
+                            }
+                            toInd = len;
                         }
-                        toInd = len;
-                    }
-                    if (Math.round(m.startTime / 1000) < timeFrom) {
-                        break;
-                    }
+                        if (Math.round(m.startTime / 1000) < timeFrom) {
+                            break;
+                        }
 
-                    highlights.edr = _analyzeEdrForMeasure(m, highlights.edr, measures, lastMeasure);
-                    lastMeasure = digestDetails.measures[len];
-                    if (highlights.longestDigestTime < lastMeasure.runtime) {
-                        highlights.longestDigestTime = lastMeasure.runtime;
+                        highlights.edr = _analyzeEdrForMeasure(m, highlights.edr, measures, lastMeasure);
+                        lastMeasure = digestDetails.measures[len];
+                        if (highlights.longestDigestTime < lastMeasure.runtime) {
+                            highlights.longestDigestTime = lastMeasure.runtime;
+                        }
+                        // count watchers in digest max of dirty/total
+                        if (highlights.dirtyWatchers < lastMeasure.nDirtyWatchers) {
+                            highlights.dirtyWatchers = lastMeasure.nDirtyWatchers;
+                        }
+                        if (highlights.nWatchers < lastMeasure.nWatchers) {
+                            highlights.nWatchers = lastMeasure.nWatchers;
+                        }
                     }
-                    // count watchers in digest max of dirty/total
-                    if (highlights.dirtyWatchers < lastMeasure.nDirtyWatchers) {
-                        highlights.dirtyWatchers = lastMeasure.nDirtyWatchers;
-                    }
-                    if (highlights.nWatchers < lastMeasure.nWatchers) {
-                        highlights.nWatchers = lastMeasure.nWatchers;
-                    }
+                    highlights.to = toInd !== -1 ? toInd : len;
+                    highlights.from = (Math.round(m.endTime / 1000) < timeFrom || len === -1) ? len + 1 : len;
                 }
-                highlights.to = toInd !== -1 ? toInd : len;
-                highlights.from = (Math.round(m.endTime / 1000) < timeFrom || len === -1) ? len + 1 : len;
-
                 return highlights;
             };
 

@@ -59,9 +59,11 @@
                 httpRecordFactory.addHttpMeasure(message.msgDetails);
             });
             receiver.actionOnTask('activeDependencies', function (message) {
+                logger.log.bind(logger, 'activeDependencies:  ').call(logger, message.msgDetails);
                 dependencyTree.addActive(message.msgDetails);
             });
             receiver.actionOnTask('dependencyTree', function (message) {
+                logger.log.bind(logger, 'dependencyTree:  ').call(logger, message.msgDetails);
                 dependencyTree.setTree(message.msgDetails);
             });
             /////////////////////////////////////////////////////////

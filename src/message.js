@@ -54,13 +54,13 @@
             var chrome = window.chrome;
             this.tabId = chrome && chrome.devtools && chrome.devtools.inspectedWindow && chrome.devtools.inspectedWindow.tabId;
         }
-        this.callerId = callerId;
+        this.task = task;
         /* default is background */
         this.receiverId = receiverId || endPoints.BACKGROUND;
+        this.msgDetails = msgDetails;
+        this.callerId = callerId;
         this.status = 'prepare';
         this.app = 'birbal';
-        this.msgDetails = msgDetails;
-        this.task = task;
     };
     /////////////////////////////////////////////////////////
     //  receiver changes call status

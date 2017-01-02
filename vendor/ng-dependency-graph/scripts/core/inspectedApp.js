@@ -6,7 +6,7 @@ angular.module('ngDependencyGraph')
         return {
             getKey: function () {
                 var tree = dependencyTree.getTree();
-                return '' + (tree && tree.apps && tree.apps[0]) + $rootScope.csInfo.enabled;
+                return '' + (tree && tree.apps && tree.apps[0]) /*+ $rootScope.csInfo.enabled*/;
             },
             getData: function () {
                 return dependencyTree.getTree();

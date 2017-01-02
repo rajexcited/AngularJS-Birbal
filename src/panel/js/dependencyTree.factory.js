@@ -7,8 +7,8 @@
 
     angular.module('dependencyTree.app', [])
         .factory('dependencyTree', ['$rootScope', 'Const', function ($rootScope, Const) {
-            var setTree, getTree, addActive, createActiveTree, activeList,
-                tree;
+            var setTree, getTree, addActive, createActiveTree,
+                activeList, tree;
 
             createActiveTree = function () {
                 if (tree && activeList) {
@@ -31,7 +31,7 @@
                                 c.isActive = true;
                                 module.isActive = true;
                                 report[0].push(c.type + ':' + c.name);
-                                list=list.substr(0,ind) + '`'+list.substr(ind);
+                                list = list.substr(0, ind) + '`' + list.substr(ind);
                             } else if (list.indexOf(name) === -1) {
                                 report[1].push(c.type + ':' + c.name);
                             }

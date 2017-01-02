@@ -201,7 +201,7 @@
         var tabInfo;
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.activeDependencies = message.msgDetails;
-        informPanel(message.tabId, tabInfo.activeDependencies, 'dependencyTree');
+        informPanel(message.tabId, tabInfo.activeDependencies, 'activeDependencies');
     });
 
     // for devtools panel
@@ -309,6 +309,20 @@
             }
         }
 
+        function handlePanelDisconnection(tabId) {
+            if (connectingPort.name === birbalJS.END_POINTS.PANEL) {
+                // disable
+                var tabInfo = tabs.getTabInfo(tabId);
+                if (tabInfo.doAnalysis) {
+                    tabInfo.doAnalysis = false;
+                    informContentScript(tabId, {
+                        'ngStart': tabInfo.doAnalysis,
+                        'ngModule': tabInfo.ngDetect.ngModule
+                    }, 'instrumentNg');
+                }
+            }
+        }
+
         // #20
         /**
          * disconnect event
@@ -318,13 +332,14 @@
             logger.log('onDisconnectCallback');
             var tabId = tabs.removePort(disconnectingPort, connectingPort.name);
             handlePopupDisconnection(tabId);
+            handlePanelDisconnection(tabId);
             // notify other connections to same tab
             logger.log(tabs.length + ' - After DisconnectCallback, removed tab #' + tabId + ': ' + connectingPort.name);
         });
         /////////////////////////////////
     });
 
-    chrome.runtime.onSuspend.addListener(function callback() {
+    chrome.runtime.onSuspend.addListener(function suspendCallback() {
         logger.log.bind(logger, 'on Suspend ').call(logger, arguments);
         // notify all tabs - CS/INJECTOR, PANEL, POPUP
     });

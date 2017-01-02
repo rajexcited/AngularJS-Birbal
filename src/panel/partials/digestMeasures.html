@@ -57,6 +57,9 @@
                 <th>
                     <div> Angular Events (name: time)</div>
                 </th>
+                <th>
+                    <div> DOM updated time after digest finished</div>
+                </th>
             </tr>
             </thead>
             <tbody>
@@ -69,8 +72,11 @@
                     <br> total {{:: aMeasure.nWatchersRuntime |number:2}} ms
                 </td>
                 <td> {{:: aMeasure.otherRuntime | number:2}} ms</td>
-                <td><p ng-if=":: aMeasure.asyncQueue.length"> {{:: aMeasure.asyncQueue.length}} basic Async Evaluations </p>
-                    <p ng-if=":: aMeasure.postDigestQueue.length"> {{:: aMeasure.postDigestQueue.length}} Post Digest </p>
+                <td>
+                    <p ng-if=":: aMeasure.asyncQueue.length"> {{:: aMeasure.asyncQueue.length}} basic Async
+                    Evaluations </p>
+                    <p ng-if=":: aMeasure.postDigestQueue.length"> {{:: aMeasure.postDigestQueue.length}} Post
+                        Digest </p>
                     <p ng-if=":: aMeasure.nWatchAsyncStarters"> {{:: aMeasure.nWatchAsyncStarters}}
                         watchers involved in async </p>
                 </td>
@@ -85,6 +91,9 @@
                     <div ng-repeat="broadcast in ::aMeasure.events.broadcast">
                         {{::broadcast.name}}
                     </div>
+                </td>
+                <td>
+                    {{::aMeasure.domUpdateTime|number :2}} ms
                 </td>
             </tr>
             </tbody>
