@@ -912,7 +912,7 @@ window.inspectorExecutor = function (window, document) {
                 window.injectMock = undefined;
                 handleHttpInjector();
             } catch (e) {
-                logger.error(e);
+                // retry until successful
                 window.setTimeout(initMock, 30);
             }
         }

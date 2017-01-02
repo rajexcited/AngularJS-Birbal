@@ -34,15 +34,15 @@
             </li>
             <li ng-show="!csInfo.pause && csInfo.enabled"><a href="#" ng-click="sidebarActions.pauseMyAnalysis();"><i
                     class="fa fa-link"></i>
-                <span>Pause capturing data</span></a></li>
+                <span>Pause Perf Analysis</span></a></li>
             <li ng-show="csInfo.pause && csInfo.enabled"><a href="#" ng-click="sidebarActions.resumeMyAnalysis();"><i
-                    class="fa fa-link"></i> <span>Resume capturing data</span></a>
+                    class="fa fa-link"></i> <span>Resume Pref Analysis</span></a>
             </li>
             <li ng-show="csInfo.enabled"><a href="#" ng-click="sidebarActions.disableMe();"><i class="fa fa-link"></i>
-                <span>Disable</span></a>
+                <span>Stop Perf Analysis</span></a>
             </li>
             <li ng-show="csInfo.ngDetected && !csInfo.enabled"><a href="#" ng-click="sidebarActions.enableMe();"><i class="fa fa-link"></i>
-                <span>Enable</span></a></li>
+                <span>Start Perf Analysis</span></a></li>
             <li select-view="help">
                 <a href="#" ng-click="sidebarActions.changePanelView('help');">
                     <i class="fa fa-link"></i> <span>Help</span>
