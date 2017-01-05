@@ -78,7 +78,7 @@
             calls = {};
         receiverSelf.receiverId = receiverId;
 
-        receiverSelf.when = function (callId, callListener) {
+        receiverSelf.for = function (callId, callListener) {
             if (typeof taskOrCall !== 'string' && typeof callListener !== 'function') {
                 throw new Error('arguments task/ call Id and call Listener are not matching');
             }
