@@ -29,9 +29,10 @@
 
             // register send message
             logger.log('message constructor to content script');
-            serviceInstance.informBackground = function (info, task, newDest) {
-                newDest = newDest || birbalJS.END_POINTS.CONTENTSCRIPT;
-                var msg = new birbalJS.Message(info, birbalJS.END_POINTS.PANEL, newDest, task);
+            serviceInstance.informBackground = function (info, task) {
+                var msg,
+                    destination = (task === 'panelInit') ? birbalJS.END_POINTS.BACKGROUND : birbalJS.END_POINTS.CONTENTSCRIPT;
+                msg = new birbalJS.Message(info, birbalJS.END_POINTS.PANEL, destination, task);
                 backgroundConnection.postMessage(msg);
             };
             /////////////////////////////////////////////////////////
@@ -39,15 +40,18 @@
             /////////////////////////////////////////////////////////
             receiver = new birbalJS.Receiver(birbalJS.END_POINTS.PANEL);
 
-            function panelInitialize(message) {
-                // action list - cleanup and init
-                $rootScope.$emit('clearResources', message.task);
-                $rootScope.$emit('changePanelView', 'nbEnable', message.msgDetails);
-            }
+            //function panelInitialize(message) {
+            //    // action list - cleanup and init
+            //    $rootScope.$emit('clearResources', message.task);
+            //    $rootScope.$emit('changePanelView', 'nbEnable', message.msgDetails);
+            //}
 
-            receiver.for('addPanel', panelInitialize);
-            receiver.for('removePanel', panelInitialize);
-            receiver.for('ngDetectData', function (message) {
+            //receiver.for('addPanel', panelInitialize);
+            //receiver.for('removePanel', panelInitialize);
+            //receiver.for('ngDetectData', function (message) {
+            //    $rootScope.$emit('ngAppDetails', message.msgDetails);
+            //});
+            receiver.for('ngDetect', function (message) {
                 $rootScope.$emit('ngAppDetails', message.msgDetails);
             });
 

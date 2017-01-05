@@ -55,15 +55,16 @@
     /////////////////////////////////////////////////////////
     backgroundConnection.onMessage.addListener(function bgMsgListener(message) {
         // in background message listener
-        if (message.task === 'instrumentNg') {
-            // qq: what's the purpose of this ???
-            var htmlNode = document.getElementsByTagName('html')[0];
-            htmlNode.setAttribute('birbal-ng-start', message.msgDetails.ngStart);
-            htmlNode.setAttribute('birbal-ng-module', message.msgDetails.ngModule);
-        } else {
-            logger.table(message);
-            window.postMessage(new birbalJS.Message(message.msgDetails, birbalJS.END_POINTS.CONTENTSCRIPT, birbalJS.END_POINTS.ANGULARINSPECTOR, message.task), '*');
-        }
+        //if (message.task === 'instrumentNg') {
+        //    // qq: what's the purpose of this ???
+        //    var htmlNode = document.getElementsByTagName('html')[0];
+        //    htmlNode.setAttribute('birbal-ng-start', message.msgDetails.ngStart);
+        //    htmlNode.setAttribute('birbal-ng-module', message.msgDetails.ngModule);
+        //} else {
+        logger.log(message);
+        var birbalMsg = new birbalJS.Message(message.msgDetails, birbalJS.END_POINTS.CONTENTSCRIPT, birbalJS.END_POINTS.ANGULARINSPECTOR, message.task);
+        window.postMessage(birbalMsg, '*');
+        //}
     });
 
     /////////////////////////////////////////////////////////
@@ -86,29 +87,32 @@
         /*jslint eqeq: false*/
         /* jshint +W116 */
         logger.log('in injectedMsgListener');
-        var winmessage = event.data,
-            bgtasks = new RegExp('^(ngDetect|csInit|dependency\.tree|dependency\.activeList)$');
-        logger.log(winmessage);
-        if (bgtasks.test(winmessage.task)) {
-            // this is coming from angularDetect injector
-            if (winmessage.msgDetails && winmessage.msgDetails.ngDetected) {
-                // send message to BG for connecting and inspecting app
-                logger.log('birbal finds angular app in page');
-            } else if (winmessage.task === 'ngDetect') {
-                // send message to BG to clean up resources and connections.
-                logger.log('birbal doesnot find angular app. cleanup resources. Bye');
-                window.setTimeout(function () {
-                    backgroundConnection.disconnect();
-                    window.removeEventListener('message', injectedMsgListener);
-                    backgroundConnection = undefined;
-                    logger = undefined;
-                }, 200);
-            }
-            informBackground(winmessage.msgDetails, winmessage.task, birbalJS.END_POINTS.BACKGROUND);
-        } else {
-            // all others are from angularinspector.js which communicates to panel
-            informBackground(winmessage.msgDetails, winmessage.task, birbalJS.END_POINTS.PANEL);
+        var winMessage = event.data,
+            destination;
+
+        logger.log(winMessage);
+        destination = winMessage.task === 'csInit' ? birbalJS.END_POINTS.BACKGROUND : birbalJS.END_POINTS.PANEL;
+        informBackground(winMessage.msgDetails, winMessage.task, destination);
+        //if (bgtasks.test(winMessage.task)) {
+        // this is coming from angularDetect injector
+        if (winMessage.msgDetails && winMessage.msgDetails.ngDetected) {
+            // send message to BG for connecting and inspecting app
+            logger.log('birbal finds angular app in page');
+        } else if (winMessage.task === 'ngDetect') {
+            // send message to BG to clean up resources and connections.
+            logger.log('birbal does not find angular app. cleanup resources. Bye');
+            window.setTimeout(function () {
+                backgroundConnection.disconnect();
+                window.removeEventListener('message', injectedMsgListener);
+                backgroundConnection = undefined;
+                logger = undefined;
+            }, 200);
         }
+        //informBackground(winMessage.msgDetails, winMessage.task, birbalJS.END_POINTS.BACKGROUND);
+        //} else {
+        // all others are from angularinspector.js which communicates to panel
+        //informBackground(winMessage.msgDetails, winMessage.task, birbalJS.END_POINTS.PANEL);
+        //}
         ///////////////
     }
 

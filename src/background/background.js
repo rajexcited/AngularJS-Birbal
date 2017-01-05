@@ -3,7 +3,7 @@
     'use strict';
 
     // all scripts gets reloaded after long inactive state
-    var logger, tabs, receiver, setPageAction;
+    var logger, tabs, receiver;
     /////////////////////////////////////////////////////////
     //            LOGGER FOR DEVELOPMENT ONLY
     /////////////////////////////////////////////////////////
@@ -164,29 +164,50 @@
     /////////////////////////////////////////////////////////
     receiver = new birbalJS.Receiver(birbalJS.END_POINTS.BACKGROUND);
     // for content-script
-    // #9
     receiver.for('csInit', function (message) {
-        // if page refresh is mark, start analysis
+        // injector init - could be reload or navigation
+        // send mock http list
         var tabInfo = tabs.getTabInfo(message.tabId);
-        if (tabInfo.mockHttp && tabInfo.mockHttp.list) {
-            informContentScript(message.tabId, tabInfo.mockHttp.list, 'mockHttplist');
+        tabInfo.mockHttp = tabInfo.mockHttp || {list: [], isModified: true};
+        if (tabInfo.mockHttp.isModified) {
+            tabInfo.mockHttp.isModified = false;
+            informContentScript(message.tabId, tabInfo.mockHttp.list, 'httpMock.list');
         }
-        if (tabInfo.doAnalysis) {
-            informPanel(message.tabId, tabInfo.ngDetect, 'addPanel');
+        if (!tabs.getPort(message.tabId, birbalJS.END_POINTS.PANEL)) {
+            // panel is not opened - pause
+            informContentScript(message.tabId, null, 'performance.pauseAnalysis');
         }
-        setPageAction(message.tabId);
     });
+    // #9
+    //receiver.for('csInit', function (message) {
+    //    // if page refresh is mark, start analysis
+    //    var tabInfo = tabs.getTabInfo(message.tabId);
+    //    if (tabInfo.mockHttp && tabInfo.mockHttp.list) {
+    //        informContentScript(message.tabId, tabInfo.mockHttp.list, 'httpMock.list');
+    //    }
+    //    if (tabInfo.doAnalysis) {
+    //        informPanel(message.tabId, tabInfo.ngDetect, 'addPanel');
+    //    }
+    //    setPageAction(message.tabId);
+    //});
+
+    function setPageAction(tabId) {
+        var tabInfo = tabs.getTabInfo(tabId);
+        if (tabInfo && tabInfo.ngDetect && tabInfo.ngDetect.ngDetected) {
+            chrome.pageAction.show(tabId);
+            chrome.pageAction.setPopup({"tabId": tabId, "popup": "src/popup/popup.html"});
+        }
+    }
+
     // #6
     receiver.for('ngDetect', function (message) {
-        var msgDetails, tabInfo, taskForpanel;
+        var msgDetails, tabInfo;
 
         // qq: what about other tabInfo of old tab?
         msgDetails = message.msgDetails;
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.ngDetect = msgDetails;
-        // angular page >> add , not angular page >> remove
-        //taskForpanel = msgDetails.ngDetected ? 'addPanel' : 'removePanel';
-        informPanel(message.tabId, msgDetails, 'ngDetectData');
+        //informPanel(message.tabId, msgDetails, 'ngDetectData');
         setPageAction(message.tabId);
     });
 
@@ -194,14 +215,14 @@
         var tabInfo;
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.dependencyTree = message.msgDetails;
-        informPanel(message.tabId, tabInfo.dependencyTree, 'dependency.tree');
+        //informPanel(message.tabId, tabInfo.dependencyTree, 'dependency.tree');
     });
 
     receiver.for('dependency.activeList', function (message) {
         var tabInfo;
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.activeDependencies = message.msgDetails;
-        informPanel(message.tabId, tabInfo.activeDependencies, 'dependency.activeList');
+        //informPanel(message.tabId, tabInfo.activeDependencies, 'dependency.activeList');
     });
 
     // for devtools panel
@@ -209,26 +230,24 @@
     receiver.for('panelInit', function (message) {
         // run pending tasks
         var tabInfo, taskForPanel;
-
         tabInfo = tabs.getTabInfo(message.tabId);
-        // addPanel >> show angular detection and allow to start
-        // removePanel >> reset panel
-        taskForPanel = tabInfo.ngDetect && tabInfo.ngDetect.ngDetected ? 'addPanel' : 'removePanel';
-        informPanel(message.tabId, tabInfo.ngDetect, taskForPanel);
+        //taskForPanel = tabInfo.ngDetect && tabInfo.ngDetect.ngDetected ? 'addPanel' : 'removePanel';
+        informPanel(message.tabId, tabInfo.ngDetect, 'ngDetect');
+        informContentScript(message.tabId, null, 'performance.resumeAnalysis');
         informPanel(message.tabId, tabInfo.dependencyTree, 'dependency.tree');
         informPanel(message.tabId, tabInfo.activeDependencies, 'dependency.activeList');
     });
 
     // #8
-    receiver.for('doAnalysis', function (message) {
-        // enable or disable
-        var tabInfo = tabs.getTabInfo(message.tabId);
-        tabInfo.doAnalysis = message.msgDetails.doAnalysis;
-        informContentScript(message.tabId, {
-            'ngStart': tabInfo.doAnalysis,
-            'ngModule': tabInfo.ngDetect.ngModule
-        }, 'instrumentNg');
-    });
+    //receiver.for('doAnalysis', function (message) {
+    //    // enable or disable
+    //    var tabInfo = tabs.getTabInfo(message.tabId);
+    //    tabInfo.doAnalysis = message.msgDetails.doAnalysis;
+    //    informContentScript(message.tabId, {
+    //        'ngStart': tabInfo.doAnalysis,
+    //        'ngModule': tabInfo.ngDetect.ngModule
+    //    }, 'instrumentNg');
+    //});
 
     // for http popup in tab
     // #9
@@ -238,17 +257,15 @@
         tabInfo.mockHttp = tabInfo.mockHttp || {list: [], isModified: true};
     });
     // #10
-    receiver.for('retrieveMockList', function (message) {
-        var tabInfo = tabs.getTabInfo(message.tabId),
-            list = tabInfo.mockHttp && tabInfo.mockHttp.list;
-        logger.table.bind(logger, 'responding with mock list- ').call(logger, list);
-        informPopupHttp(message.tabId, list, message.task + "-response");
+    receiver.for('httpMock.getMeList', function (message) {
+        var tabInfo = tabs.getTabInfo(message.tabId);
+        logger.table.bind(logger, 'responding with mock list- ').call(logger, tabInfo.mockHttp.list);
+        informPopupHttp(message.tabId, tabInfo.mockHttp.list, 'httpMock.hereIsList');
     });
 
     // #11
-    receiver.for('updateMockList', function (message) {
+    receiver.for('httpMock.updateList', function (message) {
         var tabInfo = tabs.getTabInfo(message.tabId);
-        tabInfo.mockHttp = tabInfo.mockHttp || {};
         tabInfo.mockHttp.isModified = true;
         tabInfo.mockHttp.list = message.msgDetails;
         logger.table.bind(logger, 'updating mock list-  ').call(logger, message.msgDetails);
@@ -304,7 +321,7 @@
                 if (tabInfo.mockHttp.isModified) {
                     logger.log('sending injector the updated list.');
                     tabInfo.mockHttp.isModified = false;
-                    informContentScript(tabId, tabInfo.mockHttp.list, 'mockHttplist');
+                    informContentScript(tabId, tabInfo.mockHttp.list, 'httpMock.list');
                 }
             }
         }
@@ -312,14 +329,15 @@
         function handlePanelDisconnection(tabId) {
             if (connectingPort.name === birbalJS.END_POINTS.PANEL) {
                 // disable
-                var tabInfo = tabs.getTabInfo(tabId);
-                if (tabInfo.doAnalysis) {
-                    tabInfo.doAnalysis = false;
-                    informContentScript(tabId, {
-                        'ngStart': tabInfo.doAnalysis,
-                        'ngModule': tabInfo.ngDetect.ngModule
-                    }, 'instrumentNg');
-                }
+                //var tabInfo = tabs.getTabInfo(tabId);
+                informContentScript(message.tabId, null, 'performance.pauseAnalysis');
+                //if (tabInfo.doAnalysis) {
+                //    tabInfo.doAnalysis = false;
+                //    informContentScript(tabId, {
+                //        'ngStart': tabInfo.doAnalysis,
+                //        'ngModule': tabInfo.ngDetect.ngModule
+                //    }, 'instrumentNg');
+                //}
             }
         }
 
@@ -344,13 +362,6 @@
         // notify all tabs - CS/INJECTOR, PANEL, POPUP
     });
 
-    setPageAction = function (tabId) {
-        var tabInfo = tabs.getTabInfo(tabId);
-        if (tabInfo && tabInfo.ngDetect && tabInfo.ngDetect.ngDetected) {
-            chrome.pageAction.show(tabId);
-            chrome.pageAction.setPopup({"tabId": tabId, "popup": "src/popup/popup.html"});
-        }
-    };
     ///////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////
 }(chrome, birbalJS));

@@ -112,7 +112,7 @@
                     callListeners.forEach(function (listener) {
                         listener(message);
                     });
-                    message.interceptedBy = receiverSelf.receiverId;
+                    message.interceptedBy = (message.interceptedBy || []).concat(receiverSelf.receiverId);
                 }
                 /* delegates message to destPort */
                 destPort.postMessage(message);

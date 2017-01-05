@@ -6,7 +6,7 @@
         .controller('panelViewController',
             ['$scope', 'backgroundService', '$rootScope', 'digestDataFactory', '$interval', function ($scope, backgroundService, $rootScope, digestDataFactory, $interval) {
                 // default first message on inspect tab load, letting app know I'm ready
-                backgroundService.informBackground(null, 'panelInit', birbalJS.END_POINTS.BACKGROUND);
+                backgroundService.informBackground(null, 'panelInit');
                 $scope.sidebarActions = {};
                 /////////////////////////////////////////////////////////
                 //            panel action listener
@@ -16,79 +16,93 @@
                  *  @param pageName{string} page name to change view must
                  *  @param ngDetectData {object} angular detection detail to display to user optional
                  */
-                function changeViewActionListener(pageName, ngDetectData) {
+                function changeViewActionListener(pageName/*, ngDetectData*/) {
                     //pageName = (typeof event === 'string') ? event : pageName;
-                    if (pageName === 'nbEnable' && $rootScope.csInfo.enabled) {
-                        pageName = $scope.view || 'dashboard';
-                    } else if (pageName === 'dependencyGraph') {
+                    if (!pageName) {
+                        // dashboard or init page
+                        if ($rootScope.csInfo.ngDetected) {
+                            pageName = 'dashboard';
+                        } else {
+                            pageName = 'nbEnable';
+                        }
+                    }
+                    /*if (pageName === 'nbEnable' && $rootScope.csInfo.enabled) {
+                     pageName = $scope.view || 'dashboard';
+                     } else */
+                    if (pageName === 'dependencyGraph') {
                         if (angular.element('.sidebar-collapse').length === 0) {
                             // collapse main header
                             angular.element('.main-header a[data-toggle="offcanvas"]').click();
                         }
                     }
-                    $scope.view = pageName;
+                    $scope.$applyAsync(function () {
+                        $scope.view = pageName;
+                    });
                     //initializing csInfo for template data for first time or after cleanup
-                    angular.extend($rootScope.csInfo, ngDetectData);
+                    //angular.extend($rootScope.csInfo, ngDetectData);
                 }
 
-                $rootScope.$on('changePanelView', function (event, pageName, ngDetectData) {
-                    $scope.$applyAsync(function () {
-                        changeViewActionListener(pageName, ngDetectData);
-                    });
-                });
+                //$rootScope.$on('changePanelView', function (event, pageName, ngDetectData) {
+                //    $scope.$applyAsync(function () {
+                //        changeViewActionListener(pageName, ngDetectData);
+                //    });
+                //});
                 $rootScope.$on('ngAppDetails', function (event, ngDetectData) {
                     $scope.$applyAsync(function () {
-                        angular.extend($rootScope.csInfo, ngDetectData);
+                        $rootScope.csInfo = ngDetectData;
+                        clearResources();
+                        changeViewActionListener();
                     });
                 });
 
-                $rootScope.$on('clearResources', function clrRscActionListener(event, panelAction) {
+                function clearResources(/*event, panelAction*/) {
                     // clear app data
-                    var isEnabled = !!($rootScope.csInfo && $rootScope.csInfo.enabled);
-                    $rootScope.csInfo = $rootScope.csInfo || {'enabled': isEnabled};
+                    digestDataFactory.resetDigestMeasures();
+                    //var isEnabled = !!($rootScope.csInfo && $rootScope.csInfo.enabled);
+                    //$rootScope.csInfo = $rootScope.csInfo || {'enabled': isEnabled};
                     $scope.digestExpression = [];
                     $scope.watchOrderExpression = [];
-                    if (panelAction === 'removePanel' || panelAction === 'addPanel') {
-                        digestDataFactory.resetDigestMeasures();
-                        $scope.$applyAsync(function () {
-                            $scope.view = '';
-                            $rootScope.csInfo = {
-                                'enabled': isEnabled,
-                                'pause': false
-                            };
-                        });
-                    }
-                });
+                    //if (panelAction === 'removePanel' || panelAction === 'addPanel') {
+
+                    //$scope.$applyAsync(function () {
+                    //    $scope.view = '';
+                    //    $rootScope.csInfo = {
+                    //        'enabled': isEnabled,
+                    //        'pause': false
+                    //    };
+                    //});
+                    //}
+                }
 
                 /////////////////////////////////////////////////////////
                 //            sidebar actions
                 /////////////////////////////////////////////////////////
-                $scope.sidebarActions.disableMe = function () {
-                    backgroundService.informBackground({doAnalysis: false}, 'doAnalysis', birbalJS.END_POINTS.BACKGROUND);
-                    $rootScope.csInfo.enabled = false;
-                    // reload page
-                    birbalJS.pageAction('reload');
-                };
+                //$scope.sidebarActions.disableMe = function () {
+                //    backgroundService.informBackground({doAnalysis: false}, 'doAnalysis', birbalJS.END_POINTS.BACKGROUND);
+                //    $rootScope.csInfo.enabled = false;
+                //    // reload page
+                //    birbalJS.pageAction('reload');
+                //};
 
                 $scope.sidebarActions.pauseMyAnalysis = function () {
-                    backgroundService.informBackground(null, 'pauseAnalysis');
-                    $rootScope.csInfo.pause = true;
+                    backgroundService.informBackground(null, 'performance.pauseAnalysis');
+                    //$rootScope.csInfo.pause = true;
                 };
 
                 $scope.sidebarActions.resumeMyAnalysis = function () {
-                    backgroundService.informBackground(null, 'startAnalysis');
-                    $rootScope.csInfo.pause = false;
+                    backgroundService.informBackground(null, 'performance.resumeAnalysis');
+                    //$rootScope.csInfo.pause = false;
                 };
 
                 $scope.sidebarActions.changePanelView = changeViewActionListener;
 
-                $scope.sidebarActions.enableMe = function () {
-                    // register/enable/refresh
-                    $rootScope.csInfo.ngModule = $rootScope.csInfo.ngModule || $rootScope.csInfo.ngModuleInput;
-                    $rootScope.csInfo.enabled = true;
-                    backgroundService.informBackground({doAnalysis: true}, 'doAnalysis', birbalJS.END_POINTS.BACKGROUND);
-                    birbalJS.pageAction('reload');
-                };
+                //$scope.sidebarActions.enableMe = function () {
+                //    // register/enable/refresh
+                //    $rootScope.csInfo.ngModule = $rootScope.csInfo.ngModule || $rootScope.csInfo.ngModuleInput;
+                //    $rootScope.csInfo.enabled = true;
+                //    backgroundService.informBackground({doAnalysis: true}, 'doAnalysis', birbalJS.END_POINTS.BACKGROUND);
+                //    birbalJS.pageAction('reload');
+                //};
 
                 /////////////////////////////////////////////////////////
                 //            settings view

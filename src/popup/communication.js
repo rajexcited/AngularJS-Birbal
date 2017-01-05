@@ -43,9 +43,9 @@
      * @param destination{string} use endPoints
      */
     function informBackground(info, task) {
-        tabId.then(function (tabid) {
+        tabId.then(function (tid) {
             var message = new birbalJS.Message({
-                tabId: tabid,
+                tabId: tid,
                 info: info
             }, birbalJS.END_POINTS.POPUP_HTTP, birbalJS.END_POINTS.BACKGROUND, task);
             backgroundConnection.postMessage(message);
@@ -66,15 +66,15 @@
      * **********************************************            ********************************
      * ********************************************************************************************/
 
-    logger.log('creating two way comminucation using async callback concept.');
-    birbalJS.requestBackGround = function (info, task, callback) {
-        if (callback) {
+    logger.log('creating two way communication using async callback concept.');
+    birbalJS.requestBackGround = function (info, task, waitEvent) {
+        if (waitEvent) {
             // ref var instead of anonymous to add or remove after completing its purpose
             // clean up
             var ref = function (message) {
-                if (message.task === task.concat('-response')) {
+                if (message.task === waitEvent.name) {
                     backgroundConnection.onMessage.removeListener(ref);
-                    callback(message.msgDetails);
+                    waitEvent.listener(message.msgDetails);
                 }
             };
             backgroundConnection.onMessage.addListener(ref);

@@ -5,7 +5,8 @@ window.inspectorExecutor = function (window, document) {
     /**
      * Birbal detects angular page, and notify with basic information
      */
-    var logger, contentMessageActions = {}, receiver, annotate, sendDependencyTree, httpBackendPromise, updateHttpBackend;
+    var logger, receiver, annotate, sendDependencyTree, httpBackendPromise, updateHttpBackend,
+        contentMessageActions = {injectorId: 'angular-inspector'};
     /////////////////////////////////////////////////////////
     //            LOGGER FOR DEVELOPMENT
     /////////////////////////////////////////////////////////
@@ -60,7 +61,7 @@ window.inspectorExecutor = function (window, document) {
 
     function broadcastMessage(info, task) {
         try {
-            var msg = new birbalJS.Message(info, 'angular-inspector', 'content-script', task);
+            var msg = new birbalJS.Message(info, contentMessageActions.injectorId, 'content-script', task);
             window.postMessage(msg, '*');
         } catch (e) {
             logger.error.bind(logger, 'collected data Object = ').call(null, info);
@@ -78,7 +79,7 @@ window.inspectorExecutor = function (window, document) {
         // We only accept message for our app and destination specified as this file.
         /* jshint -W116 */
         /*jslint eqeq: true*/
-        if (event.source != window || !event.data || event.data.app !== 'birbal' || event.data.receiverId !== 'angular-inspector') {
+        if (event.source != window || !event.data || event.data.app !== 'birbal' || event.data.receiverId !== contentMessageActions.injectorId) {
             return;
         }
         /*jslint eqeq: false*/
@@ -89,13 +90,13 @@ window.inspectorExecutor = function (window, document) {
 
     window.addEventListener('message', contentMsgListener, false);
 
-    receiver = new birbalJS.Receiver();
+    receiver = new birbalJS.Receiver(contentMessageActions.injectorId);
 
     // #9
     /**
      * detect angular loaded and run analysis
      */
-    receiver.for('startAnalysis', function () {
+    receiver.for('performance.resumeAnalysis', function () {
         // inject to ngmodule to get onload data
         //if (contentMessageActions.pause !== undefined) {
         contentMessageActions.pause = false;
@@ -106,14 +107,14 @@ window.inspectorExecutor = function (window, document) {
      * disable plugin
      */
         // qq: when do i need this?
-    receiver.for('pauseAnalysis', function () {
+    receiver.for('performance.pauseAnalysis', function () {
         contentMessageActions.pause = true;
     });
 
     /**
      * update mock http list
      */
-    receiver.for('mockHttplist', function (message) {
+    receiver.for('httpMock.list', function (message) {
         // update http list
         logger.table.bind('http list update request, mock http list: ').call(logger, message);
         updateHttpBackend(message.msgDetails);

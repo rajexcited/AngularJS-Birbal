@@ -21,7 +21,8 @@ class HttpList extends React.Component {
         newErrors.push(this.getErrorIndicator(httpErrorState));
         this.setState({httpList: newList, listErrorIndicator: newErrors}, function () {
             // store http to storage
-            updateHttpList(newList.filter((item)=>(!!item)));
+            birbalJS.requestBackGround(newList.filter((item)=>(!!item)), 'httpMock.updateList');
+            //updateHttpList(newList.filter((item)=>(!!item)));
         });
     }
 
@@ -34,13 +35,18 @@ class HttpList extends React.Component {
         newErrors[ind] = this.getErrorIndicator(httpErrorState);
         this.setState({httpList: aList, listErrorIndicator: newErrors}, function () {
             // store http to storage
-            updateHttpList(aList.filter((item)=>(!!item)));
+            birbalJS.requestBackGround(aList.filter((item)=>(!!item)), 'httpMock.updateList');
+            //updateHttpList(aList.filter((item)=>(!!item)));
         });
     }
 
     getStoredHttpList(THIS) {
         // get from storage and init state
-        getHttpMockFromStorage().then(function (httpList) {
+        new Promise(function (resolve) {
+            //birbalJS.informBackground(null, 'httpMock.getMeList');
+            birbalJS.requestBackGround(null, 'httpMock.getMeList',
+                {name: 'httpMock.hereIsList', listener: resolve});
+        }).then(function (httpList) {
             // on async resolve
             if (httpList) {
                 var listErrorIndicator = [];
@@ -67,14 +73,15 @@ class HttpList extends React.Component {
         this.state.listErrorIndicator[ind] = undefined;
         this.setState({httpList: this.state.httpList, listErrorIndicator: this.state.listErrorIndicator}, function () {
             // store http to storage
-            updateHttpList(this.state.httpList.filter((item)=>(!!item)));
+            //updateHttpList(this.state.httpList.filter((item)=>(!!item)));
+            birbalJS.requestBackGround(this.state.httpList.filter((item)=>(!!item)), 'httpMock.updateList');
         });
         e.stopPropagation();
         e.preventDefault();
     }
 
     handleClick(e) {
-        window.showEditHttpPanel(e);
+        showEditHttpPanel(e);
     }
 
     render() {
@@ -143,11 +150,30 @@ $(function () {
     );
 
     ReactDOM.render(<HttpNewForm httpList={httpListElm}/>, document.getElementById('http-new'));
-    $("#new").on("click", window.showEditHttpPanel);
+    $("#new").on("click", showEditHttpPanel);
+
+    $('#close-me').on('click', function () {
+        window.close();
+    });
+
+    $(".http-input-help .ui-widget-content").draggable({containment: ".http-input-help", scroll: false}).resizable();
+
+    $(".http-input-help")
+        .on("help-panel:hide", function (event, panelName) {
+            var panelSelector = panelName ? "." + panelName : "";
+            birbalJS.logger.log("panelSelector = " + panelSelector);
+            $(".http-input-help .ui-widget-content" + panelSelector).addClass("hide-me");
+        })
+        .on("help-panel:show", function (event, panelName) {
+            var panelSelector = "." + panelName;
+            birbalJS.logger.log("panelSelector = " + panelSelector);
+            $(".http-input-help .ui-widget-content" + panelSelector).removeClass("hide-me");
+        });
+
 });
 
 
-window.showEditHttpPanel = function (event) {
+function showEditHttpPanel(event) {
     var targetId = "#collapse-" + event.currentTarget.id;
     $(targetId).trigger("openingForm");
     window.setTimeout(function () {
@@ -158,31 +184,15 @@ window.showEditHttpPanel = function (event) {
     }, 100);
 }
 
-window.getHttpMockFromStorage = function () {
-    return new Promise(function (resolve) {
-        birbalJS.requestBackGround(null, 'retrieveMockList', (list)=>(resolve(list)));
-    });
-};
+//function getHttpMockFromStorage() {
+//    return new Promise(function (resolve) {
+//        //birbalJS.informBackground(null, 'httpMock.getMeList');
+//        birbalJS.requestBackGround(null, 'httpMock.getMeList',
+//            {name: 'httpMock.hereIsList', listener: resolve});
+//    });
+//}
 
-window.updateHttpList = function (list) {
-    list = list || [];
-    birbalJS.requestBackGround(list, 'updateMockList');
-};
-
-$('#close-me').on('click', function () {
-    window.close();
-});
-
-$(".http-input-help .ui-widget-content").draggable({containment: ".http-input-help", scroll: false}).resizable();
-
-$(".http-input-help")
-    .on("help-panel:hide", function (event, panelName) {
-        var panelSelector = panelName ? "." + panelName : "";
-        birbalJS.logger.log("panelSelector = " + panelSelector);
-        $(".http-input-help .ui-widget-content" + panelSelector).addClass("hide-me");
-    })
-    .on("help-panel:show", function (event, panelName) {
-        var panelSelector = "." + panelName;
-        birbalJS.logger.log("panelSelector = " + panelSelector);
-        $(".http-input-help .ui-widget-content" + panelSelector).removeClass("hide-me");
-    });
+//function updateHttpList(list) {
+//    list = list || [];
+//
+//}
