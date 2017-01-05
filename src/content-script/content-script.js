@@ -134,7 +134,8 @@
         script = document.createElement('script');
         script.setAttribute('name', 'birbal-message');
         script.setAttribute('type', 'text/javascript');
-        script.innerText = 'BirbalMessage=' + birbalJS.Message.toString();
+        script.innerText = 'birbalJS={Message:' + birbalJS.Message.toString() +
+            ', Receiver:' + birbalJS.Receiver.toString() + '};';
         htmlRootNode.appendChild(script);
 
         script = document.createElement('script');

@@ -1,4 +1,4 @@
-/*global angular, BirbalMessage, window, document*/
+/*global angular, birbalJS, window, document*/
 window.inspectorExecutor = function (window, document) {
     'use strict';
     window.name = 'NG_DEFER_BOOTSTRAP!'.concat(window.name);
@@ -60,7 +60,7 @@ window.inspectorExecutor = function (window, document) {
 
     function broadcastMessage(info, task) {
         try {
-            var msg = new BirbalMessage(info, 'angular-inspector', 'content-script', task);
+            var msg = new birbalJS.Message(info, 'angular-inspector', 'content-script', task);
             window.postMessage(msg, '*');
         } catch (e) {
             logger.error.bind(logger, 'collected data Object = ')(info);
@@ -91,32 +91,32 @@ window.inspectorExecutor = function (window, document) {
     window.addEventListener('message', contentMsgListener, false);
 
     // actions defined for given message task
-    function ReceiverImpl() {
-        var receiverSelf = this,
-            taskCallBackList = {};
+    //function ReceiverImpl() {
+    //    var receiverSelf = this,
+    //        taskCallBackList = {};
+    //
+    //    receiverSelf.answerCall = function (contentMessage) {
+    //        var taskName, callback;
+    //
+    //        contentMessage.status = 'connecting';
+    //        taskName = contentMessage.task;
+    //        callback = taskCallBackList[taskName];
+    //        if (!callback) {
+    //            throw new Error('given task:"' + taskName + '" is not registered with action callback.');
+    //        }
+    //        callback.apply(null, arguments);
+    //        contentMessage.status = 'answered';
+    //    };
+    //
+    //    receiverSelf.actionOnTask = function (task, actionCallBack) {
+    //        if (typeof task !== 'string' && typeof actionCallBack !== 'function') {
+    //            throw new Error('arguments(task, actionCallBack) are not matching.');
+    //        }
+    //        taskCallBackList[task] = actionCallBack;
+    //    };
+    //}
 
-        receiverSelf.answerCall = function (contentMessage) {
-            var taskName, callback;
-
-            contentMessage.status = 'connecting';
-            taskName = contentMessage.task;
-            callback = taskCallBackList[taskName];
-            if (!callback) {
-                throw new Error('given task:"' + taskName + '" is not registered with action callback.');
-            }
-            callback.apply(null, arguments);
-            contentMessage.status = 'answered';
-        };
-
-        receiverSelf.actionOnTask = function (task, actionCallBack) {
-            if (typeof task !== 'string' && typeof actionCallBack !== 'function') {
-                throw new Error('arguments(task, actionCallBack) are not matching.');
-            }
-            taskCallBackList[task] = actionCallBack;
-        };
-    }
-
-    receiver = new ReceiverImpl();
+    receiver = new birbalJS.Receiver();
 
     // #9
     /**
@@ -436,6 +436,7 @@ window.inspectorExecutor = function (window, document) {
                         }
                         return toStringForm(m);
                     }
+
                     scopePrototype.$evalAsync = function (expr) {
                         ngEvalAsync.apply(this, arguments);
                         if (!contentMessageActions.pause) {

@@ -74,6 +74,7 @@
     /////////////////////////////////////////////////////////
     ReceiverImpl = function (receiverId) {
         var receiverSelf = this,
+        /*namespace*/
             taskCallBackList = {};
         receiverSelf.receiverId = receiverId;
 
@@ -84,37 +85,35 @@
             taskCallBackList[task] = actionCallBack;
         };
 
-        // can have more arguments, only required args are here
+        /* can have more arguments, only required args are here */
         receiverSelf.answerCall = function (message, sender, srcPort, destPort) {
+            var callback, newMessageDetails;
             message.status = 'connecting';
-            message.tabId = message.tabId || (srcPort.sender && srcPort.sender.tab && srcPort.sender.tab.id);
+            message.tabId = message.tabId || (srcPort && srcPort.sender && srcPort.sender.tab && srcPort.sender.tab.id);
 
             if (typeof destPort === 'function') {
-                // get port in background
+                /* get port in background */
                 destPort = destPort.apply(null, arguments);
             }
-            if (srcPort.name === receiverSelf.receiverId || !destPort || destPort.name === receiverSelf.receiverId || destPort === receiverSelf.receiverId) {
-                var taskName, callback;
-                taskName = message.task;
-                callback = taskCallBackList[taskName];
+            if (!destPort || srcPort.name === receiverSelf.receiverId || destPort.name === receiverSelf.receiverId || destPort === receiverSelf.receiverId) {
+                callback = taskCallBackList[message.task];
                 if (!callback) {
-                    throw new Error('given task:"' + taskName + '" is not registered with action callback.');
+                    throw new Error('given task:"' + message.task + '" is not registered with action callback.');
                 }
                 callback(message);
                 message.status = 'answered';
             } else {
-                // intercept, update details and delegate
-                var callback = taskCallBackList[message.task];
+                /* intercept, update details and delegate */
+                callback = taskCallBackList[message.task];
                 if (callback) {
-                    var newMessageDetails = callback(message);
+                    newMessageDetails = callback(message);
                     message.msgDetails = newMessageDetails || message.msgDetails;
                     message.interceptedBy = receiverSelf.receiverId;
                 }
-                // delegates message to destPort
+                /* delegates message to destPort */
                 destPort.postMessage(message);
             }
         };
-        ///
     };
     /////////////////////////////////////////////////////////
     //            share birbalJS
