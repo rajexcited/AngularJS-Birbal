@@ -45,24 +45,24 @@
                 $rootScope.$emit('changePanelView', 'nbEnable', message.msgDetails);
             }
 
-            receiver.actionOnTask('addPanel', panelInitialize);
-            receiver.actionOnTask('removePanel', panelInitialize);
-            receiver.actionOnTask('ngDetectData', function (message) {
+            receiver.for('addPanel', panelInitialize);
+            receiver.for('removePanel', panelInitialize);
+            receiver.for('ngDetectData', function (message) {
                 $rootScope.$emit('ngAppDetails', message.msgDetails);
             });
 
-            receiver.actionOnTask('digestMeasures', function (message) {
+            receiver.for('digestMeasures', function (message) {
                 digestDataFactory.addDigestMeasure(message.msgDetails);
             });
 
-            receiver.actionOnTask('httpMeasures', function (message) {
+            receiver.for('httpMeasures', function (message) {
                 httpRecordFactory.addHttpMeasure(message.msgDetails);
             });
-            receiver.actionOnTask('activeDependencies', function (message) {
+            receiver.for('activeDependencies', function (message) {
                 logger.log.bind(logger, 'activeDependencies:  ').call(logger, message.msgDetails);
                 dependencyTree.addActive(message.msgDetails);
             });
-            receiver.actionOnTask('dependencyTree', function (message) {
+            receiver.for('dependencyTree', function (message) {
                 logger.log.bind(logger, 'dependencyTree:  ').call(logger, message.msgDetails);
                 dependencyTree.setTree(message.msgDetails);
             });

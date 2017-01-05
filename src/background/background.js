@@ -165,7 +165,7 @@
     receiver = new birbalJS.Receiver(birbalJS.END_POINTS.BACKGROUND);
     // for content-script
     // #9
-    receiver.actionOnTask('csInit', function (message) {
+    receiver.for('csInit', function (message) {
         // if page refresh is mark, start analysis
         var tabInfo = tabs.getTabInfo(message.tabId);
         if (tabInfo.mockHttp && tabInfo.mockHttp.list) {
@@ -177,7 +177,7 @@
         setPageAction(message.tabId);
     });
     // #6
-    receiver.actionOnTask('ngDetect', function (message) {
+    receiver.for('ngDetect', function (message) {
         var msgDetails, tabInfo, taskForpanel;
 
         // qq: what about other tabInfo of old tab?
@@ -190,14 +190,14 @@
         setPageAction(message.tabId);
     });
 
-    receiver.actionOnTask('dependencyTree', function (message) {
+    receiver.for('dependencyTree', function (message) {
         var tabInfo;
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.dependencyTree = message.msgDetails;
         informPanel(message.tabId, tabInfo.dependencyTree, 'dependencyTree');
     });
 
-    receiver.actionOnTask('activeDependencies', function (message) {
+    receiver.for('activeDependencies', function (message) {
         var tabInfo;
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.activeDependencies = message.msgDetails;
@@ -206,7 +206,7 @@
 
     // for devtools panel
     // #7
-    receiver.actionOnTask('panelInit', function (message) {
+    receiver.for('panelInit', function (message) {
         // run pending tasks
         var tabInfo, taskForPanel;
 
@@ -220,7 +220,7 @@
     });
 
     // #8
-    receiver.actionOnTask('doAnalysis', function (message) {
+    receiver.for('doAnalysis', function (message) {
         // enable or disable
         var tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.doAnalysis = message.msgDetails.doAnalysis;
@@ -232,13 +232,13 @@
 
     // for http popup in tab
     // #9
-    receiver.actionOnTask('popupInit', function (message) {
+    receiver.for('popupInit', function (message) {
         var tabInfo = tabs.getTabInfo(message.tabId);
         logger.log.bind(logger, 'popup init ').call(logger, message);
         tabInfo.mockHttp = tabInfo.mockHttp || {list: [], isModified: true};
     });
     // #10
-    receiver.actionOnTask('retrieveMockList', function (message) {
+    receiver.for('retrieveMockList', function (message) {
         var tabInfo = tabs.getTabInfo(message.tabId),
             list = tabInfo.mockHttp && tabInfo.mockHttp.list;
         logger.table.bind(logger, 'responding with mock list- ').call(logger, list);
@@ -246,7 +246,7 @@
     });
 
     // #11
-    receiver.actionOnTask('updateMockList', function (message) {
+    receiver.for('updateMockList', function (message) {
         var tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.mockHttp = tabInfo.mockHttp || {};
         tabInfo.mockHttp.isModified = true;

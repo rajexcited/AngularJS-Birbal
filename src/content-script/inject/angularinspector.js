@@ -3,7 +3,7 @@ window.inspectorExecutor = function (window, document) {
     'use strict';
     window.name = 'NG_DEFER_BOOTSTRAP!'.concat(window.name);
     /**
-     * Birbal detects angular page, and notify with basic informations
+     * Birbal detects angular page, and notify with basic information
      */
     var logger, contentMessageActions = {}, receiver, annotate, sendDependencyTree, httpBackendPromise, updateHttpBackend;
     /////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ window.inspectorExecutor = function (window, document) {
             var msg = new birbalJS.Message(info, 'angular-inspector', 'content-script', task);
             window.postMessage(msg, '*');
         } catch (e) {
-            logger.error.bind(logger, 'collected data Object = ')(info);
+            logger.error.bind(logger, 'collected data Object = ').call(null, info);
             try {
                 toValidJSON(msg);
                 logger.error.bind(logger, 'broadcast error: ').call(logger, e);
@@ -83,38 +83,11 @@ window.inspectorExecutor = function (window, document) {
         }
         /*jslint eqeq: false*/
         /* jshint +W116 */
-        logger.log('in contentMsgListener-angular birbal ');
-        logger.log(event.data);
+        logger.log.bind('in contentMsgListener-angular birbal ').call(null, event.data);
         receiver.answerCall(event.data);
     }
 
     window.addEventListener('message', contentMsgListener, false);
-
-    // actions defined for given message task
-    //function ReceiverImpl() {
-    //    var receiverSelf = this,
-    //        taskCallBackList = {};
-    //
-    //    receiverSelf.answerCall = function (contentMessage) {
-    //        var taskName, callback;
-    //
-    //        contentMessage.status = 'connecting';
-    //        taskName = contentMessage.task;
-    //        callback = taskCallBackList[taskName];
-    //        if (!callback) {
-    //            throw new Error('given task:"' + taskName + '" is not registered with action callback.');
-    //        }
-    //        callback.apply(null, arguments);
-    //        contentMessage.status = 'answered';
-    //    };
-    //
-    //    receiverSelf.actionOnTask = function (task, actionCallBack) {
-    //        if (typeof task !== 'string' && typeof actionCallBack !== 'function') {
-    //            throw new Error('arguments(task, actionCallBack) are not matching.');
-    //        }
-    //        taskCallBackList[task] = actionCallBack;
-    //    };
-    //}
 
     receiver = new birbalJS.Receiver();
 
@@ -122,7 +95,7 @@ window.inspectorExecutor = function (window, document) {
     /**
      * detect angular loaded and run analysis
      */
-    receiver.actionOnTask('startAnalysis', function () {
+    receiver.for('startAnalysis', function () {
         // inject to ngmodule to get onload data
         //if (contentMessageActions.pause !== undefined) {
         contentMessageActions.pause = false;
@@ -133,17 +106,16 @@ window.inspectorExecutor = function (window, document) {
      * disable plugin
      */
         // qq: when do i need this?
-    receiver.actionOnTask('pauseAnalysis', function () {
+    receiver.for('pauseAnalysis', function () {
         contentMessageActions.pause = true;
     });
 
     /**
      * update mock http list
      */
-    receiver.actionOnTask('mockHttplist', function (message) {
+    receiver.for('mockHttplist', function (message) {
         // update http list
-        logger.log('http list update request');
-        logger.table.bind('mock http list: ').call(logger, message);
+        logger.table.bind('http list update request, mock http list: ').call(logger, message);
         updateHttpBackend(message.msgDetails);
     });
 
@@ -714,8 +686,7 @@ window.inspectorExecutor = function (window, document) {
                         // invoke, ignore
                         break;
                     default:
-                        logger.warn('unknown dependency type');
-                        logger.warn(arguments);
+                        logger.warn.bind(null, 'unknown dependency type').call(null, arguments);
                         break;
                 }
             });
@@ -741,7 +712,6 @@ window.inspectorExecutor = function (window, document) {
     //      START INSPECTING PAGE FOR ANGULAR - onload
     /////////////////////////////////////////////////////////////////////
     function generateXPath(element) {
-        logger.log.bind(logger, 'request xPath: ').call(logger, element);
         if (!element || element.id === undefined) {
             return;
         }
@@ -804,7 +774,7 @@ window.inspectorExecutor = function (window, document) {
         // register birbalApp to do specific task or action
         angular.module('birbalApp', ['ngMockE2E'])
             .config(['$provide', function ($provide) {
-                logger.log('inititializing decorator');
+                logger.log('initializing decorator');
                 $provide.decorator('$httpBackend', [function () {
                     logger.log('skinning mock version of httpbackend with backend? ' + !!backend);
 
@@ -882,7 +852,7 @@ window.inspectorExecutor = function (window, document) {
 
         /*expose to injector action task*/
         updateHttpBackend = function (list) {
-            logger.log('update list request recieved');
+            logger.log('update list request received');
             if (!isModified(list)) {
                 logger.log('list is modified - updating definitions');
                 oldList = list;
@@ -901,7 +871,7 @@ window.inspectorExecutor = function (window, document) {
             }
         };
         // page load setup
-        // scene#1:  prelist
+        // scene#1:  pre-list
         logger.log.bind(logger, 'promise to init list: ').call(logger, httpBackendPromise);
         httpBackendPromise.then(function (list) {
             return updateHttpBackend(list);
@@ -984,7 +954,7 @@ window.inspectorExecutor = function (window, document) {
                 window.setTimeout(inspectAngular, 1);
                 return returnValue;
             } catch (e) {
-                logger.error('error in manual bootstrap\n' + e.stack);
+                logger.error.bind(null, 'error in manual bootstrap\n\t\t').call(null, e);
                 contentMessageActions.resumeBootstrap(true);
                 throw e;
             } finally {
