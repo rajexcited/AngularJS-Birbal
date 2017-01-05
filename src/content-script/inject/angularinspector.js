@@ -54,7 +54,6 @@ window.inspectorExecutor = function (window, document) {
                 return value;
             }));
         } catch (e) {
-            logger.error.bind(logger, 'collected data Object = ')(o);
             throw new Error('circular reference found, \tObject' + ck.join('.') + ' is equal to Object' + ck.slice(0, ind + 1).join('.') + '\n' + e.stack);
         }
     }
@@ -62,10 +61,15 @@ window.inspectorExecutor = function (window, document) {
     function broadcastMessage(info, task) {
         try {
             var msg = new BirbalMessage(info, 'angular-inspector', 'content-script', task);
-            //TODO how can I remove this overhead - do it in error not pre check
-            window.postMessage(toValidJSON(msg), '*');
+            window.postMessage(msg, '*');
         } catch (e) {
-            logger.error.bind(logger, 'broadcast error: ').call(logger, e);
+            logger.error.bind(logger, 'collected data Object = ')(info);
+            try {
+                toValidJSON(msg);
+                logger.error.bind(logger, 'broadcast error: ').call(logger, e);
+            } catch (ee) {
+                logger.error(ee);
+            }
         }
     }
 
@@ -120,9 +124,9 @@ window.inspectorExecutor = function (window, document) {
      */
     receiver.actionOnTask('startAnalysis', function () {
         // inject to ngmodule to get onload data
-        if (contentMessageActions.pause !== undefined) {
-            contentMessageActions.pause = false;
-        }
+        //if (contentMessageActions.pause !== undefined) {
+        contentMessageActions.pause = false;
+        //}
     });
 
     /**
@@ -131,15 +135,6 @@ window.inspectorExecutor = function (window, document) {
         // qq: when do i need this?
     receiver.actionOnTask('pauseAnalysis', function () {
         contentMessageActions.pause = true;
-    });
-
-    /**
-     * disconnect page or devtools or user stopped
-     */
-        // qq: when do i need this?
-    receiver.actionOnTask('stopAnalysis', function () {
-        contentMessageActions.stop = true;
-        //window.location.reload();
     });
 
     /**
@@ -281,7 +276,7 @@ window.inspectorExecutor = function (window, document) {
                         ngWatchEq = !!addedWatcher.eq;
 
                         addedWatcher.get = function () {
-                            if (nb.pause) {
+                            if (contentMessageActions.pause) {
                                 //clear
                                 return ngWatchGet.apply(null, arguments);
                             }
@@ -312,7 +307,7 @@ window.inspectorExecutor = function (window, document) {
                         };
 
                         addedWatcher.fn = function () {
-                            if (nb.pause) {
+                            if (contentMessageActions.pause) {
                                 ngWatchFn.apply(null, arguments);
                             } else {
                                 var len = _watchers.length, _w;
@@ -350,8 +345,7 @@ window.inspectorExecutor = function (window, document) {
                     ngDigest = scopePrototype.$digest;
                     scopePrototype.$digest = function () {
                         var scope = this;
-                        nb.pause = contentMessageActions.pause;
-                        if (nb.pause) {
+                        if (contentMessageActions.pause) {
                             ngDigest.apply(scope, arguments);
                             return;
                         }
@@ -390,13 +384,17 @@ window.inspectorExecutor = function (window, document) {
                     };
                     ngApply = scopePrototype.$apply;
                     scopePrototype.$apply = function () {
-                        nb.applyStartTime = perf.now();
-                        ngApply.apply(this, arguments);
-                        nb.applyEndTime = perf.now();
+                        if (contentMessageActions.pause) {
+                            ngApply.apply(this, arguments);
+                        } else {
+                            nb.applyStartTime = perf.now();
+                            ngApply.apply(this, arguments);
+                            nb.applyEndTime = perf.now();
+                        }
                     };
                     ngEmit = scopePrototype.$emit;
                     scopePrototype.$emit = function (name) {
-                        if (nb.pause) {
+                        if (contentMessageActions.pause) {
                             return ngEmit.apply(this, arguments);
                         }
                         var emitret,
@@ -414,7 +412,7 @@ window.inspectorExecutor = function (window, document) {
                     ngBroadcast = scopePrototype.$broadcast;
                     scopePrototype.$broadcast = function (name) {
                         var event, broadcastret;
-                        if (nb.pause) {
+                        if (contentMessageActions.pause) {
                             return ngBroadcast.apply(this, arguments);
                         }
                         event = {
@@ -438,13 +436,13 @@ window.inspectorExecutor = function (window, document) {
                         }
                         return toStringForm(m);
                     }
-
                     scopePrototype.$evalAsync = function (expr) {
                         ngEvalAsync.apply(this, arguments);
-                        nb.asyncEval.time.push(perf.now());
-                        nb.asyncEval.expr.push(asyncExprStringify(expr));
+                        if (!contentMessageActions.pause) {
+                            nb.asyncEval.time.push(perf.now());
+                            nb.asyncEval.expr.push(asyncExprStringify(expr));
+                        }
                     };
-
                     return $delegate;
                 }]);
 
@@ -467,7 +465,7 @@ window.inspectorExecutor = function (window, document) {
 
                         return {
                             'request': function (config) {
-                                if (!nb.pause) {
+                                if (!contentMessageActions.pause) {
                                     config.nbTime = {'req': perf.now()};
                                 }
                                 return config;
@@ -504,7 +502,9 @@ window.inspectorExecutor = function (window, document) {
                     var ngDefer = $delegate.defer;
                     var wrapper = function () {
                         ngDefer.apply(null, arguments);
-                        nb.browserDefer.push(perf.now());
+                        if (!contentMessageActions.pause) {
+                            nb.browserDefer.push(perf.now());
+                        }
                     };
                     wrapper.prototype = ngDefer.prototype;
                     wrapper.cancel = ngDefer.cancel;
@@ -643,9 +643,10 @@ window.inspectorExecutor = function (window, document) {
 
         function addDeps(moduleData, name, depsSrc, type) {
             if (typeof depsSrc === 'function') {
+                var annotated = annotate(depsSrc);
                 moduleData.components.push({
                     name: name,
-                    deps: annotate(depsSrc),
+                    deps: typeof annotated[0] === 'function' ? [] : annotated,
                     type: type
                 });
                 // Array or empty
@@ -1121,11 +1122,12 @@ window.inspectorExecutor = function (window, document) {
         instrumentActiveDependency();
         addBirbalModule();
         logger.log('bootstrap instrumented and added birbal module.');
-        if (document.getElementsByTagName('html')[0].getAttribute('birbal-ng-start') === 'true') {
-            // instrument and resume
-            instrumentAngular();
-            logger.log('instrumented NG');
-        }
+        //if (document.getElementsByTagName('html')[0].getAttribute('birbal-ng-start') === 'true') {
+        // instrument and resume
+        contentMessageActions.pause = false;
+        instrumentAngular();
+        logger.log('instrumented NG');
+        //}
     });
 
     window.addEventListener('beforeunload', function () {

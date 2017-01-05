@@ -42,6 +42,11 @@ module.exports = function (grunt) {
                     'dist/message.min.js': ['src/message.js']
                 }
             },
+            inject: {
+                files: {
+                    'src/content-script/inject/angularinspector.min.js': ['src/content-script/inject/angularinspector.js']
+                }
+            },
             'uglify-inspector': {
                 options: {
                     preserveComments: false,
@@ -192,7 +197,7 @@ module.exports = function (grunt) {
     // Default task(s).
     grunt.registerTask('default', ['jshint']);
     // generate injector script
-    grunt.registerTask('build-inject', ['clean:inject', 'uglify:uglify-inspector']);
+    grunt.registerTask('build-inject', ['clean:inject', 'uglify:inject']);
     // creating zip file for distribution
     grunt.registerTask('build-extension', ['jshint', 'template', 'concat', 'uglify', 'copy', 'compress']);
     // for development
