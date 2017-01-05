@@ -66,6 +66,7 @@
     //  receiver changes call status
     //  receiver registers taskAction
     //  receiver finds task appropriately and answer it,
+    //  receiver task can be intercepted by background but not answerable by Background,
     //  receiver looks for receiverId and transfers to it
     //  receiver discards the call if it does not find registered task and logs to console.
     /////////////////////////////////////////////////////////
@@ -89,7 +90,7 @@
             message.tabId = message.tabId || (srcPort.sender && srcPort.sender.tab && srcPort.sender.tab.id);
 
             if (typeof destPort === 'function') {
-                // used in background
+                // get port in background
                 destPort = destPort.apply(null, arguments);
             }
             if (srcPort.name === receiverSelf.receiverId || !destPort || destPort.name === receiverSelf.receiverId || destPort === receiverSelf.receiverId) {
@@ -99,9 +100,16 @@
                 if (!callback) {
                     throw new Error('given task:"' + taskName + '" is not registered with action callback.');
                 }
-                callback.apply(null, arguments);
+                callback(message);
                 message.status = 'answered';
             } else {
+                // intercept, update details and delegate
+                var callback = taskCallBackList[message.task];
+                if (callback) {
+                    var newMessageDetails = callback(message);
+                    message.msgDetails = newMessageDetails || message.msgDetails;
+                    message.interceptedBy = receiverSelf.receiverId;
+                }
                 // delegates message to destPort
                 destPort.postMessage(message);
             }
