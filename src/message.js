@@ -75,9 +75,7 @@
     ReceiverImpl = function (receiverId) {
         var receiverSelf = this,
         /* namespace calls will have call/task name - listener mapping */
-            calls = {},
-        /*namespace*/
-            taskCallBackList = {};
+            calls = {};
         receiverSelf.receiverId = receiverId;
 
         receiverSelf.when = function (callId, callListener) {
@@ -87,16 +85,10 @@
             var listeners = calls[callId] = (calls[callId] || []);
             listeners.push(callListener);
         };
-        //receiverSelf.when = function (task, actionCallBack) {
-        //    if (typeof task !== 'string' && typeof actionCallBack !== 'function') {
-        //        throw new Error('arguments(task, actionCallBack) are not matching');
-        //    }
-        //    taskCallBackList[task] = actionCallBack;
-        //};
 
         /* can have more arguments, only required args are here */
         receiverSelf.answerCall = function (message, sender, srcPort, destPort) {
-            var callListeners, newMessageDetails;
+            var callListeners;
             message.status = 'connecting';
             message.tabId = message.tabId || (srcPort && srcPort.sender && srcPort.sender.tab && srcPort.sender.tab.id);
 
@@ -105,7 +97,7 @@
                 destPort = destPort.apply(null, arguments);
             }
             if (!destPort || srcPort.name === receiverSelf.receiverId || destPort.name === receiverSelf.receiverId || destPort === receiverSelf.receiverId) {
-                callListeners = taskCallBackList[message.task];
+                callListeners = calls[message.task];
                 if (!callListeners) {
                     throw new Error('given task:"' + message.task + '" is not registered with action callback.');
                 }
@@ -115,7 +107,7 @@
                 message.status = 'answered';
             } else {
                 /* intercept, update details and delegate */
-                callListeners = taskCallBackList[message.task];
+                callListeners = calls[message.task];
                 if (callListeners) {
                     callListeners.forEach(function (listener) {
                         listener(message);

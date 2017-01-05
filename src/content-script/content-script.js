@@ -87,7 +87,7 @@
         /* jshint +W116 */
         logger.log('in injectedMsgListener');
         var winmessage = event.data,
-            bgtasks = new RegExp('^(ngDetect|csInit|dependencyTree|activeDependencies)$');
+            bgtasks = new RegExp('^(ngDetect|csInit|dependency\.tree|dependency\.activeList)$');
         logger.log(winmessage);
         if (bgtasks.test(winmessage.task)) {
             // this is coming from angularDetect injector

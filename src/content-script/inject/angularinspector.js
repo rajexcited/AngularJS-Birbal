@@ -213,7 +213,7 @@ window.inspectorExecutor = function (window, document) {
                         digestInfo = JSON.parse(digestInfo);
                         digestInfo.domUpdateTime = (perf.now() - digestInfo.endTime);
                         logger.info("digest ended, DOM update time taken in ms is " + digestInfo.domUpdateTime);
-                        broadcastMessage(digestInfo, 'digestMeasures');
+                        broadcastMessage(digestInfo, 'performance.digestMeasures');
                     }, 2);
                 }
 
@@ -433,7 +433,7 @@ window.inspectorExecutor = function (window, document) {
                                 resp: config.nbTime.resp,
                                 respErr: config.nbTime.respErr
                             };
-                            broadcastMessage(httpCall, 'httpMeasures');
+                            broadcastMessage(httpCall, 'performance.httpMeasures');
                         }
 
                         return {
@@ -706,7 +706,7 @@ window.inspectorExecutor = function (window, document) {
         }
 
         annotateFinder();
-        broadcastMessage(getMetadata(appNames), 'dependencyTree');
+        broadcastMessage(getMetadata(appNames), 'dependency.tree');
     };
     ////////////////////////////////////////////////////////////////////
     //      START INSPECTING PAGE FOR ANGULAR - onload
@@ -1074,7 +1074,7 @@ window.inspectorExecutor = function (window, document) {
                 function sendActiveDeps() {
                     if (!depstimeout) {
                         depstimeout = window.setTimeout(function () {
-                            broadcastMessage(deps, 'activeDependencies');
+                            broadcastMessage(deps, 'dependency.activeList');
                             depstimeout = undefined;
                         }, 1.3 * 1000);
                     }

@@ -51,18 +51,18 @@
                 $rootScope.$emit('ngAppDetails', message.msgDetails);
             });
 
-            receiver.for('digestMeasures', function (message) {
+            receiver.for('performance.digestMeasures', function (message) {
                 digestDataFactory.addDigestMeasure(message.msgDetails);
             });
 
-            receiver.for('httpMeasures', function (message) {
+            receiver.for('performance.httpMeasures', function (message) {
                 httpRecordFactory.addHttpMeasure(message.msgDetails);
             });
-            receiver.for('activeDependencies', function (message) {
+            receiver.for('dependency.activeList', function (message) {
                 logger.log.bind(logger, 'activeDependencies:  ').call(logger, message.msgDetails);
                 dependencyTree.addActive(message.msgDetails);
             });
-            receiver.for('dependencyTree', function (message) {
+            receiver.for('dependency.tree', function (message) {
                 logger.log.bind(logger, 'dependencyTree:  ').call(logger, message.msgDetails);
                 dependencyTree.setTree(message.msgDetails);
             });
