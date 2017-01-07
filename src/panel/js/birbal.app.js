@@ -25,6 +25,7 @@
                         } else {
                             pageName = 'nbEnable';
                         }
+                        $rootScope.csInfo.pause = false;
                     }
                     /*if (pageName === 'nbEnable' && $rootScope.csInfo.enabled) {
                      pageName = $scope.view || 'dashboard';
@@ -86,12 +87,12 @@
 
                 $scope.sidebarActions.pauseMyAnalysis = function () {
                     backgroundService.informBackground(null, 'performance.pauseAnalysis');
-                    //$rootScope.csInfo.pause = true;
+                    $rootScope.csInfo.pause = true;
                 };
 
                 $scope.sidebarActions.resumeMyAnalysis = function () {
                     backgroundService.informBackground(null, 'performance.resumeAnalysis');
-                    //$rootScope.csInfo.pause = false;
+                    $rootScope.csInfo.pause = false;
                 };
 
                 $scope.sidebarActions.changePanelView = changeViewActionListener;

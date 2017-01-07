@@ -173,7 +173,7 @@
             tabInfo.mockHttp.isModified = false;
             informContentScript(message.tabId, tabInfo.mockHttp.list, 'httpMock.list');
         }
-        if (!tabs.getPort(message.tabId, birbalJS.END_POINTS.PANEL)) {
+        if (!tabs.getPort(message.tabId, birbalJS.END_POINTS.PANEL) || tabInfo.pausePerformanceAnalysis) {
             // panel is not opened - pause
             informContentScript(message.tabId, null, 'performance.pauseAnalysis');
         }
@@ -229,13 +229,29 @@
     // #7
     receiver.for('panelInit', function (message) {
         // run pending tasks
-        var tabInfo, taskForPanel;
+        var tabInfo/*, taskForPanel*/;
         tabInfo = tabs.getTabInfo(message.tabId);
         //taskForPanel = tabInfo.ngDetect && tabInfo.ngDetect.ngDetected ? 'addPanel' : 'removePanel';
         informPanel(message.tabId, tabInfo.ngDetect, 'ngDetect');
-        informContentScript(message.tabId, null, 'performance.resumeAnalysis');
+        if (!tabInfo.pausePerformanceAnalysis) {
+            informContentScript(message.tabId, null, 'performance.resumeAnalysis');
+        }
         informPanel(message.tabId, tabInfo.dependencyTree, 'dependency.tree');
         informPanel(message.tabId, tabInfo.activeDependencies, 'dependency.activeList');
+    });
+
+    receiver.for('performance.pauseAnalysis', function (message) {
+        // record it for session
+        var tabInfo;
+        tabInfo = tabs.getTabInfo(message.tabId);
+        tabInfo.pausePerformanceAnalysis = true;
+    });
+
+    receiver.for('performance.resumeAnalysis', function (message) {
+        // record it for session
+        var tabInfo;
+        tabInfo = tabs.getTabInfo(message.tabId);
+        tabInfo.pausePerformanceAnalysis = false;
     });
 
     // #8
@@ -330,7 +346,7 @@
             if (connectingPort.name === birbalJS.END_POINTS.PANEL) {
                 // disable
                 //var tabInfo = tabs.getTabInfo(tabId);
-                informContentScript(message.tabId, null, 'performance.pauseAnalysis');
+                informContentScript(tabId, null, 'performance.pauseAnalysis');
                 //if (tabInfo.doAnalysis) {
                 //    tabInfo.doAnalysis = false;
                 //    informContentScript(tabId, {

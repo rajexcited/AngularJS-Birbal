@@ -118,6 +118,27 @@ table {
     border-color: #202221;
 }
 
+.sidebar-menu > li.perf-check > a {
+    padding-left: 13px;
+}
+
+.sidebar-menu > li > a > i.fa {
+    transition: font-size 0.4s ease-in-out;
+}
+
+.sidebar-mini.sidebar-collapse .sidebar-menu > li > a > i.fa,
+.sidebar-menu > li.perf-check > a > i.fa {
+    font-size: 130%;
+}
+
+.sidebar-mini.sidebar-collapse .sidebar-menu > li.perf-check > a > i.fa {
+    font-size: 160%;
+}
+
+.sidebar-mini.sidebar-collapse .sidebar-menu > li > a {
+    padding-left: 13px;
+}
+
 @media (max-width: 767px) {
     /* xtra small */
     /* TODO remove from ADMINLTE.min.css - overriding   */

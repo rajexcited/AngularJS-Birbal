@@ -61,7 +61,7 @@
         //    htmlNode.setAttribute('birbal-ng-start', message.msgDetails.ngStart);
         //    htmlNode.setAttribute('birbal-ng-module', message.msgDetails.ngModule);
         //} else {
-        logger.log(message);
+        //logger.log(message);
         var birbalMsg = new birbalJS.Message(message.msgDetails, birbalJS.END_POINTS.CONTENTSCRIPT, birbalJS.END_POINTS.ANGULARINSPECTOR, message.task);
         window.postMessage(birbalMsg, '*');
         //}

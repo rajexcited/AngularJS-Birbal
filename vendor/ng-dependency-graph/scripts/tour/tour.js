@@ -99,14 +99,14 @@ angular.module('ngDependencyGraph')
             },
 
             switchPanels: {
-                text: 'You can see more panel options by clicking <b>nb</b><br/><br/>',
+                text: 'to see full Panel Name, click <b>navicon</b> on top-left corner. <br/><br/>',
                 attachTo: 'a[data-toggle="offcanvas"]',
                 buttons: buttons.step
             },
 
             finish: {
                 text: 'That\'s it! :) Hope you enjoy.<br/><br/>You can restart this tour by clicking \'Tutorial\' in the bottom right corner.<br/><br/>Please star if you like it:' +
-                '<a target="_blank" href="https://github.com/rajexcited/AngularJS-Birbal/" class="glyphicon glyphicon-star">project</a><br/><br/>',
+                '<a target="_blank" href="https://github.com/rajexcited/AngularJS-Birbal/" class="fa fa-external-link">project</a><br/><br/>',
                 attachTo: '.search right',
                 buttons: buttons.finish
             }

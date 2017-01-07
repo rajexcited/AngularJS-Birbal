@@ -1,7 +1,25 @@
 /*global angular, birbalJS, window, document*/
 window.inspectorExecutor = function (window, document) {
     'use strict';
-    window.name = 'NG_DEFER_BOOTSTRAP!'.concat(window.name);
+
+    function debugAndControlNgBootstrap() {
+        var deferBootStrap = 'NG_DEFER_BOOTSTRAP!',
+            enableDebug = 'NG_ENABLE_DEBUG_INFO!',
+            name = window.name,
+            regex;
+
+        regex = new RegExp(deferBootStrap);
+        if (!regex.test(name)) {
+            name = name.concat(deferBootStrap);
+        }
+        regex = new RegExp(enableDebug);
+        if (!regex.test(name)) {
+            name = name.concat(enableDebug);
+        }
+        window.name = name;
+    }
+
+    debugAndControlNgBootstrap();
     /**
      * Birbal detects angular page, and notify with basic information
      */
@@ -84,7 +102,7 @@ window.inspectorExecutor = function (window, document) {
         }
         /*jslint eqeq: false*/
         /* jshint +W116 */
-        logger.log.bind('in contentMsgListener-angular birbal ').call(null, event.data);
+        logger.log.bind(logger, 'in contentMsgListener-angular birbal ').call(null, event.data);
         receiver.answerCall(event.data);
     }
 
@@ -976,7 +994,7 @@ window.inspectorExecutor = function (window, document) {
             .config(['$provide', function ($provide) {
                 var ngPFactory, ngPService, ngPProvider, depstimeout,
                     deps = [];
-                logger.log('dependency config');
+                logger.log.bind(logger, 'dependency config').call(logger, $provide);
                 $provide.decorator('$controller', ['$delegate', function ($delegate) {
                     return (function (name) {
                         if (typeof name === 'string') {
