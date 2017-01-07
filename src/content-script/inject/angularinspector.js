@@ -1114,7 +1114,7 @@ window.inspectorExecutor = function (window, document) {
         logger.log('bootstrap instrumented and added birbal module.');
         //if (document.getElementsByTagName('html')[0].getAttribute('birbal-ng-start') === 'true') {
         // instrument and resume
-        contentMessageActions.pause = false;
+        contentMessageActions.pause = (contentMessageActions.pause || false);
         instrumentAngular();
         logger.log('instrumented NG');
         //}

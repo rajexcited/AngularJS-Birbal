@@ -73,22 +73,100 @@
     //            Receiver Constructor
     /////////////////////////////////////////////////////////
     ReceiverImpl = function (receiverId) {
+
+        function CallsHolderImpl() {
+            var self = this,
+                mapWithString = {},
+                listWithRegex = [];
+
+            function getListenersFromMap(key) {
+                var list = [];
+                if (mapWithString.hasOwnProperty(key)) {
+                    list = mapWithString[key];
+                }
+                return list;
+            }
+
+            function getListenersIndexFromRegexList(regexKey, isRegex) {
+                var ind = -1,
+                    list = listWithRegex
+                        .filter(function (item, index) {
+                            if (isRegex && item.key === regexKey) {
+                                ind = index;
+                                return true;
+                            }
+                            return (!isRegex && item.key.test(regexKey));
+                        })
+                        .map(function (item) {
+                            return item.value;
+                        });
+                list = Array.prototype.concat.apply([], list);
+                if (isRegex) {
+                    return ({
+                        ind: ind,
+                        list: list
+                    });
+                }
+                return list;
+            }
+
+            self.addListener = function (stringOrRegex, value) {
+                var listeners = [];
+                if (stringOrRegex instanceof RegExp) {
+                    listeners = getListenersIndexFromRegexList(stringOrRegex, true);
+                    listeners.list.push(value);
+                    if (listeners.ind !== -1) {
+                        listWithRegex[listeners.ind] = listeners.list;
+                    } else {
+                        listWithRegex.push({
+                            key: stringOrRegex,
+                            value: listeners.list
+                        });
+                    }
+                } else {
+                    listeners = getListenersFromMap(stringOrRegex);
+                    listeners.push(value);
+                    mapWithString[stringOrRegex] = listeners;
+                }
+            };
+
+            self.hasListener = function (stringOrRegex) {
+                var listeners = self.getAllListeners(stringOrRegex);
+                return (listeners.length !== 0);
+            };
+
+            self.getAllListeners = function (stringOrRegex) {
+                return getListenersFromMap(stringOrRegex).concat(getListenersIndexFromRegexList(stringOrRegex, false));
+            }
+        }
+
         var receiverSelf = this,
         /* namespace calls will have call/task name - listener mapping */
-            calls = {};
+            calls = new CallsHolderImpl();
         receiverSelf.receiverId = receiverId;
 
-        receiverSelf.for = function (callId, callListener) {
-            if (typeof taskOrCall !== 'string' && typeof callListener !== 'function') {
+        receiverSelf.for = function (callIdStringOrRegex, callListener) {
+            if ((typeof callIdStringOrRegex !== 'string' || callIdStringOrRegex instanceof RegExp) && typeof callListener !== 'function') {
                 throw new Error('arguments task/ call Id and call Listener are not matching');
             }
-            var listeners = calls[callId] = (calls[callId] || []);
-            listeners.push(callListener);
+            calls.addListener(callIdStringOrRegex, callListener);
+            /*var listeners = calls[callIdStringOrRegex] = (calls[callIdStringOrRegex] || []);
+             listeners.push(callListener);*/
         };
 
         /* can have more arguments, only required args are here */
         receiverSelf.answerCall = function (message, sender, srcPort, destPort) {
-            var callListeners;
+
+            function executeCallListeners() {
+                var callListeners = calls.getAllListeners(message.task);
+
+                callListeners.forEach(function (listener) {
+                    listener(message);
+                });
+
+                return callListeners.length;
+            }
+
             message.status = 'connecting';
             message.tabId = message.tabId || (srcPort && srcPort.sender && srcPort.sender.tab && srcPort.sender.tab.id);
 
@@ -97,21 +175,13 @@
                 destPort = destPort.apply(null, arguments);
             }
             if (!destPort || srcPort.name === receiverSelf.receiverId || destPort.name === receiverSelf.receiverId || destPort === receiverSelf.receiverId) {
-                callListeners = calls[message.task];
-                if (!callListeners) {
+                if (executeCallListeners().length === 0) {
                     throw new Error('given task:"' + message.task + '" is not registered with action callback.');
                 }
-                callListeners.forEach(function (listener) {
-                    listener(message);
-                });
                 message.status = 'answered';
             } else {
                 /* intercept, update details and delegate */
-                callListeners = calls[message.task];
-                if (callListeners) {
-                    callListeners.forEach(function (listener) {
-                        listener(message);
-                    });
+                if (executeCallListeners().length !== 0) {
                     message.interceptedBy = (message.interceptedBy || []).concat(receiverSelf.receiverId);
                 }
                 /* delegates message to destPort */

@@ -25,7 +25,9 @@
                         } else {
                             pageName = 'nbEnable';
                         }
-                        $rootScope.csInfo.pause = true;
+                        // making sure to not change user choice and init
+                        $rootScope.csInfo = angular.extend({pause: true}, $rootScope.csInfo);
+                        //$rootScope.csInfo.pause = true;
                     }
                     /*if (pageName === 'nbEnable' && $rootScope.csInfo.enabled) {
                      pageName = $scope.view || 'dashboard';
@@ -50,7 +52,9 @@
                 //});
                 $rootScope.$on('ngAppDetails', function (event, ngDetectData) {
                     $scope.$applyAsync(function () {
-                        $rootScope.csInfo = ngDetectData;
+                        // merge new data with old one. do not change old non related data - using it to save for session
+                        $rootScope.csInfo = angular.extend({}, $rootScope.csInfo, ngDetectData);
+                        //$rootScope.csInfo = ngDetectData;
                         clearResources();
                         changeViewActionListener();
                     });
@@ -58,7 +62,7 @@
 
                 $rootScope.$on('performance.resumeAnalysis', function () {
                     $scope.$applyAsync(function () {
-                        $rootScope.csInfo.pause = false;
+                        $rootScope.csInfo = angular.extend({}, $rootScope.csInfo, {pause: false});
                     });
                 });
 

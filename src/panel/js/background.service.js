@@ -34,6 +34,7 @@
                     destination = (task === 'panelInit') ? birbalJS.END_POINTS.BACKGROUND : birbalJS.END_POINTS.CONTENTSCRIPT;
                 msg = new birbalJS.Message(info, birbalJS.END_POINTS.PANEL, destination, task);
                 backgroundConnection.postMessage(msg);
+                logger.log.bind(logger, 'posting to BG: ').call(logger, msg);
             };
             /////////////////////////////////////////////////////////
             //            panel actionBuilder
@@ -79,8 +80,8 @@
             /////////////////////////////////////////////////////////
             backgroundConnection.onMessage.addListener(function bgMsgListener(message, sender) {
                 // in background message listener
-                logger.log('in bgMsgListener');
                 receiver.answerCall(message, sender, backgroundConnection, birbalJS.END_POINTS.PANEL);
+                logger.log.bind(logger, 'in bgMsgListener ').call(logger, message);
             });
             /////////////////////////////////////////////////////////
             /////////////////////////////////////////////////////////

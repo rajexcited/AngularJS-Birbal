@@ -167,16 +167,26 @@
     receiver.for('csInit', function (message) {
         // injector init - could be reload or navigation
         // send mock http list
-        var tabInfo = tabs.getTabInfo(message.tabId);
+        var tabInfo = tabs.getTabInfo(message.tabId),
+            perfCallId;
         tabInfo.mockHttp = tabInfo.mockHttp || {list: [], isModified: true};
         if (tabInfo.mockHttp.isModified) {
             tabInfo.mockHttp.isModified = false;
             informContentScript(message.tabId, tabInfo.mockHttp.list, 'httpMock.list');
         }
-        if (!tabs.getPort(message.tabId, birbalJS.END_POINTS.PANEL) || tabInfo.pausePerformanceAnalysis) {
-            // panel is not opened - pause
-            informContentScript(message.tabId, null, 'performance.pauseAnalysis');
+        // default resume
+        perfCallId = 'performance.resumeAnalysis';
+        if (tabInfo.pausePerformanceAnalysis) {
+            perfCallId = 'performance.pauseAnalysis';
         }
+        if (!tabs.getPort(message.tabId, birbalJS.END_POINTS.PANEL)) {
+            // panel is not opened - pause it
+            perfCallId = 'performance.pauseAnalysis';
+        } else {
+            // panel is open
+            informPanel(message.tabId, null, perfCallId);
+        }
+        informContentScript(message.tabId, null, perfCallId);
     });
     // #9
     //receiver.for('csInit', function (message) {
@@ -225,6 +235,13 @@
         //informPanel(message.tabId, tabInfo.activeDependencies, 'dependency.activeList');
     });
 
+    receiver.for(/performance\..+/, function (message) {
+        var tabInfo = tabs.getTabInfo(message.tabId);
+        if (tabInfo.pausePerformanceAnalysis) {
+            throw new Error("interrupt message passing");
+        }
+    });
+
     // for devtools panel
     // #7
     receiver.for('panelInit', function (message) {
@@ -235,8 +252,10 @@
         informPanel(message.tabId, tabInfo.ngDetect, 'ngDetect');
         if (!tabInfo.pausePerformanceAnalysis) {
             informContentScript(message.tabId, null, 'performance.resumeAnalysis');
-            //default is pause
             informPanel(message.tabId, null, 'performance.resumeAnalysis');
+        } else {
+            informContentScript(message.tabId, null, 'performance.pauseAnalysis');
+            informPanel(message.tabId, null, 'performance.pauseAnalysis');
         }
         informPanel(message.tabId, tabInfo.dependencyTree, 'dependency.tree');
         informPanel(message.tabId, tabInfo.activeDependencies, 'dependency.activeList');
