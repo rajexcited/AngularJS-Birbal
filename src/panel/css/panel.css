@@ -139,6 +139,14 @@ table {
     padding-left: 13px;
 }
 
+.box-body LABEL {
+    padding-right: 10px;
+}
+
+.box-title > i.fa + span {
+    padding-left: 10px;
+}
+
 @media (max-width: 767px) {
     /* xtra small */
     /* TODO remove from ADMINLTE.min.css - overriding   */
