@@ -235,6 +235,8 @@
         informPanel(message.tabId, tabInfo.ngDetect, 'ngDetect');
         if (!tabInfo.pausePerformanceAnalysis) {
             informContentScript(message.tabId, null, 'performance.resumeAnalysis');
+            //default is pause
+            informPanel(message.tabId, null, 'performance.resumeAnalysis');
         }
         informPanel(message.tabId, tabInfo.dependencyTree, 'dependency.tree');
         informPanel(message.tabId, tabInfo.activeDependencies, 'dependency.activeList');

@@ -1,8 +1,10 @@
 <div>
-    <button type="button" class="btn btn-primary" ng-click="settings.clearData();">Clear All Data</button>
-    <br>
-    <span><b>digest Cycle related Option:</b></span>
-    <br>
+
+    <span><b>digest Cycle related Option:</b></span> <br/>
+    <label> <span> Clear the digest data and reset analysis:  </span>
+        <button type="button" class="btn btn-primary" ng-click="settings.clearData();"> Clear</button>
+    </label>
+    <br/>
     <div class="checkbox">
         <label> debounce time between digest cycles(in ms)
             <input type="number" min="0" ng-model="settings.digestDebounceTime" ng-blur="settings.debounceChanged();">

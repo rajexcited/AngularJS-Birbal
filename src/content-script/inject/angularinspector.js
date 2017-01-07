@@ -994,7 +994,7 @@ window.inspectorExecutor = function (window, document) {
             .config(['$provide', function ($provide) {
                 var ngPFactory, ngPService, ngPProvider, depstimeout,
                     deps = [];
-                logger.log.bind(logger, 'dependency config').call(logger, $provide);
+                logger.log('ng dependency config');
                 $provide.decorator('$controller', ['$delegate', function ($delegate) {
                     return (function (name) {
                         if (typeof name === 'string') {

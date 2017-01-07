@@ -55,6 +55,10 @@
                 $rootScope.$emit('ngAppDetails', message.msgDetails);
             });
 
+            receiver.for('performance.resumeAnalysis', function (message) {
+                $rootScope.$emit('performance.resumeAnalysis', message.msgDetails);
+            });
+
             receiver.for('performance.digestMeasures', function (message) {
                 digestDataFactory.addDigestMeasure(message.msgDetails);
             });

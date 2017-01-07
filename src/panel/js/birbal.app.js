@@ -25,7 +25,7 @@
                         } else {
                             pageName = 'nbEnable';
                         }
-                        $rootScope.csInfo.pause = false;
+                        $rootScope.csInfo.pause = true;
                     }
                     /*if (pageName === 'nbEnable' && $rootScope.csInfo.enabled) {
                      pageName = $scope.view || 'dashboard';
@@ -53,6 +53,12 @@
                         $rootScope.csInfo = ngDetectData;
                         clearResources();
                         changeViewActionListener();
+                    });
+                });
+
+                $rootScope.$on('performance.resumeAnalysis', function () {
+                    $scope.$applyAsync(function () {
+                        $rootScope.csInfo.pause = false;
                     });
                 });
 
