@@ -2,11 +2,10 @@
 (function (chrome) {
     'use strict';
 
-    var BirbalJSImpl, endPoints, MessageImpl, ReceiverImpl;
     /////////////////////////////////////////////////////////
     //            define endpoints for message
     /////////////////////////////////////////////////////////
-    endPoints = {
+    var endPoints = {
         PANEL: 'panel',
         BACKGROUND: 'background',
         CONTENTSCRIPT: 'content-script',
@@ -25,9 +24,9 @@
     //
     //  call status -  prepare, dial, connecting, answered
     /////////////////////////////////////////////////////////
-    //  Call Consructor
+    //  Call Constructor
     /////////////////////////////////////////////////////////
-    MessageImpl = function (msgDetails, callerId, receiverId, task) {
+    function MessageImpl(msgDetails, callerId, receiverId, task) {
         var tabId;
         if (msgDetails) {
             if (!task) {
@@ -43,16 +42,16 @@
                 delete msgDetails.receiverId;
             }
             tabId = msgDetails.tabId;
+            delete msgDetails.tabId;
         }
         if (!callerId || !task) {
             throw new Error('callerId or task not defined');
         }
         if (tabId) {
-            msgDetails = msgDetails.info;
+            msgDetails = msgDetails.msgDetails;
             this.tabId = tabId;
         } else {
-            var chrome = window.chrome;
-            this.tabId = chrome && chrome.devtools && chrome.devtools.inspectedWindow && chrome.devtools.inspectedWindow.tabId;
+            this.tabId = window.chrome && window.chrome.devtools && window.chrome.devtools.inspectedWindow && window.chrome.devtools.inspectedWindow.tabId;
         }
         this.task = task;
         /* default is background */
@@ -61,7 +60,75 @@
         this.callerId = callerId;
         this.status = 'prepare';
         this.app = 'birbal';
-    };
+    }
+
+
+    function CallsHolderImpl() {
+        var self = this,
+            mapWithString = {},
+            listWithRegex = [];
+
+        function getListenersFromMap(key) {
+            var list = [];
+            if (mapWithString.hasOwnProperty(key)) {
+                list = mapWithString[key];
+            }
+            return list;
+        }
+
+        function getListenersIndexFromRegexList(regexKey, isRegex) {
+            var ind = -1,
+                list = listWithRegex
+                    .filter(function (item, index) {
+                        if (isRegex && item.key === regexKey) {
+                            ind = index;
+                            return true;
+                        }
+                        return (!isRegex && item.key.test(regexKey));
+                    })
+                    .map(function (item) {
+                        return item.value;
+                    });
+            list = Array.prototype.concat.apply([], list);
+            if (isRegex) {
+                return ({
+                    ind: ind,
+                    list: list
+                });
+            }
+            return list;
+        }
+
+        self.addListener = function (stringOrRegex, value) {
+            var listeners = [];
+            if (stringOrRegex instanceof RegExp) {
+                listeners = getListenersIndexFromRegexList(stringOrRegex, true);
+                listeners.list.push(value);
+                if (listeners.ind !== -1) {
+                    listWithRegex[listeners.ind] = listeners.list;
+                } else {
+                    listWithRegex.push({
+                        key: stringOrRegex,
+                        value: listeners.list
+                    });
+                }
+            } else {
+                listeners = getListenersFromMap(stringOrRegex);
+                listeners.push(value);
+                mapWithString[stringOrRegex] = listeners;
+            }
+        };
+
+        self.hasListener = function (stringOrRegex) {
+            var listeners = self.getAllListeners(stringOrRegex);
+            return (listeners.length !== 0);
+        };
+
+        self.getAllListeners = function (stringOrRegex) {
+            return getListenersFromMap(stringOrRegex).concat(getListenersIndexFromRegexList(stringOrRegex, false));
+        }
+    }
+
     /////////////////////////////////////////////////////////
     //  receiver changes call status
     //  receiver registers taskAction
@@ -72,74 +139,7 @@
     /////////////////////////////////////////////////////////
     //            Receiver Constructor
     /////////////////////////////////////////////////////////
-    ReceiverImpl = function (receiverId) {
-
-        function CallsHolderImpl() {
-            var self = this,
-                mapWithString = {},
-                listWithRegex = [];
-
-            function getListenersFromMap(key) {
-                var list = [];
-                if (mapWithString.hasOwnProperty(key)) {
-                    list = mapWithString[key];
-                }
-                return list;
-            }
-
-            function getListenersIndexFromRegexList(regexKey, isRegex) {
-                var ind = -1,
-                    list = listWithRegex
-                        .filter(function (item, index) {
-                            if (isRegex && item.key === regexKey) {
-                                ind = index;
-                                return true;
-                            }
-                            return (!isRegex && item.key.test(regexKey));
-                        })
-                        .map(function (item) {
-                            return item.value;
-                        });
-                list = Array.prototype.concat.apply([], list);
-                if (isRegex) {
-                    return ({
-                        ind: ind,
-                        list: list
-                    });
-                }
-                return list;
-            }
-
-            self.addListener = function (stringOrRegex, value) {
-                var listeners = [];
-                if (stringOrRegex instanceof RegExp) {
-                    listeners = getListenersIndexFromRegexList(stringOrRegex, true);
-                    listeners.list.push(value);
-                    if (listeners.ind !== -1) {
-                        listWithRegex[listeners.ind] = listeners.list;
-                    } else {
-                        listWithRegex.push({
-                            key: stringOrRegex,
-                            value: listeners.list
-                        });
-                    }
-                } else {
-                    listeners = getListenersFromMap(stringOrRegex);
-                    listeners.push(value);
-                    mapWithString[stringOrRegex] = listeners;
-                }
-            };
-
-            self.hasListener = function (stringOrRegex) {
-                var listeners = self.getAllListeners(stringOrRegex);
-                return (listeners.length !== 0);
-            };
-
-            self.getAllListeners = function (stringOrRegex) {
-                return getListenersFromMap(stringOrRegex).concat(getListenersIndexFromRegexList(stringOrRegex, false));
-            }
-        }
-
+    function ReceiverImpl(receiverId) {
         var receiverSelf = this,
         /* namespace calls will have call/task name - listener mapping */
             calls = new CallsHolderImpl();
@@ -159,11 +159,9 @@
 
             function executeCallListeners() {
                 var callListeners = calls.getAllListeners(message.task);
-
                 callListeners.forEach(function (listener) {
                     listener(message);
                 });
-
                 return callListeners.length;
             }
 
@@ -188,22 +186,23 @@
                 destPort.postMessage(message);
             }
         };
-    };
+    }
+
     /////////////////////////////////////////////////////////
     //            share birbalJS
     /////////////////////////////////////////////////////////
     // creating prototype
-    BirbalJSImpl = function () {
-        var self = this;
-        self.END_POINTS = endPoints;
-        // true for development only    // try to get from config
-        self.debugMode = false;
+    function BirbalJSImpl() {
+        this.END_POINTS = endPoints;
+        // true for development only
+        // true - allows to log info and trace app behavior
+        this.debugMode = false;
         // call is used in sending message
-        self.Message = MessageImpl;
-        self.Receiver = ReceiverImpl;
-    };
+        this.Message = MessageImpl;
+        this.Receiver = ReceiverImpl;
+    }
 
-    // share
+    // sharable and used across all layers
     window.birbalJS = new BirbalJSImpl();
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 /*global chrome, birbalJS, window, document*/
 (function (chrome, birbalJS, window, document) {
     'use strict';
-    // #1
+
     /**
      detects angular page, and take actions if required
      */
@@ -29,12 +29,11 @@
     }
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
-
     logger.log('content-script is loading. getting ready.....setup Background connection');
     /////////////////////////////////////////////////////////
     //            Background connection setup
     /////////////////////////////////////////////////////////
-    // #2 Create a connection to the background page
+    // Create a connection to the background page
     backgroundConnection = chrome.runtime.connect({
         name: birbalJS.END_POINTS.CONTENTSCRIPT
     });
@@ -55,16 +54,9 @@
     /////////////////////////////////////////////////////////
     backgroundConnection.onMessage.addListener(function bgMsgListener(message) {
         // in background message listener
-        //if (message.task === 'instrumentNg') {
-        //    // qq: what's the purpose of this ???
-        //    var htmlNode = document.getElementsByTagName('html')[0];
-        //    htmlNode.setAttribute('birbal-ng-start', message.msgDetails.ngStart);
-        //    htmlNode.setAttribute('birbal-ng-module', message.msgDetails.ngModule);
-        //} else {
-        //logger.log(message);
         var birbalMsg = new birbalJS.Message(message.msgDetails, birbalJS.END_POINTS.CONTENTSCRIPT, birbalJS.END_POINTS.ANGULARINSPECTOR, message.task);
         window.postMessage(birbalMsg, '*');
-        //}
+        //logger.log(message);
     });
 
     /////////////////////////////////////////////////////////
@@ -81,19 +73,17 @@
         // We only accept message for our app and destination specified as this file.
         /* jshint -W116 */
         /*jslint eqeq: true*/
-        if (event.source != window || !event.data || event.data.app !== 'birbal' || event.data.receiverId !== 'content-script') {
+        if (event.source != window || !event.data || event.data.app !== 'birbal' || event.data.receiverId !== birbalJS.END_POINTS.CONTENTSCRIPT) {
             return;
         }
         /*jslint eqeq: false*/
         /* jshint +W116 */
-        logger.log('in injectedMsgListener');
         var winMessage = event.data,
             destination;
 
-        logger.log(winMessage);
-        destination = winMessage.task === 'csInit' ? birbalJS.END_POINTS.BACKGROUND : birbalJS.END_POINTS.PANEL;
+        logger.log.bind(logger, 'in injectedMsgListener').call(logger, winMessage);
+        destination = (winMessage.task === 'csInit') ? birbalJS.END_POINTS.BACKGROUND : birbalJS.END_POINTS.PANEL;
         informBackground(winMessage.msgDetails, winMessage.task, destination);
-        //if (bgtasks.test(winMessage.task)) {
         // this is coming from angularDetect injector
         if (winMessage.msgDetails && winMessage.msgDetails.ngDetected) {
             // send message to BG for connecting and inspecting app
@@ -108,12 +98,6 @@
                 logger = undefined;
             }, 200);
         }
-        //informBackground(winMessage.msgDetails, winMessage.task, birbalJS.END_POINTS.BACKGROUND);
-        //} else {
-        // all others are from angularinspector.js which communicates to panel
-        //informBackground(winMessage.msgDetails, winMessage.task, birbalJS.END_POINTS.PANEL);
-        //}
-        ///////////////
     }
 
     // stateless
@@ -122,7 +106,7 @@
     /////////////////////////////////////////////////////////
     //            Inject Script Communication setup
     /////////////////////////////////////////////////////////
-    // after all listeners
+    // after registering all listeners
     (function injectScript() {
         var htmlRootNode, script,
             name = 'angularinspector';
@@ -146,6 +130,7 @@
         script.className = 'birbal-' + name;
         script.setAttribute('type', 'text/javascript');
         script.innerText = '(' + window.inspectorExecutor.toString() + '(window, document))';
+        delete window.inspectorExecutor;
         htmlRootNode.appendChild(script);
 
         script = document.createElement('script');
@@ -155,8 +140,7 @@
         htmlRootNode.appendChild(script);
     }());
 
-    // #4
-    logger.log('cleaning old resources if any');
+    logger.log('to clean old resources if any');
     window.addEventListener('beforeunload', function () {
         // cleanup - closures, event listeners
         window.removeEventListener('message', injectedMsgListener);

@@ -39,4 +39,11 @@
         };
     }]);
 
+    // to verify lazy late bootstrap - early is like auto bootstrap which can be tested by changing delay to 1.
+    window.addEventListener("load", function () {
+        setTimeout(function () {
+            angular.bootstrap(document.querySelector('#myApp'), ['myApp']);
+        }, 1000);
+    });
+
 }(angular));

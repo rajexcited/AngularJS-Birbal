@@ -2,7 +2,7 @@
 window.inspectorExecutor = function (window, document) {
     'use strict';
 
-    function debugAndControlNgBootstrap() {
+    function ngBootstrap() {
         var deferBootStrap = 'NG_DEFER_BOOTSTRAP!',
             enableDebug = 'NG_ENABLE_DEBUG_INFO!',
             name = window.name,
@@ -19,7 +19,7 @@ window.inspectorExecutor = function (window, document) {
         window.name = name;
     }
 
-    debugAndControlNgBootstrap();
+    ngBootstrap();
     /**
      * Birbal detects angular page, and notify with basic information
      */
@@ -60,34 +60,35 @@ window.inspectorExecutor = function (window, document) {
     //            BIRBAL SETUP
     /////////////////////////////////////////////////////////
     // listener and communication
-    function toValidJSON(o) {
-        var cache = [], ck = [], ind = 0;
-        try {
-            return JSON.parse(JSON.stringify(o, function (key, value) {
-                if (typeof value === 'object' && value !== null) {
-                    ind = cache.indexOf(value);
-                    // Store value in our collection
-                    cache.push(value);
-                    ck.push(key);
-                }
-                return value;
-            }));
-        } catch (e) {
-            throw new Error('circular reference found, \tObject' + ck.join('.') + ' is equal to Object' + ck.slice(0, ind + 1).join('.') + '\n' + e.stack);
-        }
-    }
-
     function broadcastMessage(info, task) {
+        var msg;
         try {
-            var msg = new birbalJS.Message(info, contentMessageActions.injectorId, 'content-script', task);
+            msg = new birbalJS.Message(info, contentMessageActions.injectorId, 'content-script', task);
             window.postMessage(msg, '*');
         } catch (e) {
-            logger.error.bind(logger, 'collected data Object = ').call(null, info);
+            logger.error.bind(logger, 'collected data Object =  ').call(null, info);
             try {
                 toValidJSON(msg);
                 logger.error.bind(logger, 'broadcast error: ').call(logger, e);
             } catch (ee) {
                 logger.error(ee);
+            }
+        }
+
+        function toValidJSON(o) {
+            var cache = [], ck = [], ind = 0;
+            try {
+                return JSON.parse(JSON.stringify(o, function (key, value) {
+                    if (typeof value === 'object' && value !== null) {
+                        ind = cache.indexOf(value);
+                        // Store value in our collection
+                        cache.push(value);
+                        ck.push(key);
+                    }
+                    return value;
+                }));
+            } catch (e) {
+                throw new Error('circular reference found, \tObject' + ck.join('.') + ' is equal to Object' + ck.slice(0, ind + 1).join('.') + '\n' + e.stack);
             }
         }
     }
@@ -109,22 +110,17 @@ window.inspectorExecutor = function (window, document) {
     window.addEventListener('message', contentMsgListener, false);
 
     receiver = new birbalJS.Receiver(contentMessageActions.injectorId);
-
-    // #9
     /**
      * detect angular loaded and run analysis
      */
     receiver.for('performance.resumeAnalysis', function () {
-        // inject to ngmodule to get onload data
-        //if (contentMessageActions.pause !== undefined) {
+        // inject to ng module to get onload data
         contentMessageActions.pause = false;
-        //}
     });
 
     /**
      * disable plugin
      */
-        // qq: when do i need this?
     receiver.for('performance.pauseAnalysis', function () {
         contentMessageActions.pause = true;
     });
@@ -149,27 +145,22 @@ window.inspectorExecutor = function (window, document) {
      */
     function getAngularApp() {
         logger.log('finding app name');
-        var ngRootNode = document.getElementsByTagName('html')[0],
-            attributes, appname, attrName, len;
+        var ngRootNode, attributes, appName, attrName, len;
 
-        appname = ngRootNode.getAttribute('birbal-ng-module');
         ngRootNode = document.querySelector('.ng-scope');
-        appname = appname || angular.element(ngRootNode).data('ngApp');
-        if (!appname) {
-            attributes = (ngRootNode && ngRootNode.attributes);
-            if (attributes) {
-                len = attributes.length;
-                do {
-                    len--;
-                    attrName = attributes.item(len).name;
-                    if (normalizeAngularAttr(attrName) === 'ngApp') {
-                        appname = attributes.item(len).value;
-                        break;
-                    }
-                } while (len);
+        appName = angular.element(ngRootNode).data('ngApp');
+        if (!appName && ngRootNode) {
+            attributes = ngRootNode.attributes;
+            len = attributes.length;
+            while (len--) {
+                attrName = attributes.item(len).name;
+                if (normalizeAngularAttr(attrName) === 'ngApp') {
+                    appName = attributes.item(len).value;
+                    break;
+                }
             }
         }
-        return appname;
+        return appName;
 
         /**
          * Converts all attributes format into proper angular name.
@@ -241,9 +232,8 @@ window.inspectorExecutor = function (window, document) {
                     var scopePrototype, ngWatch, ngWatchCollection, ngDigest, ngApply, ngEmit, ngBroadcast, ngEvalAsync,
                         watchCollectionExp;
 
-                    /* $rootScope prototype initial reference version 1.2.4
+                    /* $rootScope prototype initial reference version 1.2.4 and modified to support all versions
                      https://github.com/angular/angular.js/blob/v1.2.4/src/ng/rootScope.js
-                     supports: v1.2.4
                      */
                     scopePrototype = Object.getPrototypeOf($delegate);
                     // add watch collection here
@@ -935,7 +925,6 @@ window.inspectorExecutor = function (window, document) {
         }, false);
     }
 
-    // #1 ,use for #9 & #10
     // letting birbal app know that I'm ready
     broadcastMessage(null, 'csInit');
     // start angular analysis
@@ -1128,5 +1117,4 @@ window.inspectorExecutor = function (window, document) {
     });
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
-
 };

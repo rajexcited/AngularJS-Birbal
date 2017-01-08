@@ -44,10 +44,8 @@
      */
     function informBackground(info, task) {
         tabId.then(function (tid) {
-            var message = new birbalJS.Message({
-                tabId: tid,
-                info: info
-            }, birbalJS.END_POINTS.POPUP_HTTP, birbalJS.END_POINTS.BACKGROUND, task);
+            var message = {tabId: tid, msgDetails: info};
+            message = new birbalJS.Message(message, birbalJS.END_POINTS.POPUP_HTTP, birbalJS.END_POINTS.BACKGROUND, task);
             backgroundConnection.postMessage(message);
             logger.log(message);
         });
