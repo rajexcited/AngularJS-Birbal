@@ -24,6 +24,7 @@
           "path": "/lib/jquery.min.js"
         },
         "/lib/angular.min.js",
+        "/lib/underscore-min.js",
         "/lib/ion-rangeslider/js/ion.rangeSlider.min.js",
         "/lib/admin-lte/js/bootstrap.min.js",
         "/lib/admin-lte/js/app.min.js",
@@ -38,6 +39,7 @@
         "../js/panel-view.directive.js",
         "../js/birbalFilters.filter.js",
         "../js/digestDataFactory.factory.js",
+        "../js/digestMeasureLog.factory.js",
         "../js/httpRecordFactory.factory.js",
         "../js/dependencyTree.factory.js",
         "../js/rangeSlider.directive.js",
@@ -70,6 +72,7 @@
           "path": "/lib/jquery.min.js"
         },
         "/lib/angular.min.js",
+        "/lib/underscore-min.js",
         "/lib/ion-rangeslider/js/ion.rangeSlider.min.js",
         "/lib/admin-lte/js/bootstrap.min.js",
         "/lib/admin-lte/js/app.min.js",

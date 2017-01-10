@@ -290,12 +290,13 @@ window.inspectorExecutor = function (window, document) {
                             if (contentMessageActions.pause) {
                                 ngWatcher.fn.apply(null, arguments);
                             } else {
-                                var _watcher = nb.digest.scope[scopeId].watchers[ngWatcher.ind];
+                                var start,
+                                    _watcher = nb.digest.scope[scopeId].watchers[ngWatcher.ind];
                                 _watcher = _watcher[_watcher.length - 1];
                                 ngWatcher.ind = undefined;
-                                _watcher.fnStart = perf.now();
+                                start = perf.now();
                                 ngWatcher.fn.apply(null, arguments);
-                                _watcher.fn = (perf.now() - _watcher.fnStart);
+                                _watcher.fn = (perf.now() - start);
                             }
                         };
 
