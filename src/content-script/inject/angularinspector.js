@@ -212,6 +212,7 @@ window.inspectorExecutor = function (window, document) {
                         emit: [],
                         broadcast: []
                     },
+                    apply: [],
                     http: {},
                     asyncEval: {time: [], expr: []},
                     browserDefer: []
@@ -222,6 +223,10 @@ window.inspectorExecutor = function (window, document) {
                     window.setTimeout(function () {
                         digestInfo = JSON.parse(digestInfo);
                         digestInfo.domUpdateTime = (perf.now() - digestInfo.endTime);
+                        if (nb.apply.length) {
+                            digestInfo.apply = [].concat(nb.apply);
+                            nb.apply.length = 0;
+                        }
                         logger.info("digest ended, DOM update time taken in ms is " + digestInfo.domUpdateTime);
                         broadcastMessage(digestInfo, 'performance.digestMeasures');
                     }, 2);
@@ -343,8 +348,6 @@ window.inspectorExecutor = function (window, document) {
                             throw e;
                         } finally {
                             nb.digest.endTime = perf.now();
-                            nb.digest.applyStartTime = nb.applyStartTime;
-                            nb.digest.applyEndTime = nb.applyEndTime;
                             nb.digest.events = nb.events;
                             nb.digest.async = {
                                 evalAsync: nb.asyncEval.time,
@@ -352,7 +355,6 @@ window.inspectorExecutor = function (window, document) {
                             };
                             nb.digest.asyncQueue = nb.asyncEval.expr;
                             sendDigestInfo();
-                            nb.applyStartTime = nb.applyEndTime = undefined;
                             nb.events.emit.length = 0;
                             nb.events.broadcast.length = 0;
                             nb.asyncEval.time.length = 0;
@@ -365,9 +367,12 @@ window.inspectorExecutor = function (window, document) {
                         if (contentMessageActions.pause) {
                             ngApply.apply(this, arguments);
                         } else {
-                            nb.applyStartTime = perf.now();
+                            var applyTime = {
+                                start: perf.now()
+                            };
                             ngApply.apply(this, arguments);
-                            nb.applyEndTime = perf.now();
+                            applyTime.end = perf.now();
+                            nb.apply.push(applyTime);
                         }
                     };
                     ngEmit = scopePrototype.$emit;
