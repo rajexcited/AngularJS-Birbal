@@ -1,0 +1,16 @@
+
+
+
+
+1.   minimum free time between digest cycles - allows HTML and CSS to process - perf  ===   50-100 is required
+2.   n digest cycles per sec - digest rate
+3.   group digest cycles for digest debounce time - shows continuous max n digest involvement - can be huge perf effect
+4.   show digest group
+5.   watchers group by exp with time
+6.   ngIf, ngClass, ngStyle, ngShow, ngRepeat - perf effect
+7.   browser event involvement in digest group
+8.   directive perf effect
+9.   create views without affecting actual data - clone data and process
+10.  so many watches can cause perf issues
+11.  expensive watches - causing dom time, or big digest group
+12.  create observers

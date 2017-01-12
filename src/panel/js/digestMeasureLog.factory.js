@@ -8,6 +8,8 @@
     angular.module('measure.digest.app')
         .factory('digestMeasureLogFactory', [function () {
 
+            var digestList = [];
+
             function computeWatchers(digestMeasure) {
                 var watcherList = [],
                     finalWatcherList;
@@ -57,7 +59,7 @@
                                 scope: [id],
                                 watch: getWatcher(scope.watchers[i])
                             };
-                            watcher.scopeFn = watcher.howMany.fn ? [id] : [];
+                            watcher.scopeFn = watcher.watch.howMany.fn ? [id] : [];
                             watcherList.push(watcher);
                         }
                     }
@@ -90,10 +92,58 @@
                 console.log(finalWatcherList);
             }
 
+            function getEventNames(digestMeasure) {
+                var broadcastEvents = _.groupBy(digestMeasure.events.broadcast, "name");
+                var emitEvents = _.groupBy(digestMeasure.events.emit, "name");
+                digestMeasure.eventNames = {
+                    broadcast: Object.keys(broadcastEvents),
+                    emit: Object.keys(emitEvents)
+                };
+            }
+
             return ({
                 storeMeasure: function (digestMeasure) {
                     digestMeasure.runTime = digestMeasure.endTime - digestMeasure.startTime;
                     computeWatchers(digestMeasure);
+                    // apply could be previous or could be current
+                    // is there any use of apply? Do I need to display this result ?
+                    // apply triggers digest - one apply one digest or error in digest
+
+                    // postDigest
+                    if (digestMeasure.postDigestQueue) {
+                        digestMeasure.postDigestQueue = JSON.parse(digestMeasure.postDigestQueue);
+                    }
+                    getEventNames(digestMeasure);
+                    // store last 200
+                    digestList.push(digestMeasure);
+                    digestList = digestList.slice(-200);
+                },
+                getAllMeasures: function () {
+                    return digestList;
+                },
+                getMeasuresInRange: function (from, to) {
+                    // it can be indices or time in ms
+                    if (from > 200 && to > from) {
+                        var i, l;
+                        for (i = 0; i < l; i++) {
+                            if (digestList[i].startTime >= from) {
+                                from = i;
+                                break;
+                            }
+                        }
+                        if (i < l) {
+                            while (l--) {
+                                if (digestList[l].endTime <= to) {
+                                    to = l;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (from < 0 || to > 200 || from > to) {
+                        from = to;
+                    }
+                    return digestList.slice(from, to);
                 }
             });
         }]);

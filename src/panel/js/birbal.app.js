@@ -16,8 +16,8 @@
                  *  @param pageName{string} page name to change view must
                  *  @param ngDetectData {object} angular detection detail to display to user optional
                  */
-                function changeViewActionListener(pageName/*, ngDetectData*/) {
-                    //pageName = (typeof event === 'string') ? event : pageName;
+                function changeViewActionListener(pageName) {
+
                     if (!pageName) {
                         // dashboard or init page
                         if ($rootScope.csInfo.ngDetected) {
@@ -27,11 +27,7 @@
                         }
                         // making sure to not change user choice and init
                         $rootScope.csInfo = angular.extend({pause: true}, $rootScope.csInfo);
-                        //$rootScope.csInfo.pause = true;
                     }
-                    /*if (pageName === 'nbEnable' && $rootScope.csInfo.enabled) {
-                     pageName = $scope.view || 'dashboard';
-                     } else */
                     if (pageName === 'dependencyGraph') {
                         if (angular.element('.sidebar-collapse').length === 0) {
                             // collapse main header
@@ -42,14 +38,8 @@
                         $scope.view = pageName;
                     });
                     //initializing csInfo for template data for first time or after cleanup
-                    //angular.extend($rootScope.csInfo, ngDetectData);
                 }
 
-                //$rootScope.$on('changePanelView', function (event, pageName, ngDetectData) {
-                //    $scope.$applyAsync(function () {
-                //        changeViewActionListener(pageName, ngDetectData);
-                //    });
-                //});
                 $rootScope.$on('ngAppDetails', function (event, ngDetectData) {
                     $scope.$applyAsync(function () {
                         // merge new data with old one. do not change old non related data - using it to save for session
@@ -69,32 +59,13 @@
                 function clearResources(/*event, panelAction*/) {
                     // clear app data
                     digestDataFactory.resetDigestMeasures();
-                    //var isEnabled = !!($rootScope.csInfo && $rootScope.csInfo.enabled);
-                    //$rootScope.csInfo = $rootScope.csInfo || {'enabled': isEnabled};
                     $scope.digestExpression = [];
                     $scope.watchOrderExpression = [];
-                    //if (panelAction === 'removePanel' || panelAction === 'addPanel') {
-
-                    //$scope.$applyAsync(function () {
-                    //    $scope.view = '';
-                    //    $rootScope.csInfo = {
-                    //        'enabled': isEnabled,
-                    //        'pause': false
-                    //    };
-                    //});
-                    //}
                 }
 
                 /////////////////////////////////////////////////////////
                 //            sidebar actions
                 /////////////////////////////////////////////////////////
-                //$scope.sidebarActions.disableMe = function () {
-                //    backgroundService.informBackground({doAnalysis: false}, 'doAnalysis', birbalJS.END_POINTS.BACKGROUND);
-                //    $rootScope.csInfo.enabled = false;
-                //    // reload page
-                //    birbalJS.pageAction('reload');
-                //};
-
                 $scope.sidebarActions.pauseMyAnalysis = function () {
                     backgroundService.informBackground(null, 'performance.pauseAnalysis');
                     $rootScope.csInfo.pause = true;
@@ -104,29 +75,13 @@
                     backgroundService.informBackground(null, 'performance.resumeAnalysis');
                     $rootScope.csInfo.pause = false;
                 };
-
                 $scope.sidebarActions.changePanelView = changeViewActionListener;
-
-                //$scope.sidebarActions.enableMe = function () {
-                //    // register/enable/refresh
-                //    $rootScope.csInfo.ngModule = $rootScope.csInfo.ngModule || $rootScope.csInfo.ngModuleInput;
-                //    $rootScope.csInfo.enabled = true;
-                //    backgroundService.informBackground({doAnalysis: true}, 'doAnalysis', birbalJS.END_POINTS.BACKGROUND);
-                //    birbalJS.pageAction('reload');
-                //};
-
                 /////////////////////////////////////////////////////////
                 //            settings view
                 /////////////////////////////////////////////////////////
                 $scope.settings = {
                     digestDebounceTime: digestDataFactory.getDigestDebounceTime()
-                    //showScopeToElement: true
                 };
-
-                //$scope.settings.exportScopesInElementPanel = function () {
-                //    var sidebarAction = $scope.settings.showScopeToElement ? 'addScopeToElementPanel' : 'removeScopeToElementPanel';
-                //    birbalJS.setElementPanelAction(sidebarAction);
-                //};
 
                 $scope.settings.debounceChanged = function () {
                     if (!$scope.settings.digestDebounceTime || $scope.settings.digestDebounceTime < 0) {
@@ -138,7 +93,6 @@
                 $scope.settings.clearData = function () {
                     digestDataFactory.resetDigestMeasures();
                 };
-                //$scope.settings.exportScopesInElementPanel();
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            slider, filter, dashboard update, sort, configurations
                 /////////////////////////////////////////////////////////////////////////////////////////
