@@ -3,7 +3,7 @@
     'use strict';
 
     angular.module('panel-view-app', [])
-        .directive('nbPanelView', ['$compile', '$animate', function ($compile, $animate) {
+        .directive('nbPanelView', ['$compile', '$animate', '$rootScope', '$timeout', function ($compile, $animate, $rootScope, $timeout) {
             var defaultHtml,
                 viewList = [],
                 newviewTemplate = '<ng-include class="PH_SRC-view" src="\'../partials/PH_SRC.html\'" />';
@@ -12,6 +12,13 @@
                 restrict: 'AE',
                 link: function (scope, element, attrs) {
                     scope.$watch(attrs.viewName, function (newView, oldView) {
+                        function triggerViewChangeEvent() {
+                            // 100 ms to allow DOM to render view
+                            $timeout(function () {
+                                $rootScope.$broadcast("view-changed", {displayed: newView, hidden: oldView});
+                            }, 100);
+                        }
+
                         if (newView === '') {
                             // cleanup all views
                             if (defaultHtml) {
@@ -41,6 +48,7 @@
                         element.find('ng-include.' + newView + '-view').show();
                         // hide old view if exists any
                         element.find('ng-include.' + oldView + '-view').hide();
+                        triggerViewChangeEvent();
                     });
                 }
             };

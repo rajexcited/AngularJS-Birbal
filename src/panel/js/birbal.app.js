@@ -2,12 +2,11 @@
 (function (angular, birbalJS) {
     "use strict";
 
-    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'measure.digest.app', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph'])
+    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'views.performance.digest', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph'])
         .controller('panelViewController',
-            ['$scope', 'backgroundService', '$rootScope', 'digestDataFactory', '$interval', function ($scope, backgroundService, $rootScope, digestDataFactory, $interval) {
+            ['$scope', 'backgroundService', '$rootScope', 'digestView', '$interval', function ($scope, backgroundService, $rootScope, digestView, $interval) {
                 // default first message on inspect tab load, letting app know I'm ready
                 backgroundService.informBackground(null, 'panelInit');
-                $scope.sidebarActions = {};
                 /////////////////////////////////////////////////////////
                 //            panel action listener
                 /////////////////////////////////////////////////////////
@@ -16,8 +15,8 @@
                  *  @param pageName{string} page name to change view must
                  *  @param ngDetectData {object} angular detection detail to display to user optional
                  */
-                function changeViewActionListener(pageName/*, ngDetectData*/) {
-                    //pageName = (typeof event === 'string') ? event : pageName;
+                function changeViewActionListener(pageName) {
+
                     if (!pageName) {
                         // dashboard or init page
                         if ($rootScope.csInfo.ngDetected) {
@@ -27,11 +26,7 @@
                         }
                         // making sure to not change user choice and init
                         $rootScope.csInfo = angular.extend({pause: true}, $rootScope.csInfo);
-                        //$rootScope.csInfo.pause = true;
                     }
-                    /*if (pageName === 'nbEnable' && $rootScope.csInfo.enabled) {
-                     pageName = $scope.view || 'dashboard';
-                     } else */
                     if (pageName === 'dependencyGraph') {
                         if (angular.element('.sidebar-collapse').length === 0) {
                             // collapse main header
@@ -41,20 +36,12 @@
                     $scope.$applyAsync(function () {
                         $scope.view = pageName;
                     });
-                    //initializing csInfo for template data for first time or after cleanup
-                    //angular.extend($rootScope.csInfo, ngDetectData);
                 }
 
-                //$rootScope.$on('changePanelView', function (event, pageName, ngDetectData) {
-                //    $scope.$applyAsync(function () {
-                //        changeViewActionListener(pageName, ngDetectData);
-                //    });
-                //});
                 $rootScope.$on('ngAppDetails', function (event, ngDetectData) {
                     $scope.$applyAsync(function () {
                         // merge new data with old one. do not change old non related data - using it to save for session
                         $rootScope.csInfo = angular.extend({}, $rootScope.csInfo, ngDetectData);
-                        //$rootScope.csInfo = ngDetectData;
                         clearResources();
                         changeViewActionListener();
                     });
@@ -66,87 +53,159 @@
                     });
                 });
 
-                function clearResources(/*event, panelAction*/) {
+                function clearResources() {
                     // clear app data
-                    digestDataFactory.resetDigestMeasures();
-                    //var isEnabled = !!($rootScope.csInfo && $rootScope.csInfo.enabled);
-                    //$rootScope.csInfo = $rootScope.csInfo || {'enabled': isEnabled};
+                    //digestDataFactory.resetDigestMeasures();
                     $scope.digestExpression = [];
                     $scope.watchOrderExpression = [];
-                    //if (panelAction === 'removePanel' || panelAction === 'addPanel') {
 
-                    //$scope.$applyAsync(function () {
-                    //    $scope.view = '';
-                    //    $rootScope.csInfo = {
-                    //        'enabled': isEnabled,
-                    //        'pause': false
-                    //    };
-                    //});
-                    //}
+                    digestView.resetView();
+                    //$scope.digestInfo.highlights = {};
+                    //$scope.digestInfo.details = {};
                 }
 
                 /////////////////////////////////////////////////////////
                 //            sidebar actions
                 /////////////////////////////////////////////////////////
-                //$scope.sidebarActions.disableMe = function () {
-                //    backgroundService.informBackground({doAnalysis: false}, 'doAnalysis', birbalJS.END_POINTS.BACKGROUND);
-                //    $rootScope.csInfo.enabled = false;
-                //    // reload page
-                //    birbalJS.pageAction('reload');
-                //};
-
-                $scope.sidebarActions.pauseMyAnalysis = function () {
-                    backgroundService.informBackground(null, 'performance.pauseAnalysis');
-                    $rootScope.csInfo.pause = true;
+                $scope.sidebarActions = {
+                    pauseMyAnalysis: function () {
+                        backgroundService.informBackground(null, 'performance.pauseAnalysis');
+                        $rootScope.csInfo.pause = true;
+                    },
+                    resumeMyAnalysis: function () {
+                        backgroundService.informBackground(null, 'performance.resumeAnalysis');
+                        $rootScope.csInfo.pause = false;
+                    },
+                    changePanelView: changeViewActionListener
                 };
-
-                $scope.sidebarActions.resumeMyAnalysis = function () {
-                    backgroundService.informBackground(null, 'performance.resumeAnalysis');
-                    $rootScope.csInfo.pause = false;
-                };
-
-                $scope.sidebarActions.changePanelView = changeViewActionListener;
-
-                //$scope.sidebarActions.enableMe = function () {
-                //    // register/enable/refresh
-                //    $rootScope.csInfo.ngModule = $rootScope.csInfo.ngModule || $rootScope.csInfo.ngModuleInput;
-                //    $rootScope.csInfo.enabled = true;
-                //    backgroundService.informBackground({doAnalysis: true}, 'doAnalysis', birbalJS.END_POINTS.BACKGROUND);
-                //    birbalJS.pageAction('reload');
-                //};
 
                 /////////////////////////////////////////////////////////
                 //            settings view
                 /////////////////////////////////////////////////////////
                 $scope.settings = {
-                    digestDebounceTime: digestDataFactory.getDigestDebounceTime()
-                    //showScopeToElement: true
-                };
-
-                //$scope.settings.exportScopesInElementPanel = function () {
-                //    var sidebarAction = $scope.settings.showScopeToElement ? 'addScopeToElementPanel' : 'removeScopeToElementPanel';
-                //    birbalJS.setElementPanelAction(sidebarAction);
-                //};
-
-                $scope.settings.debounceChanged = function () {
-                    if (!$scope.settings.digestDebounceTime || $scope.settings.digestDebounceTime < 0) {
-                        $scope.settings.digestDebounceTime = digestDataFactory.getDigestDebounceTime();
+                    digestDebounceTime: digestView.getDebounceTime(),
+                    debounceChanged: function () {
+                        if (!$scope.settings.digestDebounceTime || $scope.settings.digestDebounceTime < 0) {
+                            $scope.$applyAsync(function () {
+                                $scope.settings.digestDebounceTime = digestView.getDebounceTime();
+                            });
+                            //$scope.settings.digestDebounceTime = digestDataFactory.getDigestDebounceTime();
+                        } else {
+                            digestView.updateDebounceTime($scope.settings.digestDebounceTime);
+                        }
+                        /*digestDataFactory.modifyDigestDebounceTime($scope.digestDebounceTime);*/
+                    },
+                    clearData: function () {
+                        digestView.resetView();
+                        //digestDataFactory.resetDigestMeasures();
                     }
-                    digestDataFactory.modifyDigestDebounceTime($scope.digestDebounceTime);
                 };
 
-                $scope.settings.clearData = function () {
-                    digestDataFactory.resetDigestMeasures();
-                };
-                //$scope.settings.exportScopesInElementPanel();
+                /////////////////////////////////////////////////////////////////////////////////////////
+                //            performance views - digest
+                /////////////////////////////////////////////////////////////////////////////////////////
+                $scope.digestInfo = {highlights: {}, details: {}};
+                var viewChangeListenerRemover = $scope.$on("view-changed", function viewChangeListener(ignore, viewEvent) {
+                    if (viewEvent.displayed === "dashboard") {
+                        digestView.digestHighlightsWithChart($scope.digestInfo.highlights);
+                        viewChangeListenerRemover();
+                    }
+                });
+
+                //window.onload = function () {
+                //    var chart = new CanvasJS.Chart("chartContainer",
+                //        {
+                //            theme: "theme2",
+                //            title: {
+                //                text: "Digest"
+                //            },
+                //            axisY: {
+                //                includeZero: false,
+                //                valueFormatString: "#,###",
+                //                suffix: "ms"
+                //            },
+                //            toolTip: {
+                //                shared: "true"
+                //            },
+                //            data: [
+                //                {
+                //                    type: "spline",
+                //                    showInLegend: true,
+                //                    name: "mentions of samsung",
+                //                    markerSize: 0,
+                //                    color: "#C0504E",
+                //                    dataPoints: [
+                //                        {label: "Ep. 1", y: 3640000},
+                //                        {label: "Ep. 2", y: 3640000},
+                //                        {label: "Ep. 3", y: 3640000},
+                //                        {label: "Ep. 4", y: 3640000},
+                //                        {label: "Ep. 5", y: 3640000},
+                //                        {label: "Ep. 6", y: 3640000},
+                //                        {label: "Ep. 7", y: 3640000},
+                //                        {label: "Ep. 8", y: 3640000},
+                //                        {label: "Ep. 9", y: 3640000},
+                //                        {label: "Ep. 10", y: 3640000}
+                //
+                //                    ]
+                //                },
+                //
+                //                {
+                //                    type: "spline",
+                //                    showInLegend: true,
+                //                    name: "Season 2",
+                //                    // markerSize: 0,
+                //                    color: "#369EAD",
+                //                    dataPoints: [
+                //                        {label: "Ep. 1", y: 3858000},
+                //                        {label: "Ep. 2", y: 3759000},
+                //                        {label: "Ep. 3", y: 3766000},
+                //                        {label: "Ep. 4", y: 3654000},
+                //                        {label: "Ep. 5", y: 3903000},
+                //                        {label: "Ep. 6", y: 3879000},
+                //                        {label: "Ep. 7", y: 3694000},
+                //                        {label: "Ep. 8", y: 3864000},
+                //                        {label: "Ep. 9", y: 3384000},
+                //                        {label: "Ep. 10", y: 4200000}
+                //
+                //                    ]
+                //                }
+                //
+                //
+                //            ],
+                //            legend: {
+                //                cursor: "pointer",
+                //                itemclick: function (e) {
+                //                    if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                //                        e.dataSeries.visible = false;
+                //                    }
+                //                    else {
+                //                        e.dataSeries.visible = true;
+                //                    }
+                //                    chart.render();
+                //                }
+                //
+                //            },
+                //        });
+                //
+                //    chart.render();
+                //}
+
+
+                //$interval(function () {
+                //    $scope.highlights.digest = digestView.getHighlights();
+                //$scope.digestCycle = digestDataFactory.getAllDigestMeasures();
+                //$scope.watchDetails = digestDataFactory.getWatchMeasures();
+                //}, 1000);
+
+
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            slider, filter, dashboard update, sort, configurations
                 /////////////////////////////////////////////////////////////////////////////////////////
                 // every second update digest details
-                $interval(function () {
-                    $scope.digestCycle = digestDataFactory.getAllDigestMeasures();
-                    $scope.watchDetails = digestDataFactory.getWatchMeasures();
-                }, 1000);
+                //$interval(function () {
+                //$scope.digestCycle = digestDataFactory.getAllDigestMeasures();
+                //$scope.watchDetails = digestDataFactory.getWatchMeasures();
+                //}, 1000);
 
                 /* ION SLIDER */
                 $scope.rangeSlider = {
@@ -167,7 +226,7 @@
                 };
 
                 $scope.rangeSlider.digest.onChange = function (from, to) {
-                    $scope.selectedDigestRange = digestDataFactory.getDigestHighlightsForRange(from, to);
+                    //$scope.selectedDigestRange = digestDataFactory.getDigestHighlightsForRange(from, to);
                 };
 
                 $scope.digestSortByExpression = function (expression, event) {

@@ -212,6 +212,7 @@ window.inspectorExecutor = function (window, document) {
                         emit: [],
                         broadcast: []
                     },
+                    apply: [],
                     http: {},
                     asyncEval: {time: [], expr: []},
                     browserDefer: []
@@ -222,6 +223,10 @@ window.inspectorExecutor = function (window, document) {
                     window.setTimeout(function () {
                         digestInfo = JSON.parse(digestInfo);
                         digestInfo.domUpdateTime = (perf.now() - digestInfo.endTime);
+                        if (nb.apply.length) {
+                            digestInfo.apply = [].concat(nb.apply);
+                            nb.apply.length = 0;
+                        }
                         logger.info("digest ended, DOM update time taken in ms is " + digestInfo.domUpdateTime);
                         broadcastMessage(digestInfo, 'performance.digestMeasures');
                     }, 2);
@@ -239,79 +244,76 @@ window.inspectorExecutor = function (window, document) {
                     // add watch collection here
                     ngWatch = scopePrototype.$watch;
                     scopePrototype.$watch = function (watchExp, l, o, prettyPrintExpression) {
-                        var start, runtime,
-                            ngWatchGet, ngWatchFn, ngWatchEq, ngWatchret,
-                            addedWatcher, watchstr,
-                            indRvs, wInd,
-                            _watchers, _getret,
-                            scope = this;
+                        var scope = this,
+                            scopeId = scope.$id,
+                            parentScopeId = scope.$parent && scope.$parent.$id,
+                            addedWatcher, watchExpStr,
+                            ngWatcher = {};
+
                         // watch setup
-                        ngWatchret = ngWatch.apply(scope, arguments);
-                        // last is current
-                        indRvs = scope.$$watchers.length;
+                        ngWatcher.return = ngWatch.apply(scope, arguments);
                         addedWatcher = scope.$$watchers[0];
-                        watchstr = toStringForm(watchCollectionExp || prettyPrintExpression || watchExp.exp || watchExp);
+                        if (addedWatcher.isBirbalInstrumented) {
+                            // handling watch delegate
+                            return ngWatcher.return;
+                        }
+                        addedWatcher.isBirbalInstrumented = true;
+                        watchExpStr = toStringForm(watchCollectionExp || prettyPrintExpression || watchExp.exp || watchExp);
                         // patch get and fn to trace
-                        ngWatchGet = addedWatcher.get;
-                        ngWatchFn = addedWatcher.fn;
-                        ngWatchEq = !!addedWatcher.eq;
+                        ngWatcher.get = addedWatcher.get;
+                        ngWatcher.fn = addedWatcher.fn;
+                        ngWatcher.eq = !!addedWatcher.eq;
 
                         addedWatcher.get = function () {
                             if (contentMessageActions.pause) {
                                 //clear
-                                return ngWatchGet.apply(null, arguments);
+                                return ngWatcher.get.apply(null, arguments);
                             }
-                            try {
-                                wInd = scope.$$watchers.length - indRvs;
-                                _watchers = nb.digest.scope[scope.$id].watchers[wInd] || [];
-                            } catch (e) {
-                                _watchers = nb.digest.scope[scope.$id] = nb.digest.scope[scope.$id] ||
-                                    {
-                                        watchers: [],
-                                        parent: scope.$parent && scope.$parent.$id
-                                    };
-                                _watchers = _watchers.watchers[wInd] = _watchers.watchers[wInd] || [];
-                            }
-                            start = perf.now();
-                            _getret = ngWatchGet.apply(null, arguments);
-                            runtime = perf.now() - start;
-                            if (_watchers.length === 0) {
-                                _watchers.push({
-                                    'get': runtime,
-                                    'exp': watchstr,
-                                    'eq': ngWatchEq
-                                });
+                            var wScope, start, _watcher, _getReturn;
+                            if (nb.digest.scope[scopeId]) {
+                                wScope = nb.digest.scope[scopeId];
                             } else {
-                                _watchers.push(runtime);
+                                // new digest cycle
+                                wScope = nb.digest.scope[scopeId] = {watchers: [], parent: parentScopeId};
+                                ngWatcher.ind = undefined;
                             }
-                            return _getret;
+                            if (!wScope.watchers[ngWatcher.ind]) {
+                                ngWatcher.ind = scope.$$watchers.indexOf(addedWatcher);
+                                _watcher = wScope.watchers[ngWatcher.ind] = (wScope.watchers[ngWatcher.ind] || []);
+                                _watcher.push({get: [], exp: watchExpStr, eq: ngWatcher.eq});
+                            }
+                            _watcher = wScope.watchers[ngWatcher.ind];
+                            _watcher = _watcher[_watcher.length - 1];
+                            start = perf.now();
+                            _getReturn = ngWatcher.get.apply(null, arguments);
+                            /* get run time*/
+                            _watcher.get.push((perf.now() - start));
+                            return _getReturn;
                         };
 
                         addedWatcher.fn = function () {
                             if (contentMessageActions.pause) {
-                                ngWatchFn.apply(null, arguments);
+                                ngWatcher.fn.apply(null, arguments);
                             } else {
-                                var len = _watchers.length, _w;
-                                if (len === 1) {
-                                    _w = _watchers[0];
-                                } else {
-                                    runtime = _watchers[len - 1];
-                                    _w = _watchers[len - 1] = {'get': runtime};
-                                }
-
-                                _w.start = start = perf.now();
-                                ngWatchFn.apply(null, arguments);
-                                _w.fn = perf.now() - start;
+                                var start,
+                                    _watcher = nb.digest.scope[scopeId].watchers[ngWatcher.ind];
+                                _watcher = _watcher[_watcher.length - 1];
+                                ngWatcher.ind = undefined;
+                                start = perf.now();
+                                ngWatcher.fn.apply(null, arguments);
+                                _watcher.fn = (perf.now() - start);
                             }
                         };
 
                         // returning removal with cleanup
-                        return function removeWatcher() {
+                        return function deregisterWatch() {
                             // clear
-                            addedWatcher.get = ngWatchGet;
-                            addedWatcher.fn = ngWatchFn;
-                            ngWatchret.apply(null, arguments);
-                            ngWatchret = runtime = addedWatcher = start = _getret = _watchers = wInd = indRvs = watchstr = ngWatchEq = ngWatchFn = ngWatchGet = scope = undefined;
+                            addedWatcher.get = ngWatcher.get;
+                            addedWatcher.fn = ngWatcher.fn;
+                            ngWatcher.return.apply(null, arguments);
+                            logger.info.bind(logger, "watch is removed  " + scope.$$watchers.indexOf(addedWatcher)).call(logger, scope);
+                            // clear to raise error if it fails to clean memory
+                            ngWatcher = addedWatcher = scope = watchExpStr = undefined;
                         };
                     };
                     ngWatchCollection = scopePrototype.$watchCollection;
@@ -346,8 +348,6 @@ window.inspectorExecutor = function (window, document) {
                             throw e;
                         } finally {
                             nb.digest.endTime = perf.now();
-                            nb.digest.applyStartTime = nb.applyStartTime;
-                            nb.digest.applyEndTime = nb.applyEndTime;
                             nb.digest.events = nb.events;
                             nb.digest.async = {
                                 evalAsync: nb.asyncEval.time,
@@ -355,7 +355,6 @@ window.inspectorExecutor = function (window, document) {
                             };
                             nb.digest.asyncQueue = nb.asyncEval.expr;
                             sendDigestInfo();
-                            nb.applyStartTime = nb.applyEndTime = undefined;
                             nb.events.emit.length = 0;
                             nb.events.broadcast.length = 0;
                             nb.asyncEval.time.length = 0;
@@ -368,9 +367,12 @@ window.inspectorExecutor = function (window, document) {
                         if (contentMessageActions.pause) {
                             ngApply.apply(this, arguments);
                         } else {
-                            nb.applyStartTime = perf.now();
+                            var applyTime = {
+                                start: perf.now()
+                            };
                             ngApply.apply(this, arguments);
-                            nb.applyEndTime = perf.now();
+                            applyTime.end = perf.now();
+                            nb.apply.push(applyTime);
                         }
                     };
                     ngEmit = scopePrototype.$emit;
@@ -625,10 +627,9 @@ window.inspectorExecutor = function (window, document) {
 
         function addDeps(moduleData, name, depsSrc, type) {
             if (typeof depsSrc === 'function') {
-                var annotated = annotate(depsSrc);
                 moduleData.components.push({
                     name: name,
-                    deps: typeof annotated[0] === 'function' ? [] : annotated,
+                    deps: annotate(depsSrc),
                     type: type
                 });
                 // Array or empty
@@ -711,7 +712,8 @@ window.inspectorExecutor = function (window, document) {
             });
             window.metadata = metadata;
             logger.info.bind(logger, 'dependency metaData:  ').call(logger, metadata);
-            return metadata;
+            // to remove instrumented methods
+            return JSON.parse(JSON.stringify(metadata));
         }
 
         annotateFinder();
@@ -848,7 +850,7 @@ window.inspectorExecutor = function (window, document) {
         }
 
         function useNewBackend() {
-            // reset the definition off http mock
+            // resetView the definition off http mock
             backend = angular.injector(['ngMockE2E']).get('$httpBackend');
         }
 

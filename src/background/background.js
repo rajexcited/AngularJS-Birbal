@@ -174,9 +174,9 @@
             tabInfo.mockHttp.isModified = false;
             informContentScript(message.tabId, tabInfo.mockHttp.list, 'httpMock.list');
         }
-        // default resume
+
         perfCallId = 'performance.resumeAnalysis';
-        if (tabInfo.pausePerformanceAnalysis) {
+        if (tabInfo.pausePerformanceAnalysis !== false) {
             perfCallId = 'performance.pauseAnalysis';
         }
         if (!tabs.getPort(message.tabId, birbalJS.END_POINTS.PANEL)) {
@@ -188,18 +188,6 @@
         }
         informContentScript(message.tabId, null, perfCallId);
     });
-    // #9
-    //receiver.for('csInit', function (message) {
-    //    // if page refresh is mark, start analysis
-    //    var tabInfo = tabs.getTabInfo(message.tabId);
-    //    if (tabInfo.mockHttp && tabInfo.mockHttp.list) {
-    //        informContentScript(message.tabId, tabInfo.mockHttp.list, 'httpMock.list');
-    //    }
-    //    if (tabInfo.doAnalysis) {
-    //        informPanel(message.tabId, tabInfo.ngDetect, 'addPanel');
-    //    }
-    //    setPageAction(message.tabId);
-    //});
 
     function setPageAction(tabId) {
         var tabInfo = tabs.getTabInfo(tabId);
@@ -212,12 +200,10 @@
     // #6
     receiver.for('ngDetect', function (message) {
         var msgDetails, tabInfo;
-
         // qq: what about other tabInfo of old tab?
         msgDetails = message.msgDetails;
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.ngDetect = msgDetails;
-        //informPanel(message.tabId, msgDetails, 'ngDetectData');
         setPageAction(message.tabId);
     });
 
@@ -225,20 +211,18 @@
         var tabInfo;
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.dependencyTree = message.msgDetails;
-        //informPanel(message.tabId, tabInfo.dependencyTree, 'dependency.tree');
     });
 
     receiver.for('dependency.activeList', function (message) {
         var tabInfo;
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.activeDependencies = message.msgDetails;
-        //informPanel(message.tabId, tabInfo.activeDependencies, 'dependency.activeList');
     });
 
     receiver.for(/performance\..+/, function (message) {
         var tabInfo = tabs.getTabInfo(message.tabId);
-        if (tabInfo.pausePerformanceAnalysis) {
-            throw new Error("interrupt message passing");
+        if (tabInfo.pausePerformanceAnalysis !== false) {
+            throw new Error("interrupt message passing. stopping delegation.");
         }
     });
 
@@ -246,11 +230,11 @@
     // #7
     receiver.for('panelInit', function (message) {
         // run pending tasks
-        var tabInfo/*, taskForPanel*/;
+        var tabInfo;
         tabInfo = tabs.getTabInfo(message.tabId);
-        //taskForPanel = tabInfo.ngDetect && tabInfo.ngDetect.ngDetected ? 'addPanel' : 'removePanel';
+
         informPanel(message.tabId, tabInfo.ngDetect, 'ngDetect');
-        if (!tabInfo.pausePerformanceAnalysis) {
+        if (tabInfo.pausePerformanceAnalysis === false) {
             informContentScript(message.tabId, null, 'performance.resumeAnalysis');
             informPanel(message.tabId, null, 'performance.resumeAnalysis');
         } else {
@@ -274,17 +258,6 @@
         tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.pausePerformanceAnalysis = false;
     });
-
-    // #8
-    //receiver.for('doAnalysis', function (message) {
-    //    // enable or disable
-    //    var tabInfo = tabs.getTabInfo(message.tabId);
-    //    tabInfo.doAnalysis = message.msgDetails.doAnalysis;
-    //    informContentScript(message.tabId, {
-    //        'ngStart': tabInfo.doAnalysis,
-    //        'ngModule': tabInfo.ngDetect.ngModule
-    //    }, 'instrumentNg');
-    //});
 
     // for http popup in tab
     // #9
@@ -366,15 +339,7 @@
         function handlePanelDisconnection(tabId) {
             if (connectingPort.name === birbalJS.END_POINTS.PANEL) {
                 // disable
-                //var tabInfo = tabs.getTabInfo(tabId);
                 informContentScript(tabId, null, 'performance.pauseAnalysis');
-                //if (tabInfo.doAnalysis) {
-                //    tabInfo.doAnalysis = false;
-                //    informContentScript(tabId, {
-                //        'ngStart': tabInfo.doAnalysis,
-                //        'ngModule': tabInfo.ngDetect.ngModule
-                //    }, 'instrumentNg');
-                //}
             }
         }
 

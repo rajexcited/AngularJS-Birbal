@@ -90,6 +90,8 @@ module.exports = function (grunt) {
                     {src: 'node_modules/angular-animate/angular-animate.min.js', dest: 'lib/angular-animate.min.js'},
                     // jquery
                     {src: 'node_modules/jquery/dist/jquery.min.js', dest: 'lib/jquery.min.js'},
+                    // underscore
+                    {src: 'node_modules/underscore/underscore-min.js', dest: 'lib/underscore-min.js'},
                     // admin-lte, bootstrap and font-awesome
                     {
                         expand: true,

@@ -4,7 +4,7 @@
 
     var backgroundConnection;
     angular.module('background-service-app', ['measure.digest.app', 'measure.http.app', 'dependencyTree.app'])
-        .service('backgroundService', ['$rootScope', 'digestDataFactory', 'httpRecordFactory', 'dependencyTree', function ($rootScope, digestDataFactory, httpRecordFactory, dependencyTree) {
+        .service('backgroundService', ['$rootScope', 'httpRecordFactory', 'dependencyTree', 'digestMeasureLogFactory', function ($rootScope, httpRecordFactory, dependencyTree, digestMeasureLogFactory) {
             /////////////////////////////////////////////////////////
             //            LOGGER FOR DEVELOPMENT ONLY
             /////////////////////////////////////////////////////////
@@ -61,7 +61,8 @@
             });
 
             receiver.for('performance.digestMeasures', function (message) {
-                digestDataFactory.addDigestMeasure(message.msgDetails);
+                digestMeasureLogFactory.storeMeasure(message.msgDetails);
+                //digestDataFactory.addDigestMeasure(message.msgDetails);
             });
 
             receiver.for('performance.httpMeasures', function (message) {
