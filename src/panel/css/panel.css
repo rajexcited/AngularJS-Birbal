@@ -147,6 +147,46 @@ table {
     padding-left: 10px;
 }
 
+.digest-chart {
+    height: 375px;
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.loader {
+    border: 16px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 16px solid #3498db;
+    width: 120px;
+    height: 120px;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
+.digest-chart > .loader {
+    position: absolute;
+    top: 30%;
+    left: 30%;
+}
+
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 @media (max-width: 767px) {
     /* xtra small */
     /* TODO remove from ADMINLTE.min.css - overriding   */

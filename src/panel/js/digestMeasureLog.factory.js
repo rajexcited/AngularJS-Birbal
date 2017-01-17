@@ -5,7 +5,7 @@
 (function (angular) {
     "use strict";
 
-    angular.module('measure.digest.app')
+    angular.module('measure.digest.app', [])
         .factory('digestMeasureLogFactory', [function () {
 
             var digestList = [];
@@ -119,31 +119,34 @@
                     digestList = digestList.slice(-200);
                 },
                 getAllMeasures: function () {
-                    return digestList;
+                    return [].concat(digestList);
                 },
                 getMeasuresInRange: function (from, to) {
                     // it can be indices or time in ms
-                    if (from > 200 && to > from) {
-                        var i, l;
-                        for (i = 0; i < l; i++) {
-                            if (digestList[i].startTime >= from) {
-                                from = i;
-                                break;
-                            }
+
+                    if (from > 200 && (to > from || to === undefined)) {
+                        // by time
+                        var fromD = _.find(digestList, function (d) {
+                            return (d.startTime >= from);
+                        });
+                        from = digestList.indexOf(fromD);
+                        if (to !== undefined) {
+                            var toD = _.findLast(digestList, function (d) {
+                                return (d.endTime <= to);
+                            });
+                            to = digestList.indexOf(toD);
                         }
-                        if (i < l) {
-                            while (l--) {
-                                if (digestList[l].endTime <= to) {
-                                    to = l;
-                                    break;
-                                }
-                            }
-                        }
+                    }
+                    if (to === undefined) {
+                        to = digestList.length;
                     }
                     if (from < 0 || to > 200 || from > to) {
                         from = to;
                     }
                     return digestList.slice(from, to);
+                },
+                resetView: function () {
+                    digestList.length = 0;
                 }
             });
         }]);

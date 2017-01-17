@@ -12,38 +12,61 @@
             <div class="box-footer">
                 <div class="row">
                     <div class="col-sm-5 border-right">
-                        <div class="description-block" data-toggle="tooltip" data-original-title="Longest ever">
-                            <span class="description-text">Longest </span>
-                            <h5 class="description-header">{{digestCycle.highlights.longestDigestTime | number:2}}
-                                ms</h5>
+                        <div class="row">
+                            <div class="description-block" data-toggle="tooltip"
+                                 data-original-title="Longest from chart range">
+                                <span class="description-text">Longest </span>
+                                <h5 class="description-header">{{digestInfo.highlights.longest | number:2}} ms</h5>
+                            </div>
+                            <!-- /.description-block -->
                         </div>
-                        <!-- /.description-block -->
+                        <div class="row">
+                            <div class="description-block" data-toggle="tooltip"
+                                 data-original-title="average digest rate - less is good.">
+                                <span class="description-text">Digest rate: </span>
+                                <h5 class="description-header"> {{digestInfo.highlights.rate | number:0}}
+                                    cycles per second </h5>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
                     </div>
                     <!-- /.col -->
                     <div class="col-sm-7">
-                        <div class="description-block" data-toggle="tooltip"
-                             data-original-title="Effective digest rate based on debounce time defined in settings view">
-                            <span class="description-text">Effective digest rate: </span>
-                            <h5 class="description-header"> {{digestCycle.highlights.edr.nDigest}} cycles in
-                                {{digestCycle.highlights.edr.runtime|number:2}} ms </h5>
+                        <div class="row">
+                            <div class="description-block" data-toggle="tooltip"
+                                 data-original-title="rendering time to update dom due to digest cycle">
+                                <span class="description-text">DOM render Longest </span>
+                                <h5 class="description-header">{{digestInfo.highlights.domLongest | number:0}} ms</h5>
+                            </div>
+                            <!-- /.description-block -->
                         </div>
-                        <!-- /.description-block -->
+                        <div class="row">
+                            <div class="description-block" data-toggle="tooltip"
+                                 data-original-title="average DOM render time">
+                                <span class="description-text">DOM average render time: </span>
+                                <h5 class="description-header"> {{digestInfo.highlights.domAverageTime | number:0}}
+                                    ms </h5>
+                            </div>
+                            <!-- /.description-block -->
+                        </div>
                     </div>
                     <!-- /.col -->
                 </div>
                 <!-- /.row -->
-                <div class="row" ng-if="selectedDigestRange.edr">
-                    <div class="col-sm-12">
-                        <div class="description-block">
-                            <span>???  For chosen time range, digest rate: {{selectedDigestRange.edr.nDigest}} cycles in
-                                {{selectedDigestRange.edr.runtime|number:2}} ms</span>
-                            <h5 class="description-header">longest cycle:
-                                {{selectedDigestRange.longestDigestTime|number:2}} ms</h5>
-                        </div>
-                        <!-- /.description-block -->
-                    </div>
-                    <!-- /.col -->
-                </div>
+                <!--
+                                <div class="row" ng-if="selectedDigestRange.edr">
+                                    <div class="col-sm-12">
+                                        <div class="description-block">
+                                            <span>???  For chosen time range, digest rate: {{selectedDigestRange.edr.nDigest}} cycles in
+                                                {{selectedDigestRange.edr.runtime|number:2}} ms</span>
+                                            <h5 class="description-header">longest cycle:
+                                                {{selectedDigestRange.longestDigestTime|number:2}} ms</h5>
+                                        </div>
+                                        &lt;!&ndash; /.description-block &ndash;&gt;
+                                    </div>
+                                    &lt;!&ndash; /.col &ndash;&gt;
+                                </div>
+                -->
                 <!-- /.row -->
             </div>
         </div>
@@ -79,14 +102,6 @@
                         <!-- /.description-block -->
                     </div>
                     <!-- /.col -->
-                    <div class="col-sm-4">
-                        <div class="description-block">
-                            <h5 class="description-header"> ?? </h5>
-                            <span class="description-text"> watchers yet never run</span>
-                        </div>
-                        <!-- /.description-block -->
-                    </div>
-                    <!-- /.col -->
                 </div>
                 <!-- /.row -->
             </div>
@@ -94,4 +109,25 @@
         <!-- /.widget-user -->
     </div>
     <!-- /.col Watch card-->
+</div>
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="digest-chart" id="digest-rate-chart-container">
+            <div class="loader"></div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="digest-chart" id="dom-chart-container">
+            <div class="loader"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="digest-chart" id="longest-digest-chart-container">
+            <div class="loader"></div>
+        </div>
+    </div>
 </div>

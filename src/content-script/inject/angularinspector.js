@@ -850,7 +850,7 @@ window.inspectorExecutor = function (window, document) {
         }
 
         function useNewBackend() {
-            // reset the definition off http mock
+            // resetView the definition off http mock
             backend = angular.injector(['ngMockE2E']).get('$httpBackend');
         }
 

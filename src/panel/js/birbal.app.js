@@ -2,12 +2,11 @@
 (function (angular, birbalJS) {
     "use strict";
 
-    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'measure.digest.app', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph'])
+    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'views.performance.digest', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph'])
         .controller('panelViewController',
-            ['$scope', 'backgroundService', '$rootScope', 'digestDataFactory', '$interval', function ($scope, backgroundService, $rootScope, digestDataFactory, $interval) {
+            ['$scope', 'backgroundService', '$rootScope', 'digestView', '$interval', function ($scope, backgroundService, $rootScope, digestView, $interval) {
                 // default first message on inspect tab load, letting app know I'm ready
                 backgroundService.informBackground(null, 'panelInit');
-                $scope.sidebarActions = {};
                 /////////////////////////////////////////////////////////
                 //            panel action listener
                 /////////////////////////////////////////////////////////
@@ -37,14 +36,12 @@
                     $scope.$applyAsync(function () {
                         $scope.view = pageName;
                     });
-                    //initializing csInfo for template data for first time or after cleanup
                 }
 
                 $rootScope.$on('ngAppDetails', function (event, ngDetectData) {
                     $scope.$applyAsync(function () {
                         // merge new data with old one. do not change old non related data - using it to save for session
                         $rootScope.csInfo = angular.extend({}, $rootScope.csInfo, ngDetectData);
-                        //$rootScope.csInfo = ngDetectData;
                         clearResources();
                         changeViewActionListener();
                     });
@@ -56,51 +53,159 @@
                     });
                 });
 
-                function clearResources(/*event, panelAction*/) {
+                function clearResources() {
                     // clear app data
-                    digestDataFactory.resetDigestMeasures();
+                    //digestDataFactory.resetDigestMeasures();
                     $scope.digestExpression = [];
                     $scope.watchOrderExpression = [];
+
+                    digestView.resetView();
+                    //$scope.digestInfo.highlights = {};
+                    //$scope.digestInfo.details = {};
                 }
 
                 /////////////////////////////////////////////////////////
                 //            sidebar actions
                 /////////////////////////////////////////////////////////
-                $scope.sidebarActions.pauseMyAnalysis = function () {
-                    backgroundService.informBackground(null, 'performance.pauseAnalysis');
-                    $rootScope.csInfo.pause = true;
+                $scope.sidebarActions = {
+                    pauseMyAnalysis: function () {
+                        backgroundService.informBackground(null, 'performance.pauseAnalysis');
+                        $rootScope.csInfo.pause = true;
+                    },
+                    resumeMyAnalysis: function () {
+                        backgroundService.informBackground(null, 'performance.resumeAnalysis');
+                        $rootScope.csInfo.pause = false;
+                    },
+                    changePanelView: changeViewActionListener
                 };
 
-                $scope.sidebarActions.resumeMyAnalysis = function () {
-                    backgroundService.informBackground(null, 'performance.resumeAnalysis');
-                    $rootScope.csInfo.pause = false;
-                };
-                $scope.sidebarActions.changePanelView = changeViewActionListener;
                 /////////////////////////////////////////////////////////
                 //            settings view
                 /////////////////////////////////////////////////////////
                 $scope.settings = {
-                    digestDebounceTime: digestDataFactory.getDigestDebounceTime()
-                };
-
-                $scope.settings.debounceChanged = function () {
-                    if (!$scope.settings.digestDebounceTime || $scope.settings.digestDebounceTime < 0) {
-                        $scope.settings.digestDebounceTime = digestDataFactory.getDigestDebounceTime();
+                    digestDebounceTime: digestView.getDebounceTime(),
+                    debounceChanged: function () {
+                        if (!$scope.settings.digestDebounceTime || $scope.settings.digestDebounceTime < 0) {
+                            $scope.$applyAsync(function () {
+                                $scope.settings.digestDebounceTime = digestView.getDebounceTime();
+                            });
+                            //$scope.settings.digestDebounceTime = digestDataFactory.getDigestDebounceTime();
+                        } else {
+                            digestView.updateDebounceTime($scope.settings.digestDebounceTime);
+                        }
+                        /*digestDataFactory.modifyDigestDebounceTime($scope.digestDebounceTime);*/
+                    },
+                    clearData: function () {
+                        digestView.resetView();
+                        //digestDataFactory.resetDigestMeasures();
                     }
-                    digestDataFactory.modifyDigestDebounceTime($scope.digestDebounceTime);
                 };
 
-                $scope.settings.clearData = function () {
-                    digestDataFactory.resetDigestMeasures();
-                };
+                /////////////////////////////////////////////////////////////////////////////////////////
+                //            performance views - digest
+                /////////////////////////////////////////////////////////////////////////////////////////
+                $scope.digestInfo = {highlights: {}, details: {}};
+                var viewChangeListenerRemover = $scope.$on("view-changed", function viewChangeListener(ignore, viewEvent) {
+                    if (viewEvent.displayed === "dashboard") {
+                        digestView.digestHighlightsWithChart($scope.digestInfo.highlights);
+                        viewChangeListenerRemover();
+                    }
+                });
+
+                //window.onload = function () {
+                //    var chart = new CanvasJS.Chart("chartContainer",
+                //        {
+                //            theme: "theme2",
+                //            title: {
+                //                text: "Digest"
+                //            },
+                //            axisY: {
+                //                includeZero: false,
+                //                valueFormatString: "#,###",
+                //                suffix: "ms"
+                //            },
+                //            toolTip: {
+                //                shared: "true"
+                //            },
+                //            data: [
+                //                {
+                //                    type: "spline",
+                //                    showInLegend: true,
+                //                    name: "mentions of samsung",
+                //                    markerSize: 0,
+                //                    color: "#C0504E",
+                //                    dataPoints: [
+                //                        {label: "Ep. 1", y: 3640000},
+                //                        {label: "Ep. 2", y: 3640000},
+                //                        {label: "Ep. 3", y: 3640000},
+                //                        {label: "Ep. 4", y: 3640000},
+                //                        {label: "Ep. 5", y: 3640000},
+                //                        {label: "Ep. 6", y: 3640000},
+                //                        {label: "Ep. 7", y: 3640000},
+                //                        {label: "Ep. 8", y: 3640000},
+                //                        {label: "Ep. 9", y: 3640000},
+                //                        {label: "Ep. 10", y: 3640000}
+                //
+                //                    ]
+                //                },
+                //
+                //                {
+                //                    type: "spline",
+                //                    showInLegend: true,
+                //                    name: "Season 2",
+                //                    // markerSize: 0,
+                //                    color: "#369EAD",
+                //                    dataPoints: [
+                //                        {label: "Ep. 1", y: 3858000},
+                //                        {label: "Ep. 2", y: 3759000},
+                //                        {label: "Ep. 3", y: 3766000},
+                //                        {label: "Ep. 4", y: 3654000},
+                //                        {label: "Ep. 5", y: 3903000},
+                //                        {label: "Ep. 6", y: 3879000},
+                //                        {label: "Ep. 7", y: 3694000},
+                //                        {label: "Ep. 8", y: 3864000},
+                //                        {label: "Ep. 9", y: 3384000},
+                //                        {label: "Ep. 10", y: 4200000}
+                //
+                //                    ]
+                //                }
+                //
+                //
+                //            ],
+                //            legend: {
+                //                cursor: "pointer",
+                //                itemclick: function (e) {
+                //                    if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                //                        e.dataSeries.visible = false;
+                //                    }
+                //                    else {
+                //                        e.dataSeries.visible = true;
+                //                    }
+                //                    chart.render();
+                //                }
+                //
+                //            },
+                //        });
+                //
+                //    chart.render();
+                //}
+
+
+                //$interval(function () {
+                //    $scope.highlights.digest = digestView.getHighlights();
+                //$scope.digestCycle = digestDataFactory.getAllDigestMeasures();
+                //$scope.watchDetails = digestDataFactory.getWatchMeasures();
+                //}, 1000);
+
+
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            slider, filter, dashboard update, sort, configurations
                 /////////////////////////////////////////////////////////////////////////////////////////
                 // every second update digest details
-                $interval(function () {
-                    $scope.digestCycle = digestDataFactory.getAllDigestMeasures();
-                    $scope.watchDetails = digestDataFactory.getWatchMeasures();
-                }, 1000);
+                //$interval(function () {
+                //$scope.digestCycle = digestDataFactory.getAllDigestMeasures();
+                //$scope.watchDetails = digestDataFactory.getWatchMeasures();
+                //}, 1000);
 
                 /* ION SLIDER */
                 $scope.rangeSlider = {
@@ -121,7 +226,7 @@
                 };
 
                 $scope.rangeSlider.digest.onChange = function (from, to) {
-                    $scope.selectedDigestRange = digestDataFactory.getDigestHighlightsForRange(from, to);
+                    //$scope.selectedDigestRange = digestDataFactory.getDigestHighlightsForRange(from, to);
                 };
 
                 $scope.digestSortByExpression = function (expression, event) {
