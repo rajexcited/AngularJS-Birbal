@@ -8,7 +8,7 @@
     angular.module('views.performance.digest', ['measure.digest.app', 'dashboardCharts'])
         .factory('digestView', ['digestMeasureLogFactory', '$interval', '$rootScope', 'dashboardCharts', function (digestMeasureLogFactory, $interval, $rootScope, dashboardCharts) {
 
-            var reset = true;
+            var reset = true, digestGroups = [], debounceTime = 200, TIME_TO_KEEP = 4 * 60 * 1000;
 
             function getHighLights(fromStartTime, time) {
                 var digestList, len, highlights,
@@ -104,28 +104,71 @@
                 };
             }
 
+            function recalculateGroupHighLight(digestGroup) {
+                var last = digestGroup.list[digestGroup.list.length - 1];
+                var startTime = digestGroup.list[0].startTime;
+                var endTime = last.endTime;
+                digestGroup.startTime = startTime;
+                digestGroup.duration = endTime - startTime;
+                digestGroup.runtime = digestGroup.runtime || 0;
+                digestGroup.runtime += last.runTime;
+                digestGroup.domUpdateTime = digestGroup.domUpdateTime || 0;
+                digestGroup.domUpdateTime += last.domUpdateTime;
+            }
+
+            function removeOlder(lastGrp) {
+                // remove 4 min older
+                var firstGrp = digestGroups[0];
+                if (lastGrp.startTime - firstGrp.endTime >= TIME_TO_KEEP) {
+                    digestGroups.shift();
+                    removeOlder(lastGrp);
+                }
+            }
+
+            function addToGroup(digestMeasure) {
+                var lastGrp = digestGroups[digestGroups.length - 1];
+                var last = lastGrp && lastGrp.list[lastGrp.list.length - 1];
+
+                if (!last || (digestMeasure.startTime - last.endTime > debounceTime)) {
+                    // create new group and add
+                    lastGrp = {list: []};
+                    digestGroups.push(lastGrp);
+                }
+                // update group list
+                lastGrp.list.push(digestMeasure);
+                recalculateGroupHighLight(lastGrp);
+                removeOlder(lastGrp);
+            }
+
+            $rootScope.$on("addDigestToDetailGrouping", function (ignore, measure) {
+                addToGroup(measure);
+            });
+
             return ({
                 getDebounceTime: function () {
-                    // default is 200
-                    //var settings = localStorage.getItem("settings"),
-                    //    debounceTime;
-                    //if (!settings) {
-                    //    debounceTime = 200;
-                    //    localStorage.setItem("settings", JSON.stringify({digestDebounce: debounceTime}));
-                    //} else {
-                    //    settings = JSON.parse(settings);
-                    //    debounceTime = settings.digestDebounce;
-                    //}
-                    //return debounceTime;
-                    return 200;
+                    var self = this;
+                    return new Promise(function (resolve) {
+                        // default is 200
+                        var key = "digestDebounce";
+                        chrome.storage.sync.get(key, function (items) {
+                            if (window.isNaN(items[key])) {
+                                self.updateDebounceTime(debounceTime);
+                                resolve(debounceTime);
+                            } else {
+                                resolve(items[key]);
+                            }
+                        });
+                    });
                 },
-                updateDebounceTime: function (debounceTime) {
-                    var settings = localStorage.getItem("settings");
-                    if (!settings) {
-                        settings = {};
-                    }
-                    settings.digestDebounce = debounceTime;
-                    localStorage.setItem("settings", JSON.stringify(settings));
+                updateDebounceTime: function (debounce) {
+                    return new Promise(function (resolve) {
+                        debounceTime = debounce;
+                        chrome.storage.sync.set({"digestDebounce": debounceTime}, function () {
+                            digestGroups = [];
+                            _.forEach(digestMeasureLogFactory.getAllMeasures(), addToGroup);
+                            resolve();
+                        });
+                    });
                 },
                 digestHighlightsWithChart: function (digestHighlights) {
                     // monitor by polling
@@ -149,8 +192,12 @@
                     }, pollTime);
 
                 },
+                getDigestGroups: function () {
+                    return digestGroups;
+                },
                 resetView: function () {
                     digestMeasureLogFactory.resetView();
+                    digestGroups.length = 0;
                     reset = true;
                 }
             });

@@ -82,29 +82,38 @@
                 /////////////////////////////////////////////////////////
                 //            settings view
                 /////////////////////////////////////////////////////////
+                function getDebounceTime() {
+                    digestView.getDebounceTime().then(function (debounceTime) {
+                        birbalJS.logger.log("debounce time is " + debounceTime);
+                        $scope.$applyAsync(function () {
+                            $scope.digestDebounceTime = debounceTime;
+                        });
+                    });
+                }
+
                 $scope.settings = {
-                    digestDebounceTime: digestView.getDebounceTime(),
                     debounceChanged: function () {
-                        if (!$scope.settings.digestDebounceTime || $scope.settings.digestDebounceTime < 0) {
-                            $scope.$applyAsync(function () {
-                                $scope.settings.digestDebounceTime = digestView.getDebounceTime();
+                        if ($scope.settings.digestDebounceTime && $scope.settings.digestDebounceTime > 0) {
+                            digestView.updateDebounceTime($scope.settings.digestDebounceTime).then(function () {
+                                $scope.digestInfo.details = digestView.getDigestGroups();
                             });
-                            //$scope.settings.digestDebounceTime = digestDataFactory.getDigestDebounceTime();
-                        } else {
-                            digestView.updateDebounceTime($scope.settings.digestDebounceTime);
                         }
-                        /*digestDataFactory.modifyDigestDebounceTime($scope.digestDebounceTime);*/
+                        getDebounceTime();
+                        birbalJS.logger.log.bind(null, "debounce changed, digest groups ").call(null, digestView.getDigestGroups());
                     },
                     clearData: function () {
                         digestView.resetView();
                         //digestDataFactory.resetDigestMeasures();
                     }
                 };
+                getDebounceTime();
+
+                birbalJS.logger.log.bind(null, " digest groups ").call(null, digestView.getDigestGroups());
 
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            performance views - digest
                 /////////////////////////////////////////////////////////////////////////////////////////
-                $scope.digestInfo = {highlights: {}, details: {}};
+                $scope.digestInfo = {highlights: {}, details: digestView.getDigestGroups()};
                 var viewChangeListenerRemover = $scope.$on("view-changed", function viewChangeListener(ignore, viewEvent) {
                     if (viewEvent.displayed === "dashboard") {
                         digestView.digestHighlightsWithChart($scope.digestInfo.highlights);
@@ -112,101 +121,9 @@
                     }
                 });
 
-                //window.onload = function () {
-                //    var chart = new CanvasJS.Chart("chartContainer",
-                //        {
-                //            theme: "theme2",
-                //            title: {
-                //                text: "Digest"
-                //            },
-                //            axisY: {
-                //                includeZero: false,
-                //                valueFormatString: "#,###",
-                //                suffix: "ms"
-                //            },
-                //            toolTip: {
-                //                shared: "true"
-                //            },
-                //            data: [
-                //                {
-                //                    type: "spline",
-                //                    showInLegend: true,
-                //                    name: "mentions of samsung",
-                //                    markerSize: 0,
-                //                    color: "#C0504E",
-                //                    dataPoints: [
-                //                        {label: "Ep. 1", y: 3640000},
-                //                        {label: "Ep. 2", y: 3640000},
-                //                        {label: "Ep. 3", y: 3640000},
-                //                        {label: "Ep. 4", y: 3640000},
-                //                        {label: "Ep. 5", y: 3640000},
-                //                        {label: "Ep. 6", y: 3640000},
-                //                        {label: "Ep. 7", y: 3640000},
-                //                        {label: "Ep. 8", y: 3640000},
-                //                        {label: "Ep. 9", y: 3640000},
-                //                        {label: "Ep. 10", y: 3640000}
-                //
-                //                    ]
-                //                },
-                //
-                //                {
-                //                    type: "spline",
-                //                    showInLegend: true,
-                //                    name: "Season 2",
-                //                    // markerSize: 0,
-                //                    color: "#369EAD",
-                //                    dataPoints: [
-                //                        {label: "Ep. 1", y: 3858000},
-                //                        {label: "Ep. 2", y: 3759000},
-                //                        {label: "Ep. 3", y: 3766000},
-                //                        {label: "Ep. 4", y: 3654000},
-                //                        {label: "Ep. 5", y: 3903000},
-                //                        {label: "Ep. 6", y: 3879000},
-                //                        {label: "Ep. 7", y: 3694000},
-                //                        {label: "Ep. 8", y: 3864000},
-                //                        {label: "Ep. 9", y: 3384000},
-                //                        {label: "Ep. 10", y: 4200000}
-                //
-                //                    ]
-                //                }
-                //
-                //
-                //            ],
-                //            legend: {
-                //                cursor: "pointer",
-                //                itemclick: function (e) {
-                //                    if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-                //                        e.dataSeries.visible = false;
-                //                    }
-                //                    else {
-                //                        e.dataSeries.visible = true;
-                //                    }
-                //                    chart.render();
-                //                }
-                //
-                //            },
-                //        });
-                //
-                //    chart.render();
-                //}
-
-
-                //$interval(function () {
-                //    $scope.highlights.digest = digestView.getHighlights();
-                //$scope.digestCycle = digestDataFactory.getAllDigestMeasures();
-                //$scope.watchDetails = digestDataFactory.getWatchMeasures();
-                //}, 1000);
-
-
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            slider, filter, dashboard update, sort, configurations
                 /////////////////////////////////////////////////////////////////////////////////////////
-                // every second update digest details
-                //$interval(function () {
-                //$scope.digestCycle = digestDataFactory.getAllDigestMeasures();
-                //$scope.watchDetails = digestDataFactory.getWatchMeasures();
-                //}, 1000);
-
                 /* ION SLIDER */
                 $scope.rangeSlider = {
                     digest: {

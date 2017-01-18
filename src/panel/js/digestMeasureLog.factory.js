@@ -6,7 +6,7 @@
     "use strict";
 
     angular.module('measure.digest.app', [])
-        .factory('digestMeasureLogFactory', [function () {
+        .factory('digestMeasureLogFactory', ['$rootScope', function ($rootScope) {
 
             var digestList = [];
 
@@ -117,6 +117,7 @@
                     // store last 200
                     digestList.push(digestMeasure);
                     digestList = digestList.slice(-200);
+                    $rootScope.$emit("addDigestToDetailGrouping", digestMeasure);
                 },
                 getAllMeasures: function () {
                     return [].concat(digestList);
