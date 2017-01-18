@@ -64,6 +64,7 @@
                 for (i = 0; i < limit; i++) {
                     dataPoints.push({x: i - limit, y: null});
                 }
+                chartOptions.data[ind].maxYOccurance = 0;
                 if (chartOptions.axisY.maximum) {
                     chartOptions.axisY.interval = Math.ceil(chartOptions.axisY.maximum / 3);
                 }
@@ -76,7 +77,10 @@
                 n = ++chartOptions.data[ind].nModified;
                 point = {x: n, y: null};
                 if (!dataPoints[n]) {
-                    dataPoints.shift();
+                    var first = dataPoints.shift();
+                    if (chartOptions.data[ind].maxYOccurance && first.yVal && chartOptions.axisY.maximum && first.yVal > chartOptions.axisY.maximum) {
+                        chartOptions.data[ind].maxYOccurance--;
+                    }
                     dataPoints.push(point);
                 } else {
                     dataPoints[n] = point;
@@ -89,10 +93,13 @@
                 return point;
             }
 
-            function updatePointYVal(p, max) {
+            function updatePointYVal(p, max, dataSeries) {
                 if (p.yVal) {
                     p.y = p.yVal;
                     if (max && p.yVal > max) {
+                        if (dataSeries) {
+                            dataSeries.maxYOccurance++;
+                        }
                         p.y = max;
                     }
                 }
@@ -221,7 +228,8 @@
 
             charts['dom'] = function (id, limit) {
                 // digest rate
-                var chart, chartOptions;
+                var chart, chartOptions,
+                    LONGEST_DS = 1, AVG_DS = 0;
 
                 chartOptions = {
                     theme: "theme1",
@@ -247,19 +255,19 @@
                         shared: true
                     },
                     data: [{
-                        name: "longest time",
+                        name: "average time",
                         type: "spline",
-                        color: "#C0504E",
+                        color: "#369EAD",
                         showInLegend: true,
-                        toolTipContent: "{name} :  {yVal} ms <br/>  @{xmin} min {xsec} sec",
+                        toolTipContent: "{name} :  {yVal} ms <br/> ",
                         highlightEnabled: true,
                         nModified: -1,
                         max: limit,
                         dataPoints: []
                     }, {
-                        name: "average time",
+                        name: "longest time",
                         type: "spline",
-                        color: "#369EAD",
+                        color: "#C0504E",
                         showInLegend: true,
                         toolTipContent: "{name} :  {yVal} ms <br/>  @{xmin} min {xsec} sec",
                         highlightEnabled: true,
@@ -271,8 +279,8 @@
                         cursor: "pointer",
                         itemclick: function (e) {
                             if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-                                var data1 = chartOptions.data[0],
-                                    data2 = chartOptions.data[1];
+                                var data1 = getDataSeriesForLongestDomTime(),
+                                    data2 = getDataSeriesForAverageDomTime();
                                 if ((data1.dataPoints === e.dataSeries.dataPoints && (data2.visible || data2.visible === undefined)) ||
                                     (data2.dataPoints === e.dataSeries.dataPoints && (data1.visible || data1.visible === undefined))) {
                                     e.dataSeries.visible = false;
@@ -281,7 +289,9 @@
                             }
                             else {
                                 e.dataSeries.visible = true;
-                                changeyMaxLimit(1200);
+                                if (getDataSeriesForLongestDomTime().maxYOccurance > 0 || getDataSeriesForAverageDomTime().maxYOccurance > 0) {
+                                    changeyMaxLimit(1200);
+                                }
                             }
                             chart.render();
                         }
@@ -289,10 +299,18 @@
                     }
                 };
 
+                function getDataSeriesForLongestDomTime() {
+                    return chartOptions.data[LONGEST_DS];
+                }
+
+                function getDataSeriesForAverageDomTime() {
+                    return chartOptions.data[AVG_DS];
+                }
+
                 function changeyMaxLimit(changeTo) {
                     chartOptions.axisY.maximum = changeTo;
-                    var points1 = chartOptions.data[0].dataPoints;
-                    var points2 = chartOptions.data[1].dataPoints;
+                    var points1 = getDataSeriesForLongestDomTime().dataPoints;
+                    var points2 = getDataSeriesForAverageDomTime().dataPoints;
                     _.forEach(points1, function (p1, i) {
                         updatePointYVal(p1, changeTo);
                         emphasizeDataPointMarker(i, points1, changeTo);
@@ -303,26 +321,41 @@
 
                 this.update = function (highlightInfo, reset) {
                     var point1, point2,
-                        max = chartOptions.axisY.maximum;
+                        max = chartOptions.axisY.maximum,
+                        prevOccurance1 = getDataSeriesForLongestDomTime().maxYOccurance,
+                        prevOccurance2 = getDataSeriesForAverageDomTime().maxYOccurance,
+                        newOccurance1, newOccurance2;
                     if (reset) {
-                        initChartData(chartOptions, 0);
-                        initChartData(chartOptions, 1);
+                        initChartData(chartOptions, LONGEST_DS);
+                        initChartData(chartOptions, AVG_DS);
                     }
 
-                    point1 = addUpdateDataPoint(chartOptions, 0, !!(highlightInfo && highlightInfo.domAverageTime));
-                    point2 = addUpdateDataPoint(chartOptions, 1, !!(highlightInfo && highlightInfo.domAverageTime));
+                    point1 = addUpdateDataPoint(chartOptions, LONGEST_DS, !!(highlightInfo && highlightInfo.domAverageTime));
+                    point2 = addUpdateDataPoint(chartOptions, AVG_DS, !!(highlightInfo && highlightInfo.domAverageTime));
 
                     if (highlightInfo && highlightInfo.domLongest) {
                         point1.yVal = Math.ceil(highlightInfo.domLongest);
-                        updatePointYVal(point1, max);
+                        updatePointYVal(point1, 1200, getDataSeriesForLongestDomTime());
                     }
                     if (highlightInfo && highlightInfo.domAverageTime) {
                         point2.y = point2.yVal = Math.ceil(highlightInfo.domAverageTime);
-                        updatePointYVal(point2, max);
+                        updatePointYVal(point2, 1200, getDataSeriesForAverageDomTime());
                     }
-
-                    emphasizeDataPointMarker(point1, chartOptions.data[0].dataPoints, max);
-                    emphasizeDataPointMarker(point2, chartOptions.data[1].dataPoints, max);
+                    newOccurance1 = getDataSeriesForLongestDomTime().maxYOccurance;
+                    newOccurance2 = getDataSeriesForAverageDomTime().maxYOccurance;
+                    if (prevOccurance1 !== newOccurance1 || prevOccurance2 !== newOccurance2) {
+                        if (newOccurance1 > 1 || newOccurance2 > 1) {
+                            emphasizeDataPointMarker(point1, getDataSeriesForLongestDomTime().dataPoints, max);
+                            emphasizeDataPointMarker(point2, getDataSeriesForAverageDomTime().dataPoints, max);
+                        } else if (newOccurance1 === 1 || newOccurance2 === 1) {
+                            changeyMaxLimit(1200);
+                        } else {
+                            changeyMaxLimit(null);
+                        }
+                    } else {
+                        emphasizeDataPointMarker(point1, getDataSeriesForLongestDomTime().dataPoints, max);
+                        emphasizeDataPointMarker(point2, getDataSeriesForAverageDomTime().dataPoints, max);
+                    }
                     chart.render();
                 };
 
