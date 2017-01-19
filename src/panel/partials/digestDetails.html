@@ -3,6 +3,19 @@
     <span> ng-app = <b> {{ csInfo.ngModule}} </b></span>
     <br> <br>
 
+    <div ng-if="!csInfo.chartCreated">
+        <div class="panel panel-danger">
+            <div class="panel-heading">
+                <h3 class="panel-title">Enable Performance analysis</h3>
+            </div>
+            <div class="panel-body">
+                <span>Please enable performance analysis to see digest detail analysis.</span><br/>
+                <b>Check the "Performance Analysis" option in left navigator to enable/resume it. Uncheck to pause
+                    analysis and got through details.</b>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="box box-primary">
             <div class="box-header">
@@ -37,7 +50,7 @@
                         <th>#</th>
                         <th title="military time 24 hrs, HH:mm:ss">Start time</th>
                         <th>Duration</th>
-                        <th>HTML/DOM render time</th>
+                        <th>post script time (HTML render/repaint)</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -53,5 +66,5 @@
         </div>
     </div>
 
-    <div ng-include="'digestMeasures.html'"></div>
+    <!--<div ng-include="'digestMeasures.html'"></div>-->
 </div>

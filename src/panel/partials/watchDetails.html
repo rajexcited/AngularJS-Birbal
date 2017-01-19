@@ -1,4 +1,17 @@
 <div>
+    <div ng-if="!csInfo.chartCreated">
+        <div class="panel panel-danger">
+            <div class="panel-heading">
+                <h3 class="panel-title">Enable Performance analysis</h3>
+            </div>
+            <div class="panel-body">
+                <span>Please enable performance analysis to see watcher analysis data.</span><br/>
+                <b>Check the "Performance Analysis" option in left navigator to enable/resume it. Uncheck to pause
+                    analysis and got through details.</b>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-sm-6">
             <!-- Widget: user widget style 1 -WATCH card -->

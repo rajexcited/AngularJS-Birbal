@@ -6,7 +6,7 @@
     "use strict";
 
     angular.module('dashboardCharts', [])
-        .factory('dashboardCharts', ['$timeout', function ($timeout) {
+        .factory('dashboardCharts', ['$timeout', '$rootScope', function ($timeout, $rootScope) {
 
             var charts = {
                 created: []
@@ -368,16 +368,28 @@
                 this.update(null, true);
             };
 
-            function createChart(id, limit) {
-                $timeout(function () {
+            function createChart(chartId, max) {
+
+                function createOnEnable(id, limit) {
+                    if ($rootScope.csInfo.pause) {
+                        // verify on every half sec
+                        $timeout(createOnEnable, 500, false, id, limit);
+                    } else {
+                        var chart = new charts[id](id + "-chart-container", limit);
+                        charts.created.push(chart);
+                        $rootScope.csInfo.chartCreated = true;
+                    }
+                }
+
+                $timeout(function (id, limit) {
+                    // allow to load the view before creating chart to avoid html error
                     var container = angular.element("#" + id + "-chart-container");
                     if (container.length === 0) {
                         createChart(id, limit);
                     } else {
-                        var chart = new charts[id](id + "-chart-container", limit);
-                        charts.created.push(chart);
+                        createOnEnable(id, limit);
                     }
-                });
+                }, 200, false, chartId, max);
             }
 
             return ({
