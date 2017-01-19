@@ -47,7 +47,7 @@
                         }
                         if (len === oldLen) {
                             oldLen = 0;
-                            if (len === 0) {
+                            if (!len) {
                                 return;
                             }
                         }

@@ -20,57 +20,37 @@
     </div>
 
     <div class="row">
-        <div class="col-sm-6">
-            <!-- Widget: user widget style 1 -DIGEST card -->
-            <div class="box box-widget widget-user">
-                <div class="widget-user-header bg-aqua-active">
-                    <h3 class="widget-user-username">Digest Cycles</h3>
-                    <h5 class="widget-user-desc">Summary</h5>
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <!-- Default panel contents -->
+                <div class="panel-heading">Digest Information</div>
+                <div class="panel-body">
+                    <p>Digest cycles are grouped by debounce time set from "more option". the bigger the worse. browser
+                        can be freeze in this duration stopping/delaying all user actions.
+                        Overlapped DOM rendering time is adjusted between groups. </p>
                 </div>
-                <div class="widget-user-image">
-                    <img class="img-circle" src="/img/digest_measures.jpg" alt="digestMeasures">
-                </div>
-                <div class="box-footer">
-                    <div class="row">
-                        <div class="col-sm-5 border-right">
-                            <div class="description-block" data-toggle="tooltip" data-original-title="Longest ever">
-                                <span class="description-text">Longest </span>
-                                <h5 class="description-header">{{digestCycle.highlights.longestDigestTime | number:2}}
-                                    ms</h5>
-                            </div>
-                            <!-- /.description-block -->
-                        </div>
-                        <!-- /.col -->
-                        <div class="col-sm-7">
-                            <div class="description-block" data-toggle="tooltip"
-                                 data-original-title="Effective digest rate based on debounce time defined in settings view">
-                                <span class="description-text">Effective digest rate: </span>
-                                <h5 class="description-header"> {{digestCycle.highlights.edr.nDigest}} cycles in
-                                    {{digestCycle.highlights.edr.runtime|number:2}} ms </h5>
-                            </div>
-                            <!-- /.description-block -->
-                        </div>
-                        <!-- /.col -->
-                    </div>
-                    <!-- /.row -->
-                    <div class="row" ng-if="selectedDigestRange.edr">
-                        <div class="col-sm-12">
-                            <div class="description-block">
-                            <span>???  For chosen time range, digest rate: {{selectedDigestRange.edr.nDigest}} cycles in
-                                {{selectedDigestRange.edr.runtime|number:2}} ms</span>
-                                <h5 class="description-header">longest cycle:
-                                    {{selectedDigestRange.longestDigestTime|number:2}} ms</h5>
-                            </div>
-                            <!-- /.description-block -->
-                        </div>
-                        <!-- /.col -->
-                    </div>
-                    <!-- /.row -->
-                </div>
+
+                <!-- Table -->
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th title="military time 24 hrs, HH:mm:ss">Start time</th>
+                        <th>Duration</th>
+                        <th>HTML/DOM render time</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="group in digestInfo.details">
+                        <th scope="row">{{$index+1}}</th>
+                        <td>{{group.startDate|date:'HH:mm:ss'}}</td>
+                        <td>{{group.duration|number:0}} ms</td>
+                        <td>{{group.domRenderTime|number:0}} ms</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
-            <!-- /.widget-user -->
         </div>
-        <!-- /.col Digest card-->
     </div>
 
     <div ng-include="'digestMeasures.html'"></div>

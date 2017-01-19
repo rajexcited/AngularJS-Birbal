@@ -57,12 +57,13 @@
 
             function initChartData(chartOptions, ind) {
                 var i,
+                    dateTime = Date.now(),
                     dataPoints = chartOptions.data[ind].dataPoints,
                     limit = chartOptions.data[ind].max;
 
                 dataPoints.length = 0;
                 for (i = 0; i < limit; i++) {
-                    dataPoints.push({x: i - limit, y: null});
+                    dataPoints.push({x: new Date(dateTime - (limit - i) * 1000), y: null});
                 }
                 chartOptions.data[ind].maxYOccurance = 0;
                 if (chartOptions.axisY.maximum) {
@@ -75,7 +76,7 @@
 
                 dataPoints = chartOptions.data[ind].dataPoints;
                 n = ++chartOptions.data[ind].nModified;
-                point = {x: n, y: null};
+                point = {x: new Date(), y: null};
                 if (!dataPoints[n]) {
                     var first = dataPoints.shift();
                     if (chartOptions.data[ind].maxYOccurance && first.yVal && chartOptions.axisY.maximum && first.yVal > chartOptions.axisY.maximum) {
@@ -85,8 +86,8 @@
                 } else {
                     dataPoints[n] = point;
                 }
-                point.xmin = Math.floor(point.x / 60);
-                point.xsec = (point.x % 60);
+                //point.xmin = Math.floor(point.x / 60);
+                //point.xsec = (point.x % 60);
                 if (shouldNullifyYInterval && chartOptions.axisY.interval !== null) {
                     chartOptions.axisY.interval = null;
                 }
@@ -123,9 +124,9 @@
                         maximum: 70
                     },
                     axisX: {
-                        title: " time (sec) ",
+                        title: " time (military date time) ",
                         includeZero: false,
-                        valueFormatString: "#,###"
+                        valueFormatString: "HH:mm:ss"
                     },
                     toolTip: {
                         enabled: true,
@@ -135,7 +136,8 @@
                         name: "rate ",
                         type: "spline",
                         color: "#C0504E",
-                        toolTipContent: "{name} :  {yVal} cps <br/>  @{xmin} min {xsec} sec",
+                        xValueFormatString: "HH:mm:ss",
+                        toolTipContent: "{name} :  {yVal} cps <br/>  @ {x} ",
                         highlightEnabled: true,
                         nModified: -1,
                         max: limit,
@@ -184,9 +186,9 @@
                         suffix: " ms"
                     },
                     axisX: {
-                        title: " time (sec) ",
+                        title: " time (military time) ",
                         includeZero: false,
-                        valueFormatString: "#,###"
+                        valueFormatString: "HH:mm:ss"
                     },
                     toolTip: {
                         enabled: true,
@@ -196,7 +198,8 @@
                         name: "longest digest time",
                         type: "spline",
                         color: "#C0504E",
-                        toolTipContent: "{name} :  {yVal} ms <br/>  @{xmin} min {xsec} sec",
+                        xValueFormatString: "HH:mm:ss",
+                        toolTipContent: "{name} :  {yVal} ms <br/>  @ {x} ",
                         highlightEnabled: true,
                         nModified: -1,
                         max: limit,
@@ -246,9 +249,9 @@
                         maximum: 1200
                     },
                     axisX: {
-                        title: " time (sec) ",
+                        title: " time (military time) ",
                         includeZero: false,
-                        valueFormatString: "#,###"
+                        valueFormatString: "HH:mm:ss"
                     },
                     toolTip: {
                         enabled: true,
@@ -269,7 +272,8 @@
                         type: "spline",
                         color: "#C0504E",
                         showInLegend: true,
-                        toolTipContent: "{name} :  {yVal} ms <br/>  @{xmin} min {xsec} sec",
+                        xValueFormatString: "HH:mm:ss",
+                        toolTipContent: "{name} :  {yVal} ms <br/> @ {x} ",
                         highlightEnabled: true,
                         nModified: -1,
                         max: limit,

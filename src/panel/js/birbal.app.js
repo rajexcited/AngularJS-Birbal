@@ -99,7 +99,7 @@
                             });
                         }
                         getDebounceTime();
-                        birbalJS.logger.log.bind(null, "debounce changed, digest groups ").call(null, digestView.getDigestGroups());
+                        birbalJS.logger.log("debounce changed, digest groups ", digestView.getDigestGroups());
                     },
                     clearData: function () {
                         digestView.resetView();
@@ -108,7 +108,7 @@
                 };
                 getDebounceTime();
 
-                birbalJS.logger.log.bind(null, " digest groups ").call(null, digestView.getDigestGroups());
+                birbalJS.logger.log(" digest groups ", digestView.getDigestGroups());
 
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            performance views - digest

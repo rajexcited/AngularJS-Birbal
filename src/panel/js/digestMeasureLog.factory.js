@@ -89,7 +89,7 @@
                 });
 
                 digestMeasure.watchers = finalWatcherList;
-                console.log(finalWatcherList);
+                //console.log(finalWatcherList);
             }
 
             function getEventNames(digestMeasure) {
@@ -114,9 +114,11 @@
                         digestMeasure.postDigestQueue = JSON.parse(digestMeasure.postDigestQueue);
                     }
                     getEventNames(digestMeasure);
+                    digestMeasure.domRenderTime = digestMeasure.domRenderEndTime - digestMeasure.endTime;
                     // store last 200
                     digestList.push(digestMeasure);
                     digestList = digestList.slice(-200);
+                    birbalJS.logger.info("et= " + digestMeasure.endTime + "  - det= " + digestMeasure.domRenderEndTime + " dr= " + digestMeasure.domRenderTime);
                     $rootScope.$emit("addDigestToDetailGrouping", digestMeasure);
                 },
                 getAllMeasures: function () {

@@ -81,7 +81,7 @@
         var winMessage = event.data,
             destination;
 
-        logger.log.bind(logger, 'in injectedMsgListener').call(logger, winMessage);
+        logger.log( 'in injectedMsgListener', winMessage);
         destination = (winMessage.task === 'csInit') ? birbalJS.END_POINTS.BACKGROUND : birbalJS.END_POINTS.PANEL;
         informBackground(winMessage.msgDetails, winMessage.task, destination);
         // this is coming from angularDetect injector

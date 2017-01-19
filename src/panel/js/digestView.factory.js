@@ -27,8 +27,8 @@
                         totalRuntimeDigest += d.runTime;
                         digestRuntimeList.push(d.runTime);
                         // dom
-                        totalRuntimeDom += d.domUpdateTime;
-                        domRuntimeList.push(d.domUpdateTime);
+                        totalRuntimeDom += d.domRenderTime;
+                        domRuntimeList.push(d.domRenderTime);
                     });
 
                     /**
@@ -54,7 +54,7 @@
                 }
             }
 
-            function averageCalculatorForhighlight(dataLimit, digestHighlights) {
+            function averageCalculatorForHighlight(dataLimit, digestHighlights) {
                 var list = [];
 
                 function addToList(highlightOfPolling) {
@@ -105,15 +105,33 @@
             }
 
             function recalculateGroupHighLight(digestGroup) {
-                var last = digestGroup.list[digestGroup.list.length - 1];
-                var startTime = digestGroup.list[0].startTime;
-                var endTime = last.endTime;
+                var last, startTime, endTime, det1, dOfPrevGrp;
+                last = digestGroup.list[digestGroup.list.length - 1];
+                startTime = digestGroup.list[0].startTime;
+                endTime = last.endTime;
                 digestGroup.startTime = startTime;
+                digestGroup.startDate = new Date(startTime + $rootScope.csInfo.datePerfGapTime);
                 digestGroup.duration = endTime - startTime;
                 digestGroup.runtime = digestGroup.runtime || 0;
                 digestGroup.runtime += last.runTime;
-                digestGroup.domUpdateTime = digestGroup.domUpdateTime || 0;
-                digestGroup.domUpdateTime += last.domUpdateTime;
+
+                dOfPrevGrp = digestGroups[digestGroups.length - 2];
+                dOfPrevGrp = dOfPrevGrp && dOfPrevGrp.list[dOfPrevGrp.list.length - 1];
+                det1 = (dOfPrevGrp && dOfPrevGrp.domRenderEndTime) || 0;
+                digestGroup.domRenderTime = 0;
+                _.forEach(digestGroup.list, function (d2, i) {
+                    var dr1Remaining = det1 - d2.endTime;
+                    if (dr1Remaining <= d2.domRenderTime) {
+                        if (dr1Remaining < 0) {
+                            dr1Remaining = 0;
+                        }
+                        if (i === 0 && digestGroup.list.length === 1) {
+                            birbalJS.logger.log("dom rendering prev time ", "|", d2.domRenderTime, "|", (d2.domRenderTime - dr1Remaining), "|", dr1Remaining, "|");
+                        }
+                        digestGroup.domRenderTime += (d2.domRenderTime - dr1Remaining);
+                        det1 = d2.domRenderEndTime;
+                    }
+                });
             }
 
             function removeOlder(lastGrp) {
@@ -175,7 +193,7 @@
                     var dataLimit = 200, pollTime = 1000, recalculateHighlightAverage;
                     // init chart
                     dashboardCharts.createCharts(dataLimit, 'digest-rate', 'longest-digest', 'dom');
-                    recalculateHighlightAverage = averageCalculatorForhighlight(dataLimit, digestHighlights);
+                    recalculateHighlightAverage = averageCalculatorForHighlight(dataLimit, digestHighlights);
 
                     $interval(function () {
                         if (!$rootScope.csInfo.pause) {

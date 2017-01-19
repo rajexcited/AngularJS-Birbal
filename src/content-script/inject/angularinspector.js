@@ -66,10 +66,10 @@ window.inspectorExecutor = function (window, document) {
             msg = new birbalJS.Message(info, contentMessageActions.injectorId, 'content-script', task);
             window.postMessage(msg, '*');
         } catch (e) {
-            logger.error.bind(logger, 'collected data Object =  ').call(null, info);
+            logger.error('collected data Object =  ', info);
             try {
                 toValidJSON(msg);
-                logger.error.bind(logger, 'broadcast error: ').call(logger, e);
+                logger.error('broadcast error: ', e);
             } catch (ee) {
                 logger.error(ee);
             }
@@ -103,7 +103,7 @@ window.inspectorExecutor = function (window, document) {
         }
         /*jslint eqeq: false*/
         /* jshint +W116 */
-        logger.log.bind(logger, 'in contentMsgListener-angular birbal ').call(null, event.data);
+        logger.log('in contentMsgListener-angular birbal ', event.data);
         receiver.answerCall(event.data);
     }
 
@@ -130,7 +130,7 @@ window.inspectorExecutor = function (window, document) {
      */
     receiver.for('httpMock.list', function (message) {
         // update http list
-        logger.table.bind('http list update request, mock http list: ').call(logger, message);
+        logger.log('http list update request, mock http list: ', message);
         updateHttpBackend(message.msgDetails);
     });
 
@@ -222,12 +222,12 @@ window.inspectorExecutor = function (window, document) {
                     var digestInfo = JSON.stringify(nb.digest);
                     window.setTimeout(function () {
                         digestInfo = JSON.parse(digestInfo);
-                        digestInfo.domUpdateTime = (perf.now() - digestInfo.endTime);
+                        digestInfo.domRenderEndTime = perf.now();
                         if (nb.apply.length) {
                             digestInfo.apply = [].concat(nb.apply);
                             nb.apply.length = 0;
                         }
-                        logger.info("digest ended, DOM update time taken in ms is " + digestInfo.domUpdateTime);
+                        logger.info("digest ended, DOM update time taken in ms is " + digestInfo.domRenderEndTime);
                         broadcastMessage(digestInfo, 'performance.digestMeasures');
                     }, 2);
                 }
@@ -311,7 +311,7 @@ window.inspectorExecutor = function (window, document) {
                             addedWatcher.get = ngWatcher.get;
                             addedWatcher.fn = ngWatcher.fn;
                             ngWatcher.return.apply(null, arguments);
-                            logger.info.bind(logger, "watch is removed  " + scope.$$watchers.indexOf(addedWatcher)).call(logger, scope);
+                            logger.info("watch is removed  ", scope.$$watchers.indexOf(addedWatcher), scope);
                             // clear to raise error if it fails to clean memory
                             ngWatcher = addedWatcher = scope = watchExpStr = undefined;
                         };
@@ -696,7 +696,7 @@ window.inspectorExecutor = function (window, document) {
                         // invoke, ignore
                         break;
                     default:
-                        logger.warn.bind(null, 'unknown dependency type').call(null, arguments);
+                        logger.warn('unknown dependency type', arguments);
                         break;
                 }
             });
@@ -711,7 +711,7 @@ window.inspectorExecutor = function (window, document) {
                 }
             });
             window.metadata = metadata;
-            logger.info.bind(logger, 'dependency metaData:  ').call(logger, metadata);
+            logger.info('dependency metaData:  ', metadata);
             // to remove instrumented methods
             return JSON.parse(JSON.stringify(metadata));
         }
@@ -739,7 +739,7 @@ window.inspectorExecutor = function (window, document) {
         for (var i = 0; i < siblings.length; i++) {
             var sibling = siblings[i];
             if (sibling === element) {
-                logger.log.bind(logger, 'xPath of parent: ').call(logger, element.parentNode);
+                logger.log('xPath of parent: ', element.parentNode);
                 var parentX = generateXPath(element.parentNode);
                 if (!parentX) {
                     parentX = '';
@@ -771,8 +771,9 @@ window.inspectorExecutor = function (window, document) {
             msg.ngModule = getAngularApp();
             msg.ngRootNode = generateXPath(document.querySelector('.ng-scope'));
             sendDependencyTree(msg.ngModule.split(','));
+            msg.datePerfGapTime = Date.now() - performance.now();
         } else {
-            window.name = window.name.replace(/^NG_DEFER_BOOTSTRAP!/, '');
+            window.name = window.name.replace(/^NG_DEFER_BOOTSTRAP!/, '').replace(/NG_ENABLE_DEBUG_INFO!/, '');
         }
         // send inspection data
         broadcastMessage(msg, 'ngDetect');
@@ -883,7 +884,7 @@ window.inspectorExecutor = function (window, document) {
         };
         // page load setup
         // scene#1:  pre-list
-        logger.log.bind(logger, 'promise to init list: ').call(logger, httpBackendPromise);
+        logger.log('promise to init list: ', httpBackendPromise);
         httpBackendPromise.then(function (list) {
             return updateHttpBackend(list);
         });
@@ -964,7 +965,7 @@ window.inspectorExecutor = function (window, document) {
                 window.setTimeout(inspectAngular, 1);
                 return returnValue;
             } catch (e) {
-                logger.error.bind(null, 'error in manual bootstrap\n\t\t').call(null, e);
+                logger.error('error in manual bootstrap\n\t\t', e);
                 contentMessageActions.resumeBootstrap(true);
                 throw e;
             } finally {

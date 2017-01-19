@@ -27,7 +27,7 @@
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
     logger.log('background.js loading');
-    logger.error.bind(logger, 'last error of extension: ').call(logger, chrome.runtime.lastError);
+    logger.error('last error of extension: ', chrome.runtime.lastError);
     /////////////////////////////////////////////////////////
     //            TABS - CONNECTIONS and PROTOTYPE
     /////////////////////////////////////////////////////////
@@ -88,7 +88,7 @@
             // reloading tab should be recover within 2 sec
             if (tabId && !tabHolder[tabId][birbalJS.END_POINTS.PANEL] && !tabHolder[tabId][birbalJS.END_POINTS.CONTENTSCRIPT]) {
                 // clean up tab resource after time expires
-                logger.log.bind(logger, 'removing tab ').call(logger, tabHolder[tabId]);
+                logger.log('removing tab ', tabHolder[tabId]);
                 delete tabHolder[tabId];
             }
         });
@@ -263,13 +263,13 @@
     // #9
     receiver.for('popupInit', function (message) {
         var tabInfo = tabs.getTabInfo(message.tabId);
-        logger.log.bind(logger, 'popup init ').call(logger, message);
+        logger.log('popup init ', message);
         tabInfo.mockHttp = tabInfo.mockHttp || {list: [], isModified: true};
     });
     // #10
     receiver.for('httpMock.getMeList', function (message) {
         var tabInfo = tabs.getTabInfo(message.tabId);
-        logger.table.bind(logger, 'responding with mock list- ').call(logger, tabInfo.mockHttp.list);
+        logger.log('responding with mock list- ', tabInfo.mockHttp.list);
         informPopupHttp(message.tabId, tabInfo.mockHttp.list, 'httpMock.hereIsList');
     });
 
@@ -278,7 +278,7 @@
         var tabInfo = tabs.getTabInfo(message.tabId);
         tabInfo.mockHttp.isModified = true;
         tabInfo.mockHttp.list = message.msgDetails;
-        logger.table.bind(logger, 'updating mock list-  ').call(logger, message.msgDetails);
+        logger.log('updating mock list-  ', message.msgDetails);
     });
 
     /////////////////////////////////////////////////////////
@@ -360,7 +360,7 @@
     });
 
     chrome.runtime.onSuspend.addListener(function suspendCallback() {
-        logger.log.bind(logger, 'on Suspend ').call(logger, arguments);
+        logger.log('on Suspend ', arguments);
         // notify all tabs - CS/INJECTOR, PANEL, POPUP
     });
 

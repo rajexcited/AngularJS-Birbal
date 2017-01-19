@@ -74,7 +74,7 @@
                 <td> {{:: aMeasure.otherRuntime | number:2}} ms</td>
                 <td>
                     <p ng-if=":: aMeasure.asyncQueue.length"> {{:: aMeasure.asyncQueue.length}} basic Async
-                    Evaluations </p>
+                        Evaluations </p>
                     <p ng-if=":: aMeasure.postDigestQueue.length"> {{:: aMeasure.postDigestQueue.length}} Post
                         Digest </p>
                     <p ng-if=":: aMeasure.nWatchAsyncStarters"> {{:: aMeasure.nWatchAsyncStarters}}
@@ -93,7 +93,7 @@
                     </div>
                 </td>
                 <td>
-                    {{::aMeasure.domUpdateTime|number :2}} ms
+                    {{::aMeasure.domRenderTime|number :2}} ms
                 </td>
             </tr>
             </tbody>
