@@ -27,11 +27,9 @@
                         // making sure to not change user choice and init
                         $rootScope.csInfo = angular.extend({pause: true}, $rootScope.csInfo);
                     }
-                    if (pageName === 'dependencyGraph') {
-                        if (angular.element('.sidebar-collapse').length === 0) {
-                            // collapse main header
-                            angular.element('.main-header a[data-toggle="offcanvas"]').click();
-                        }
+                    if (angular.element('.sidebar-collapse').length === 0) {
+                        // collapse main header
+                        angular.element('.main-header a[data-toggle="offcanvas"]').click();
                     }
                     $scope.$applyAsync(function () {
                         $scope.view = pageName;
@@ -86,7 +84,7 @@
                     digestView.getDebounceTime().then(function (debounceTime) {
                         birbalJS.logger.log("debounce time is " + debounceTime);
                         $scope.$applyAsync(function () {
-                            $scope.digestDebounceTime = debounceTime;
+                            $scope.settings.digestDebounceTime = debounceTime;
                         });
                     });
                 }
@@ -125,72 +123,72 @@
                 //            slider, filter, dashboard update, sort, configurations
                 /////////////////////////////////////////////////////////////////////////////////////////
                 /* ION SLIDER */
-                $scope.rangeSlider = {
-                    digest: {
-                        config: {
-                            min: 0,
-                            max: 200,
-                            //from: 0,
-                            //to: 4000,
-                            type: 'double',
-                            //step: 1,
-                            //prefix: "$",
-                            postfix: " sec",
-                            prettify: false,
-                            grid: true
-                        }
-                    }
-                };
+                //$scope.rangeSlider = {
+                //    digest: {
+                //        config: {
+                //            min: 0,
+                //            max: 200,
+                //            //from: 0,
+                //            //to: 4000,
+                //            type: 'double',
+                //            //step: 1,
+                //            //prefix: "$",
+                //            postfix: " sec",
+                //            prettify: false,
+                //            grid: true
+                //        }
+                //    }
+                //};
 
-                $scope.rangeSlider.digest.onChange = function (from, to) {
+                //$scope.rangeSlider.digest.onChange = function (from, to) {
                     //$scope.selectedDigestRange = digestDataFactory.getDigestHighlightsForRange(from, to);
-                };
+                //};
 
-                $scope.digestSortByExpression = function (expression, event) {
-                    if (expression && event) {
-                        // get index of expression, ignore predicate
-                        var sortClass = 'fa-sort-asc',
-                            exp = '+' + expression,
-                            ind = $scope.digestExpression.indexOf('+' + expression),
-                            irev = $scope.digestExpression.indexOf('-' + expression);
+                //$scope.digestSortByExpression = function (expression, event) {
+                //    if (expression && event) {
+                //        // get index of expression, ignore predicate
+                //        var sortClass = 'fa-sort-asc',
+                //            exp = '+' + expression,
+                //            ind = $scope.digestExpression.indexOf('+' + expression),
+                //            irev = $scope.digestExpression.indexOf('-' + expression);
+                //
+                //        if (ind !== -1) {
+                //            // toggle predicate
+                //            exp = '-' + expression;
+                //            sortClass = 'fa-sort-desc';
+                //            $scope.digestExpression.splice(ind, 1);
+                //        } else if (irev !== -1) {
+                //            // toggle predicate
+                //            sortClass = 'fa-sort-asc';
+                //            $scope.digestExpression.splice(irev, 1);
+                //        }
+                //        // give this exp to sort order first priority
+                //        $scope.digestExpression.unshift(exp);
+                //        event.currentTarget.querySelector('i.fa.fa-fw').className = "fa fa-fw " + sortClass;
+                //    } else {
+                //        $('#digestCycleDataTable').find('thead i.fa.fa-fw').removeClass('fa-sort-asc fa-sort-desc').addClass('fa-unsorted');
+                //        $scope.digestExpression.length = 0;
+                //    }
+                //};
 
-                        if (ind !== -1) {
-                            // toggle predicate
-                            exp = '-' + expression;
-                            sortClass = 'fa-sort-desc';
-                            $scope.digestExpression.splice(ind, 1);
-                        } else if (irev !== -1) {
-                            // toggle predicate
-                            sortClass = 'fa-sort-asc';
-                            $scope.digestExpression.splice(irev, 1);
-                        }
-                        // give this exp to sort order first priority
-                        $scope.digestExpression.unshift(exp);
-                        event.currentTarget.querySelector('i.fa.fa-fw').className = "fa fa-fw " + sortClass;
-                    } else {
-                        $('#digestCycleDataTable').find('thead i.fa.fa-fw').removeClass('fa-sort-asc fa-sort-desc').addClass('fa-unsorted');
-                        $scope.digestExpression.length = 0;
-                    }
-                };
-
-                $scope.watchSortByExpression = function (expression, event) {
-                    $('#watchersDataTable').find('thead i.fa.fa-fw').removeClass('fa-sort-asc fa-sort-desc').addClass('fa-unsorted');
-                    if (expression && event) {
-                        // get index of expression, ignore predicate
-                        var sortClass = 'fa-sort-asc',
-                            expAsc = '+' + expression;
-
-                        if ($scope.watchOrderExpression[0] === expAsc) {
-                            $scope.watchOrderExpression[0] = '-' + expression;
-                            sortClass = 'fa-sort-desc';
-                        } else {
-                            $scope.watchOrderExpression[0] = expAsc;
-                        }
-                        event.currentTarget.querySelector('i.fa.fa-fw').className = "fa fa-fw " + sortClass;
-                    } else {
-                        $scope.watchOrderExpression.length = 0;
-                    }
-                };
+                //$scope.watchSortByExpression = function (expression, event) {
+                //    $('#watchersDataTable').find('thead i.fa.fa-fw').removeClass('fa-sort-asc fa-sort-desc').addClass('fa-unsorted');
+                //    if (expression && event) {
+                //        // get index of expression, ignore predicate
+                //        var sortClass = 'fa-sort-asc',
+                //            expAsc = '+' + expression;
+                //
+                //        if ($scope.watchOrderExpression[0] === expAsc) {
+                //            $scope.watchOrderExpression[0] = '-' + expression;
+                //            sortClass = 'fa-sort-desc';
+                //        } else {
+                //            $scope.watchOrderExpression[0] = expAsc;
+                //        }
+                //        event.currentTarget.querySelector('i.fa.fa-fw').className = "fa fa-fw " + sortClass;
+                //    } else {
+                //        $scope.watchOrderExpression.length = 0;
+                //    }
+                //};
 
                 // end of controller
             }]);

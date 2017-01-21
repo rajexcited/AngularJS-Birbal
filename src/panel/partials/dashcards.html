@@ -5,6 +5,7 @@
             <div class="widget-user-header bg-aqua-active">
                 <h3 class="widget-user-username">Digest Cycle Summary</h3>
                 <h5 class="widget-user-desc">highlights of recent 3 min activities with graph details</h5>
+                <a class="label " href="#" ng-click="sidebarActions.changePanelView('digestDetails');"><i class="fa fa-share"></i><span> &nbsp;Go To detail</span></a>
             </div>
             <div class="box-footer">
                 <ul class="nav nav-stacked">
@@ -69,14 +70,14 @@
 </div>
 
 <div class="row">
-    <div class="col-sm-11">
+    <div class="col-sm-9">
         <div class="digest-chart" id="digest-rate-chart-container">
             <div class="loader"></div>
         </div>
     </div>
 </div>
 <div class="row">
-    <div class="col-sm-11">
+    <div class="col-sm-9">
         <div class="digest-chart" id="dom-chart-container">
             <div class="loader"></div>
         </div>
@@ -84,7 +85,7 @@
 </div>
 
 <div class="row">
-    <div class="col-sm-11">
+    <div class="col-sm-9">
         <div class="digest-chart" id="longest-digest-chart-container">
             <div class="loader"></div>
         </div>

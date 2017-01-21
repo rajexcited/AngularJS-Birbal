@@ -29,17 +29,17 @@
             </li>
             <li select-view="settings">
                 <a href="#" ng-click="sidebarActions.changePanelView('settings');">
-                    <i class="fa fa-cogs"></i> <span>More Options</span>
+                    <i class="fa fa-cogs"></i> <span>Settings</span>
                 </a>
             </li>
             <li class="perf-check" ng-show="!csInfo.pause && csInfo.ngDetected">
                 <a title="it is ON" href="#" ng-click="sidebarActions.pauseMyAnalysis();">
-                    <i class="fa fa-check-square"></i> <span>Performance Analysis</span>
+                    <i class="fa fa-stop"></i> <span>Stop Perf Analysis</span>
                 </a>
             </li>
             <li class="perf-check" ng-show="csInfo.pause && csInfo.ngDetected">
                 <a href="#" title="it is OFF" ng-click="sidebarActions.resumeMyAnalysis();">
-                    <i class="fa fa-square-o"></i> <span>Performance Analysis</span>
+                    <i class="fa fa-play"></i> <span>Start Perf Analysis</span>
                 </a>
             </li>
             <li select-view="help">

@@ -16,21 +16,21 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Digest range Slider</h3>
-                <span>select time range to filter digest result and inline chart shows the frequency of digest cycle over the time scale.</span>
-            </div><!-- /.box-header -->
-            <div class="box-body">
-                <div class="row margin">
-                <span id="digestRangeSlider" range-slider="" slider-config="rangeSlider.digest.config"
-                      on-range-change="rangeSlider.digest.onChange"
-                      measures="digestCycle.measures"></span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!--<div class="row">-->
+    <!--<div class="box box-primary">-->
+    <!--<div class="box-header">-->
+    <!--<h3 class="box-title">Digest range Slider</h3>-->
+    <!--<span>select time range to filter digest result and inline chart shows the frequency of digest cycle over the time scale.</span>-->
+    <!--</div>&lt;!&ndash; /.box-header &ndash;&gt;-->
+    <!--<div class="box-body">-->
+    <!--<div class="row margin">-->
+    <!--<span id="digestRangeSlider" range-slider="" slider-config="rangeSlider.digest.config"-->
+    <!--on-range-change="rangeSlider.digest.onChange"-->
+    <!--measures="digestInfo.details"></span>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
 
     <div class="row">
         <div class="col-sm-12">
@@ -38,7 +38,7 @@
                 <!-- Default panel contents -->
                 <div class="panel-heading">Digest Information</div>
                 <div class="panel-body">
-                    <p>Digest cycles are grouped by debounce time set from "more option". the bigger the worse. browser
+                    <p>Digest cycles are grouped by debounce time provided in "settings". the bigger the worse. browser
                         can be freeze in this duration stopping/delaying all user actions.
                         Overlapped DOM rendering time is adjusted between groups. </p>
                 </div>
@@ -47,15 +47,15 @@
                 <table class="table">
                     <thead>
                     <tr>
-                        <th>#</th>
-                        <th title="military time 24 hrs, HH:mm:ss">Start time</th>
+                        <th>n in group</th>
+                        <th>Start time (HH:mm:ss)</th>
                         <th>Duration</th>
-                        <th>post script time (HTML render/repaint)</th>
+                        <th>HTML rendering & repainting</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr ng-repeat="group in digestInfo.details">
-                        <th scope="row">{{$index+1}}</th>
+                        <th scope="row">{{group.list.length}}</th>
                         <td>{{group.startDate|date:'HH:mm:ss'}}</td>
                         <td>{{group.duration|number:0}} ms</td>
                         <td>{{group.domRenderTime|number:0}} ms</td>

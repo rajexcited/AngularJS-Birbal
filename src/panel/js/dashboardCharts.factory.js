@@ -121,11 +121,13 @@
                         connectNullData: true,
                         gridThickness: 0.3,
                         includeZero: true,
-                        maximum: 70
+                        maximum: 70,
+                        labelFontSize: 12
                     },
                     axisX: {
-                        title: " time (military date time) ",
+                        title: " time (HH:mm:ss) ",
                         includeZero: false,
+                        labelFontSize: 12,
                         valueFormatString: "HH:mm:ss"
                     },
                     toolTip: {
@@ -183,12 +185,14 @@
                         connectNullData: true,
                         gridThickness: 0.3,
                         includeZero: false,
-                        suffix: " ms"
+                        suffix: " ms",
+                        labelFontSize: 12
                     },
                     axisX: {
-                        title: " time (military time) ",
+                        title: " time (HH:mm:ss) ",
                         includeZero: false,
-                        valueFormatString: "HH:mm:ss"
+                        valueFormatString: "HH:mm:ss",
+                        labelFontSize: 12
                     },
                     toolTip: {
                         enabled: true,
@@ -237,7 +241,7 @@
                 chartOptions = {
                     theme: "theme1",
                     title: {
-                        text: "DOM rendering due to digest"
+                        text: "HTML rendering due to digest"
                     },
                     axisY: {
                         title: "rendering time (ms)",
@@ -246,12 +250,14 @@
                         gridThickness: 0.3,
                         includeZero: false,
                         suffix: " ms",
-                        maximum: 1200
+                        maximum: 1200,
+                        labelFontSize: 12
                     },
                     axisX: {
-                        title: " time (military time) ",
+                        title: " time (HH:mm:ss) ",
                         includeZero: false,
-                        valueFormatString: "HH:mm:ss"
+                        valueFormatString: "HH:mm:ss",
+                        labelFontSize: 12
                     },
                     toolTip: {
                         enabled: true,
