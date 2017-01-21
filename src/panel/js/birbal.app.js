@@ -31,6 +31,7 @@
                         // collapse main header
                         angular.element('.main-header a[data-toggle="offcanvas"]').click();
                     }
+                    $scope.$emit('render-charts-dashboard');
                     $scope.$applyAsync(function () {
                         $scope.view = pageName;
                     });
@@ -141,7 +142,7 @@
                 //};
 
                 //$scope.rangeSlider.digest.onChange = function (from, to) {
-                    //$scope.selectedDigestRange = digestDataFactory.getDigestHighlightsForRange(from, to);
+                //$scope.selectedDigestRange = digestDataFactory.getDigestHighlightsForRange(from, to);
                 //};
 
                 //$scope.digestSortByExpression = function (expression, event) {

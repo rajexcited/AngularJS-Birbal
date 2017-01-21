@@ -9,7 +9,8 @@
         .factory('dashboardCharts', ['$timeout', '$rootScope', function ($timeout, $rootScope) {
 
             var charts = {
-                created: []
+                created: [],
+                doRender: true
             };
 
             /**
@@ -161,8 +162,13 @@
                         updatePointYVal(point, axisY.maximum);
                     }
                     emphasizeDataPointMarker(point, chartOptions.data[0].dataPoints, axisY.maximum);
+                    this.render();
+                };
 
-                    chart.render();
+                this.render = function () {
+                    if (charts.doRender) {
+                        chart.render();
+                    }
                 };
 
                 chart = new CanvasJS.Chart(id, chartOptions);
@@ -225,9 +231,14 @@
                     }
 
                     emphasizeDataPointMarker(point, chartOptions.data[0].dataPoints, axisY.maximum);
-                    chart.render();
+                    this.render();
                 };
 
+                this.render = function () {
+                    if (charts.doRender) {
+                        chart.render();
+                    }
+                };
                 chart = new CanvasJS.Chart(id, chartOptions);
 
                 this.update(null, true);
@@ -366,13 +377,28 @@
                         emphasizeDataPointMarker(point1, getDataSeriesForLongestDomTime().dataPoints, max);
                         emphasizeDataPointMarker(point2, getDataSeriesForAverageDomTime().dataPoints, max);
                     }
-                    chart.render();
+                    this.render();
+                };
+
+                this.render = function () {
+                    if (charts.doRender) {
+                        chart.render();
+                    }
                 };
 
                 chart = new CanvasJS.Chart(id, chartOptions);
 
                 this.update(null, true);
             };
+
+            $rootScope.$on('render-charts-dashboard', function (event) {
+                $timeout(function () {
+                    charts.doRender = (event.targetScope.view === 'dashboard');
+                    charts.created.forEach(function (chart) {
+                        chart.render();
+                    });
+                });
+            });
 
             function createChart(chartId, max) {
 
