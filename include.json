@@ -44,7 +44,8 @@
         "../js/httpRecordFactory.factory.js",
         "../js/dependencyTree.factory.js",
         "../js/rangeSlider.directive.js",
-        "../js/searchCriteria.watch.directive.js"
+        "../js/searchCriteria.watch.directive.js",
+        "../js/watcherView.factory.js"
       ]
     }
   },

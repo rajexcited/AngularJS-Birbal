@@ -1,10 +1,9 @@
 <div class="box">
     <div class="box-header">
         <h3 class="box-title">
-            Watch Measure Table ({{watchDetails.measures.length}}) <i data-toggle="tooltip"
-                                                                      data-original-title="clear sort options"
-                                                                      ng-click="watchSortByExpression()"
-                                                                      class="fa fa-fw fa-reorder"></i>
+            Watch Measure Table ({{watchInfo.details.length}})
+            <i data-toggle="tooltip" data-original-title="clear sort options" ng-click="watchSortByExpression()"
+               class="fa fa-fw fa-reorder"></i>
         </h3>
 
         <div class="box-tools">
@@ -22,67 +21,78 @@
                         watch expression <i class="fa fa-fw fa-unsorted"></i>
                     </div>
                 </th>
-                <th><span> Equality </span></th>
+                <!--<th><span> Equality </span></th>-->
+                <th colspan="2" class="text-center">
+                    <div data-toggle="tooltip"
+                         data-original-title="watch expression evaluation to verify any changes made.">
+                        Expression evaluated
+                    </div>
+                </th>
+                <th colspan="2" class="text-center">
+                    <div data-toggle="tooltip" data-original-title="watch action listener">
+                        Action Listener
+                    </div>
+                </th>
                 <th>
                     <div data-toggle="tooltip"
-                         data-original-title="number of times this watch expression has been verified">
-                        <span ng-click="watchSortByExpression('nGet', $event)">
-                            nGet <i class="fa fa-fw fa-unsorted"></i></span>
+                         data-original-title="total runtime of both watch expression and listener">
+                        <span ng-click="watchSortByExpression('runtime', $event)" data-toggle="tooltip"
+                              data-original-title="">
+                            total time <i class="fa fa-fw fa-unsorted"></i></span>
                     </div>
                 </th>
-                <th>
-                    <div data-toggle="tooltip"
-                         data-original-title="time taken to verify watch for evaluation. This can be expensive.">
-                        <span ng-click="watchSortByExpression('timeGet', $event)">
-                            timeGet <i class="fa fa-fw fa-unsorted"></i></span>
-                    </div>
-                </th>
-                <th>
-                    <div data-toggle="tooltip" data-original-title="number of times this has been evaluated.">
-                        <span ng-click="watchSortByExpression('nFn', $event)">
-                            nFn <i class="fa fa-fw fa-unsorted"></i></span>
-                    </div>
-                </th>
-                <th>
-                    <div data-toggle="tooltip" data-original-title="time taken to evaluate.">
-                        <span ng-click="watchSortByExpression('timeFn', $event)">
-                            timeFn <i class="fa fa-fw fa-unsorted"></i></span>
-                    </div>
-                </th>
-                <th><span ng-click="watchSortByExpression('runtime', $event)" data-toggle="tooltip"
-                          data-original-title="total watch time">
-                    total time <i class="fa fa-fw fa-unsorted"></i></span></th>
                 <!--<th>
                     <div data-toggle="tooltip" data-original-title="this is used by scopes">
                         scope Ids
                     </div>
                 </th>-->
+                <!--<th>-->
+                <!--<div data-toggle="tooltip" data-original-title="number of times use on various code blocks.">-->
+                <!--<span ng-click="watchSortByExpression('nUsedMax', $event)">-->
+                <!--n Used Max<i class="fa fa-fw fa-unsorted"></i></span>-->
+                <!--</div>-->
+                <!--</th>-->
+                <!--<th>-->
+                <!--<div data-toggle="tooltip" data-original-title="total executed =nGet+nFn ">-->
+                <!--<span ng-click="watchSortByExpression('nUsed', $event)">-->
+                <!--n Used <i class="fa fa-fw fa-unsorted"></i></span>-->
+                <!--</div>-->
+                <!--</th>-->
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
                 <th>
-                    <div data-toggle="tooltip" data-original-title="number of times use on various code blocks.">
-                        <span ng-click="watchSortByExpression('nUsedMax', $event)">
-                            n Used Max<i class="fa fa-fw fa-unsorted"></i></span>
-                    </div>
+                    <span ng-click="watchSortByExpression('howMany.get', $event)">
+                        occurrence <i class="fa fa-fw fa-unsorted"></i></span>
                 </th>
                 <th>
-                    <div data-toggle="tooltip" data-original-title="total executed =nGet+nFn ">
-                        <span ng-click="watchSortByExpression('nUsed', $event)">
-                            n Used <i class="fa fa-fw fa-unsorted"></i></span>
-                    </div>
+                    <span ng-click="watchSortByExpression('get', $event)">
+                        time <i class="fa fa-fw fa-unsorted"></i></span>
                 </th>
+                <th>
+                    <span ng-click="watchSortByExpression('howMany.fn', $event)">
+                        occurrence <i class="fa fa-fw fa-unsorted"></i></span>
+                </th>
+                <th>
+                    <span ng-click="watchSortByExpression('fn', $event)">
+                        time <i class="fa fa-fw fa-unsorted"></i></span>
+                </th>
+                <th>&nbsp;</th>
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="aMeasure in watchDetails.measures | filter: watch.search.filterBy | filter: watch.search.filterByFn | orderBy: watchOrderExpression">
-                <td>{{:: aMeasure.exp}}</td>
-                <td>{{:: aMeasure.eq}}</td>
-                <td> {{ aMeasure.nGet }}</td>
-                <td> {{ aMeasure.timeGet |number:2}} ms</td>
-                <td> {{ aMeasure.nFn }}</td>
-                <td> {{ aMeasure.timeFn | number:2}} ms</td>
-                <td> {{ aMeasure.runtime | number :2}} ms</td>
+            <!--<tr ng-repeat="aMeasure in watchInfo.details | filter: watch.search.filterBy | filter: watch.search.filterByFn | orderBy: watchOrderExpression">-->
+            <tr ng-repeat="aMeasure in watchInfo.details">
+                <td>{{:: aMeasure.watch.exp}}</td>
+                <!--<td>{{:: aMeasure.watch.eq}}</td>-->
+                <td> {{ aMeasure.watch.howMany.get}}</td>
+                <td> {{ aMeasure.watch.get|number:2}} ms</td>
+                <td> {{ aMeasure.watch.howMany.fn}}</td>
+                <td> {{ aMeasure.watch.fn|number:2}} ms</td>
+                <td> {{ aMeasure.watch.runTime | number :2}} ms</td>
                 <!--<td> {{:: aMeasure.scope }}</td>-->
-                <td> {{ aMeasure.nUsedMax}}</td>
-                <td> {{ aMeasure.nUsed }}</td>
+                <!--<td> {{ aMeasure.nUsedMax}}</td>-->
+                <!--<td> {{ aMeasure.nUsed }}</td>-->
             </tr>
             </tbody>
         </table>

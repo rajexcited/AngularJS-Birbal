@@ -2,9 +2,9 @@
 (function (angular, birbalJS) {
     "use strict";
 
-    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'views.performance.digest', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph'])
+    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'views.performance.digest', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph', 'measure.digest.app'])
         .controller('panelViewController',
-            ['$scope', 'backgroundService', '$rootScope', 'digestView', '$interval', function ($scope, backgroundService, $rootScope, digestView, $interval) {
+            ['$scope', 'backgroundService', '$rootScope', 'digestView', '$interval', 'watchMeasureLogFactory', function ($scope, backgroundService, $rootScope, digestView, $interval, watchMeasureLogFactory) {
                 // default first message on inspect tab load, letting app know I'm ready
                 backgroundService.informBackground(null, 'panelInit');
                 /////////////////////////////////////////////////////////
@@ -102,11 +102,16 @@
                     },
                     clearData: function () {
                         digestView.resetView();
+                        watchMeasureLogFactory.reset();
                         //digestDataFactory.resetDigestMeasures();
                     }
                 };
                 getDebounceTime();
-
+                $scope.watchInfo = {
+                    details: watchMeasureLogFactory.getWatcherList(),
+                    highlights: {}
+                };
+                watchMeasureLogFactory.prepareHighlights($scope.watchInfo.highlights);
                 birbalJS.logger.log(" digest groups ", digestView.getDigestGroups());
 
                 /////////////////////////////////////////////////////////////////////////////////////////

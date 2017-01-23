@@ -5,14 +5,13 @@
 (function (angular) {
     "use strict";
 
-    angular.module('measure.digest.app', [])
-        .factory('digestMeasureLogFactory', ['$rootScope', function ($rootScope) {
+    angular.module('measure.digest.app', ['views.performance.watch'])
+        .factory('digestMeasureLogFactory', ['$rootScope', 'watchMeasureLogFactory', function ($rootScope, watchMeasureLogFactory) {
 
             var digestList = [];
 
             function computeWatchers(digestMeasure) {
-                var watcherList = [],
-                    finalWatcherList;
+                var watcherList = [];
 
                 /**
                  *
@@ -67,29 +66,8 @@
                     delete scope.watchers;
                 });
 
-                var finalWatcherList = [];
-                angular.forEach(_.groupBy(watcherList, function (item) {
-                    return item.watch.exp + item.watch.eq;
-                }), function (list) {
-
-                    function mergeItems(item1, item2) {
-                        item1.scope = item1.scope.concat(item2.scope);
-                        item1.scopeFn = item1.scopeFn.concat(item2.scopeFn);
-                        item1.watch.howMany.fn += item2.watch.howMany.fn;
-                        item1.watch.fn += item2.watch.fn;
-                        item1.watch.howMany.get += item2.watch.howMany.get;
-                        item1.watch.get += item2.watch.get;
-                        return item1;
-                    }
-
-                    var item = _.reduce(list, mergeItems);
-                    item.scopeFn = _.uniq(item.scopeFn.sort(), true);
-                    item.scope = _.uniq(item.scope, true).sort();
-                    finalWatcherList.push(item);
-                });
-
-                digestMeasure.watchers = finalWatcherList;
-                //console.log(finalWatcherList);
+                digestMeasure.watchers = watchMeasureLogFactory.addWatchers(watcherList);
+                //console.log('digestMeasure.watchers', digestMeasure.watchers);
             }
 
             function getEventNames(digestMeasure) {
@@ -115,6 +93,8 @@
                     }
                     getEventNames(digestMeasure);
                     digestMeasure.domRenderTime = digestMeasure.domRenderEndTime - digestMeasure.endTime;
+                    var lastId = digestList[digestList.length - 1];
+                    digestMeasure.id = (lastId && (lastId.id + 1)) || 1;
                     // store last 200
                     digestList.push(digestMeasure);
                     digestList = digestList.slice(-200);
@@ -152,6 +132,7 @@
                     digestList.length = 0;
                 }
             });
+
         }]);
 
 }(angular));

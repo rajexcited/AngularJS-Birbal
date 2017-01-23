@@ -169,6 +169,12 @@ table {
     left: 30%;
 }
 
+.digest-summary .widget-user-header a.label,
+.watch-summary .widget-user-header a.label {
+    padding-top: 10px;
+    float: right;
+}
+
 @-webkit-keyframes spin {
     0% {
         -webkit-transform: rotate(0deg);
