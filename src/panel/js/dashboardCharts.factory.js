@@ -247,7 +247,7 @@
             charts['dom'] = function (id, limit) {
                 // digest rate
                 var chart, chartOptions,
-                    LONGEST_DS = 1, AVG_DS = 0;
+                    LONGEST_DS = 0, AVG_DS = 1;
 
                 chartOptions = {
                     theme: "theme1",
@@ -275,22 +275,22 @@
                         shared: true
                     },
                     data: [{
-                        name: "average time",
-                        type: "spline",
-                        color: "#369EAD",
+                        name: "longest time",
+                        type: "area",
+                        color: "#A7F1ED",
                         showInLegend: true,
-                        toolTipContent: "{name} :  {yVal} ms <br/> ",
+                        xValueFormatString: "HH:mm:ss",
+                        toolTipContent: "{name} :  {yVal} ms <br/> @ {x} ",
                         highlightEnabled: true,
                         nModified: -1,
                         max: limit,
                         dataPoints: []
                     }, {
-                        name: "longest time",
+                        name: "average time",
                         type: "spline",
-                        color: "#C0504E",
+                        color: "#369EAD",
                         showInLegend: true,
-                        xValueFormatString: "HH:mm:ss",
-                        toolTipContent: "{name} :  {yVal} ms <br/> @ {x} ",
+                        toolTipContent: "{name} :  {yVal} ms <br/> ",
                         highlightEnabled: true,
                         nModified: -1,
                         max: limit,
