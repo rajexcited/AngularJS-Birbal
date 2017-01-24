@@ -33,10 +33,18 @@
 
             var ngObj = {noScope: "There is no scope for this element."};
             if (sc) {
-                ngObj = {$scope: getScope(sc), $isolateScope: undefined};
-            }
-            if (is) {
-                ngObj.$isolateScope = getScope(is);
+                ngObj = {$scope: getScope(sc)};
+                if (is) {
+                    ngObj.$isolateScope = getScope(is);
+                }
+                var binding = angular.element($0).data('$binding');
+                if (binding) {
+                    ngObj.$binding = binding;
+                    if (binding.length === 1) {
+                        ngObj.$binding = binding[0];
+                    }
+                }
+
             }
             return ngObj;
         }(scope, isolateScope));
