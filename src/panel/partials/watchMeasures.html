@@ -2,13 +2,7 @@
     <div class="box-header">
         <h3 class="box-title">
             Watch Measure Table ({{watchInfo.details.length}})
-            <i data-toggle="tooltip" data-original-title="clear sort options" ng-click="watchSortByExpression()"
-               class="fa fa-fw fa-reorder"></i>
         </h3>
-
-        <div class="box-tools">
-            <button class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-        </div><!-- /.box-tools -->
     </div>
     <!-- /.box-header -->
     <div class="box-body no-padding">
@@ -82,7 +76,7 @@
             </thead>
             <tbody>
             <!--<tr ng-repeat="aMeasure in watchInfo.details | filter: watch.search.filterBy | filter: watch.search.filterByFn | orderBy: watchOrderExpression">-->
-            <tr ng-repeat="aMeasure in watchInfo.details">
+            <tr ng-repeat="aMeasure in watchInfo.details | birbalFilter: watchInfo.activeFilterList">
                 <td>{{:: aMeasure.watch.exp}}</td>
                 <!--<td>{{:: aMeasure.watch.eq}}</td>-->
                 <td> {{ aMeasure.watch.howMany.get}}</td>

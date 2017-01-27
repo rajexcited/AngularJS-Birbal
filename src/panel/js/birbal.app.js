@@ -109,10 +109,55 @@
                 getDebounceTime();
                 $scope.watchInfo = {
                     details: watchMeasureLogFactory.getWatcherList(),
-                    highlights: {}
+                    highlights: {},
+                    watchFilters: {}
                 };
                 watchMeasureLogFactory.prepareHighlights($scope.watchInfo.highlights);
                 birbalJS.logger.log(" digest groups ", digestView.getDigestGroups());
+                $scope.watchInfo.watchFilters.list = [
+                    {
+                        label: 'Hide unused watchers',
+                        condition: function (watcher) {
+                            return watcher.watch.howMany.fn > 0;
+                        },
+                        isActive: false
+                    },
+                    {
+                        label: 'Display unused watchers',
+                        condition: function (watcher) {
+                            return watcher.watch.howMany.fn === 0;
+                        },
+                        isActive: false
+                    },
+                    {
+                        label: 'Display watchers without filter',
+                        condition: function (watcher) {
+                            var regExForPipe = /\w\s*\|\s*\w/;
+                            return !regExForPipe.test(item.watch.exp);
+                        },
+                        isActive: false
+                    },
+                    {
+                        label: 'Display watchers using only filter',
+                        condition: function (watcher) {
+                            var regExForPipe = /\w\s*\|\s*\w/;
+                            return regExForPipe.test(item.watch.exp);
+                        },
+                        isActive: false
+                    },
+                    {
+                        label: 'Search Expression: ',
+                        input: {
+                            type: 'text',
+                            placeholder: 'Enter Expression to search and select it',
+                            value: ''
+                        },
+                        condition: function (watcher) {
+                            return watcher.watch.exp.indexOf(this.input.value) !== -1;
+                        },
+                        isActive: false
+                    }
+                ];
 
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            performance views - digest
@@ -124,6 +169,28 @@
                         viewChangeListenerRemover();
                     }
                 });
+
+                $scope.clearFilters = function (filterList, activeList) {
+                    activeList.length = 0;
+                    filterList.forEach(function (item) {
+                        item.isActive = false;
+                    });
+                };
+
+                $scope.toggleFilter = function (activeFilterList, item, event) {
+                    if (event.target.tagName !== 'INPUT') {
+                        if (item.isActive) {
+                            var ind = activeFilterList.indexOf(item);
+                            if (ind !== -1) {
+                                activeFilterList.splice(ind, 1);
+                            }
+                            item.isActive = false;
+                        } else {
+                            activeFilterList.push(item);
+                            item.isActive = true;
+                        }
+                    }
+                };
 
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            slider, filter, dashboard update, sort, configurations

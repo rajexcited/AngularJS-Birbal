@@ -13,6 +13,42 @@
     </div>
 
     <div class="row">
+        <div class="col-sm-7">
+            <div class="box filter-box box-success">
+                <div class="box-header">
+                    <h3 class="box-title">
+                        <button type="button" ng-click="clearFilters(watchInfo.watchFilters.list, watchInfo.activeFilterList);" class="btn btn-primary">
+                            Clear all Filters
+                        </button>
+                    </h3>
+                    <div class="box-tools pull-right">
+                        <button class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                    </div>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <!--<div class="margin-bottom-20">-->
+                    <!---->
+                    <!--</div>-->
+                    <div class="list-group">
+                        <a href="#" class="list-group-item"
+                           ng-click="toggleFilter(watchInfo.activeFilterList, watchFilterItem, $event);"
+                           ng-class="{'list-group-item-success selected':watchFilterItem.isActive}"
+                           ng-repeat="watchFilterItem in watchInfo.watchFilters.list">
+                            <span>{{watchFilterItem.label}}</span>
+                            <input class="list-item-input form-control" type="{{::watchFilterItem.input.type}}"
+                                   ng-if="::watchFilterItem.input"
+                                   ng-model="watchFilterItem.input.value"
+                                   placeholder="{{::watchFilterItem.input.placeholder}}">
+                            <span class="selection-mark glyphicon glyphicon-ok"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
         <!--<div class="col-sm-6">-->
         <!--&lt;!&ndash; Widget: user widget style 1 -WATCH card &ndash;&gt;-->
         <!--<div class="box box-widget widget-user">-->
@@ -50,24 +86,24 @@
         <!--&lt;!&ndash; /.widget-user &ndash;&gt;-->
         <!--</div>-->
         <!-- /.col Watch card-->
-        <div class="col-sm-6">
-            <div class="box box-solid">
-                <div class="box-body">
-                    <div class="callout callout-info">
-                        <h4> Search Watchers.</h4>
-                        <h5>Choose Column Action and give </h5>
-                        <p>
-                            1. input value as in exact or substring match <br>
-                            2. input value as in multi value match ex. 1,4,7 <br>
-                            3. input value as in range ('-') ex. 1-10
-                        </p>
-                    </div>
-                    <div search-watch="watch.search"></div>
-                </div>
-                <!-- /.box-body -->
-            </div>
-            <!-- /.box Watch search -->
-        </div>
+        <!--<div class="col-sm-6">-->
+        <!--<div class="box box-solid">-->
+        <!--<div class="box-body">-->
+        <!--<div class="callout callout-info">-->
+        <!--<h4> Search Watchers.</h4>-->
+        <!--<h5>Choose Column Action and give </h5>-->
+        <!--<p>-->
+        <!--1. input value as in exact or substring match <br>-->
+        <!--2. input value as in multi value match ex. 1,4,7 <br>-->
+        <!--3. input value as in range ('-') ex. 1-10-->
+        <!--</p>-->
+        <!--</div>-->
+        <!--<div search-watch="watch.search"></div>-->
+        <!--</div>-->
+        <!--&lt;!&ndash; /.box-body &ndash;&gt;-->
+        <!--</div>-->
+        <!--&lt;!&ndash; /.box Watch search &ndash;&gt;-->
+        <!--</div>-->
         <!-- /.col Watch search -->
     </div>
     <!-- /.row watch highlights-->

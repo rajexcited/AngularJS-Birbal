@@ -175,6 +175,55 @@ table {
     float: right;
 }
 
+.box.filter-box .box-tools .fa {
+    font-size: 200%;
+}
+
+.list-group .list-group-item:not(.selected) .selection-mark {
+    color: transparent;
+}
+
+.list-group .list-group-item .selection-mark {
+    font-size: 135%;
+    float: right;
+}
+
+input.list-item-input {
+    width: 50%;
+    margin-left: 15px;
+    display: inline-block;
+    border-radius: 6px;
+    font-weight: bold;
+    color: inherit;
+    background-color: inherit;
+}
+
+.list-group-item-success input.list-item-input:hover {
+    background-color: #dff0d8;
+    border-color: #3c763d;
+}
+
+input.list-item-input:hover {
+    background-color: #fff;
+    border-color: #555;
+}
+
+.list-group-item-success input.list-item-input:focus {
+    background-color: #dff0d8;
+}
+
+input.list-item-input:focus {
+    background-color: #fff;
+}
+
+input.list-item-input:focus {
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+}
+
+.margin-bottom-20 {
+    margin-bottom: 20px;
+}
+
 @-webkit-keyframes spin {
     0% {
         -webkit-transform: rotate(0deg);
