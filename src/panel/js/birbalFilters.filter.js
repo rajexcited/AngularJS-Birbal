@@ -31,6 +31,25 @@
                 }
                 return [];
             };
+        }])
+        .filter('birbalSearchBy', [function () {
+            return function (list, conditionList) {
+                var len = conditionList.length,
+                    filteredList = [];
+                if (list) {
+                    angular.forEach(list, function (item) {
+                        var i,
+                            shouldAdd = true;
+                        for (i = 0; i < len && shouldAdd; i++) {
+                            shouldAdd = conditionList[i].checkCondition(item);
+                        }
+                        if (shouldAdd) {
+                            filteredList.push(item);
+                        }
+                    });
+                }
+                return filteredList;
+            };
         }]);
 
 }(angular));

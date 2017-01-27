@@ -76,7 +76,7 @@
             </thead>
             <tbody>
             <!--<tr ng-repeat="aMeasure in watchInfo.details | filter: watch.search.filterBy | filter: watch.search.filterByFn | orderBy: watchOrderExpression">-->
-            <tr ng-repeat="aMeasure in watchInfo.details | birbalFilter: watchInfo.activeFilterList">
+            <tr ng-repeat="aMeasure in watchInfo.details | birbalSearchBy : watchInfo.activeFilterList">
                 <td>{{:: aMeasure.watch.exp}}</td>
                 <!--<td>{{:: aMeasure.watch.eq}}</td>-->
                 <td> {{ aMeasure.watch.howMany.get}}</td>

@@ -110,38 +110,39 @@
                 $scope.watchInfo = {
                     details: watchMeasureLogFactory.getWatcherList(),
                     highlights: {},
-                    watchFilters: {}
+                    watchFilters: {},
+                    activeFilterList: []
                 };
                 watchMeasureLogFactory.prepareHighlights($scope.watchInfo.highlights);
                 birbalJS.logger.log(" digest groups ", digestView.getDigestGroups());
                 $scope.watchInfo.watchFilters.list = [
                     {
                         label: 'Hide unused watchers',
-                        condition: function (watcher) {
+                        checkCondition: function (watcher) {
                             return watcher.watch.howMany.fn > 0;
                         },
                         isActive: false
                     },
                     {
                         label: 'Display unused watchers',
-                        condition: function (watcher) {
+                        checkCondition: function (watcher) {
                             return watcher.watch.howMany.fn === 0;
                         },
                         isActive: false
                     },
                     {
                         label: 'Display watchers without filter',
-                        condition: function (watcher) {
+                        checkCondition: function (watcher) {
                             var regExForPipe = /\w\s*\|\s*\w/;
-                            return !regExForPipe.test(item.watch.exp);
+                            return !regExForPipe.test(watcher.watch.exp);
                         },
                         isActive: false
                     },
                     {
                         label: 'Display watchers using only filter',
-                        condition: function (watcher) {
+                        checkCondition: function (watcher) {
                             var regExForPipe = /\w\s*\|\s*\w/;
-                            return regExForPipe.test(item.watch.exp);
+                            return regExForPipe.test(watcher.watch.exp);
                         },
                         isActive: false
                     },
@@ -152,7 +153,7 @@
                             placeholder: 'Enter Expression to search and select it',
                             value: ''
                         },
-                        condition: function (watcher) {
+                        checkCondition: function (watcher) {
                             return watcher.watch.exp.indexOf(this.input.value) !== -1;
                         },
                         isActive: false
@@ -191,6 +192,25 @@
                         }
                     }
                 };
+
+
+                //////////////////////////////////////////////////////////////////////////////////////////
+                //          handle scroll bar
+                //////////////////////////////////////////////////////////////////////////////////////////
+                function isThereScrollBar() {
+                    return ($(document).height() > $(window).height());
+                }
+
+                $interval(function () {
+                    var contentWrapper = $(".wrapper .content-wrapper");
+                    if (isThereScrollBar()) {
+                        // yes - remove right scrollbar space
+                        contentWrapper.css('padding-right', '17px');
+                    } else {
+                        // no - add right scrollbar space
+                        contentWrapper.css('padding-right', '');
+                    }
+                }, 200);
 
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            slider, filter, dashboard update, sort, configurations
