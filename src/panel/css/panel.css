@@ -7,6 +7,24 @@
 /*  overriding bootstrap styles  */
 .fixed .content-wrapper {
     padding-top: 10px;
+    padding-right: 0;
+    transition: padding-right 0.3s ease-in-out;
+}
+
+.fixed .dependency-graph-container .app.right-side {
+    padding-top: 0;
+}
+
+.dependency-graph-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+sortable-column {
+    cursor: pointer;
 }
 
 /****/

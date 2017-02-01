@@ -11,12 +11,15 @@
             var watcherList = [], watchHighlights, digestCount = 0;
 
             function updateHighlights(digestWatcherList) {
-                var count = 0, dirty = 0;
+                var count = 0, dirty = 0, time_total = 0, time_dirty = 0;
                 digestCount++;
                 _.forEach(digestWatcherList, function (w) {
                     count += w.watch.howMany.get;
+                    time_total += w.watch.get;
                     if (w.watch.howMany.fn) {
                         dirty += w.watch.howMany.fn;
+                        time_total += w.watch.fn;
+                        time_dirty += w.watch.fn;
                     }
                 });
                 watchHighlights.max = Math.max(count, watchHighlights.max || 0);
@@ -27,7 +30,8 @@
                     count: count,
                     dirty: dirty,
                     isMax: (watchHighlights.max === count),
-                    isDirtyMax: (watchHighlights.dirty === dirty)
+                    isDirtyMax: (watchHighlights.dirty === dirty),
+                    runTime: {dirty: time_dirty, total: time_total}
                 });
             }
 

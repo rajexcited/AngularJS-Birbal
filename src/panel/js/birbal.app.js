@@ -2,9 +2,9 @@
 (function (angular, birbalJS) {
     "use strict";
 
-    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'views.performance.digest', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph', 'measure.digest.app'])
+    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'views.performance.digest', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph', 'measure.digest.app', 'sortable-column.component'])
         .controller('panelViewController',
-            ['$scope', 'backgroundService', '$rootScope', 'digestView', '$interval', 'watchMeasureLogFactory', function ($scope, backgroundService, $rootScope, digestView, $interval, watchMeasureLogFactory) {
+            ['$scope', 'backgroundService', '$rootScope', 'digestView', '$interval', 'watchMeasureLogFactory', '$timeout', function ($scope, backgroundService, $rootScope, digestView, $interval, watchMeasureLogFactory, $timeout) {
                 // default first message on inspect tab load, letting app know I'm ready
                 backgroundService.informBackground(null, 'panelInit');
                 /////////////////////////////////////////////////////////
@@ -111,7 +111,8 @@
                     details: watchMeasureLogFactory.getWatcherList(),
                     highlights: {},
                     watchFilters: {},
-                    activeFilterList: []
+                    activeFilterList: [],
+                    sortByExpressions: []
                 };
                 watchMeasureLogFactory.prepareHighlights($scope.watchInfo.highlights);
                 birbalJS.logger.log(" digest groups ", digestView.getDigestGroups());
@@ -163,7 +164,49 @@
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            performance views - digest
                 /////////////////////////////////////////////////////////////////////////////////////////
-                $scope.digestInfo = {highlights: {}, details: digestView.getDigestGroups()};
+                $scope.digestInfo = {
+                    highlights: {},
+                    details: digestView.getDigestGroups(),
+                    filters: {},
+                    activeFilterList: [],
+                    sortByExpressions: ['+startDate']
+                };
+                $scope.digestInfo.filters.list = [
+                    {
+                        label: 'Show me recent cycles of given seconds which is ',
+                        input: {
+                            type: 'number',
+                            placeholder: 'Enter seconds',
+                            value: ''
+                        },
+                        checkCondition: function (group) {
+                            return group.startDate >= new Date(Date.now() - parseInt(this.input.value) * 1000);
+                        },
+                        isActive: false
+                    },
+                    {
+                        label: 'Display group having 1 or 2 cycles',
+                        checkCondition: function (group) {
+                            return group.list.length <= 2;
+                        },
+                        isActive: false
+                    },
+                    {
+                        label: 'Hide group having 1 or 2 cycles',
+                        checkCondition: function (group) {
+                            return group.list.length > 2;
+                        },
+                        isActive: false
+                    },
+                    {
+                        label: 'Display groups consumed by watchers for 80% time',
+                        checkCondition: function (group) {
+                            return (group.watcherRunTime / group.runTime) >= 0.8;
+                        },
+                        isActive: false
+                    }
+                ];
+
                 var viewChangeListenerRemover = $scope.$on("view-changed", function viewChangeListener(ignore, viewEvent) {
                     if (viewEvent.displayed === "dashboard") {
                         digestView.digestHighlightsWithChart($scope.digestInfo.highlights);
@@ -197,20 +240,43 @@
                 //////////////////////////////////////////////////////////////////////////////////////////
                 //          handle scroll bar
                 //////////////////////////////////////////////////////////////////////////////////////////
-                function isThereScrollBar() {
-                    return ($(document).height() > $(window).height());
-                }
+                (function handleScrollBarGap() {
+                    var prevScrollbarGap,
+                        contentWrapper = $(".wrapper .content-wrapper"),
+                        $$document = $(document),
+                        $$window = $(window),
+                        $$HTMLBODY = $('html,body'),
+                        SCROLL_BAR_SPACE = '17px',
+                        NO_SPACE = '';
 
-                $interval(function () {
-                    var contentWrapper = $(".wrapper .content-wrapper");
-                    if (isThereScrollBar()) {
-                        // yes - remove right scrollbar space
-                        contentWrapper.css('padding-right', '17px');
-                    } else {
-                        // no - add right scrollbar space
-                        contentWrapper.css('padding-right', '');
+
+                    function isThereScrollBar() {
+                        return ($$document.height() > $$window.height());
                     }
-                }, 200);
+
+                    function changeScrollbarPadding(addPadding) {
+                        if (addPadding && prevScrollbarGap !== SCROLL_BAR_SPACE) {
+                            prevScrollbarGap = SCROLL_BAR_SPACE;
+                            contentWrapper.css('padding-right', prevScrollbarGap);
+                            $timeout(function () {
+                                $$HTMLBODY.css('overflow-y', 'hidden');
+                            }, 150);
+                        } else if (!addPadding && prevScrollbarGap !== NO_SPACE) {
+                            prevScrollbarGap = NO_SPACE;
+                            contentWrapper.css('padding-right', prevScrollbarGap);
+                            $timeout(function () {
+                                $$HTMLBODY.css('overflow-y', '');
+                            }, 150);
+                        }
+                    }
+
+                    $interval(function () {
+                        // yes - remove right scrollbar space
+                        // no - add right scrollbar space
+                        changeScrollbarPadding(!isThereScrollBar());
+                    }, 400);
+
+                })();
 
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            slider, filter, dashboard update, sort, configurations

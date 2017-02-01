@@ -112,13 +112,14 @@
                 digestGroup.startTime = startTime;
                 digestGroup.startDate = new Date(startTime + $rootScope.csInfo.datePerfGapTime);
                 digestGroup.duration = endTime - startTime;
-                digestGroup.runtime = digestGroup.runtime || 0;
-                digestGroup.runtime += last.runTime;
+                digestGroup.runTime = digestGroup.runTime || 0;
+                digestGroup.runTime += last.runTime;
 
                 dOfPrevGrp = digestGroups[digestGroups.length - 2];
                 dOfPrevGrp = dOfPrevGrp && dOfPrevGrp.list[dOfPrevGrp.list.length - 1];
                 det1 = (dOfPrevGrp && dOfPrevGrp.domRenderEndTime) || 0;
                 digestGroup.domRenderTime = 0;
+                digestGroup.watcherRunTime = 0;
                 _.forEach(digestGroup.list, function (d2, i) {
                     var dr1Remaining = det1 - d2.endTime;
                     if (dr1Remaining <= d2.domRenderTime) {
@@ -131,6 +132,8 @@
                         digestGroup.domRenderTime += (d2.domRenderTime - dr1Remaining);
                         det1 = d2.domRenderEndTime;
                     }
+                    // watchers runTime
+                    digestGroup.watcherRunTime += d2.watchers.runTime.total;
                 });
             }
 

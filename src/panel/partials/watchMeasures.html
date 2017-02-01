@@ -10,30 +10,40 @@
             <thead style="background-color: white;">
             <tr>
                 <th>
-                    <div data-toggle="tooltip" data-original-title="digest start time after page load"
-                         ng-click="watchSortByExpression('exp', $event)">
-                        watch expression <i class="fa fa-fw fa-unsorted"></i>
-                    </div>
+                    <sortable-column sort-type="alpha" predicate="+watch.exp" sort-by="watchInfo.sortByExpressions"
+                                     data-toggle="tooltip" data-original-title="digest start time after page load">
+                        <span>watch expression</span>
+                    </sortable-column>
+                    <!--<div data-toggle="tooltip" data-original-title="digest start time after page load"-->
+                    <!--ng-click="watchSortByExpression('exp', $event)">-->
+                    <!--<i class="fa fa-fw fa-unsorted"></i>-->
+                    <!--</div>-->
                 </th>
                 <!--<th><span> Equality </span></th>-->
                 <th colspan="2" class="text-center">
                     <div data-toggle="tooltip"
                          data-original-title="watch expression evaluation to verify any changes made.">
-                        Expression evaluated
+                        <span>Expression evaluated</span>
                     </div>
                 </th>
                 <th colspan="2" class="text-center">
                     <div data-toggle="tooltip" data-original-title="watch action listener">
-                        Action Listener
+                        <span>Action Listener</span>
                     </div>
                 </th>
                 <th>
-                    <div data-toggle="tooltip"
-                         data-original-title="total runtime of both watch expression and listener">
-                        <span ng-click="watchSortByExpression('runtime', $event)" data-toggle="tooltip"
-                              data-original-title="">
-                            total time <i class="fa fa-fw fa-unsorted"></i></span>
-                    </div>
+                    <sortable-column sort-type="numeric" predicate="+watch.runTime"
+                                     sort-by="watchInfo.sortByExpressions"
+                                     data-toggle="tooltip"
+                                     data-original-title="total runtime of both watch expression and listener">
+                        <span>total time</span>
+                    </sortable-column>
+                    <!--<div data-toggle="tooltip"-->
+                    <!--data-original-title="total runtime of both watch expression and listener">-->
+                    <!--<span ng-click="watchSortByExpression('runtime', $event)" data-toggle="tooltip"-->
+                    <!--data-original-title="">-->
+                    <!--total time <i class="fa fa-fw fa-unsorted"></i></span>-->
+                    <!--</div>-->
                 </th>
                 <!--<th>
                     <div data-toggle="tooltip" data-original-title="this is used by scopes">
@@ -56,27 +66,41 @@
             <tr>
                 <th>&nbsp;</th>
                 <th>
-                    <span ng-click="watchSortByExpression('howMany.get', $event)">
-                        occurrence <i class="fa fa-fw fa-unsorted"></i></span>
+                    <sortable-column sort-type="numeric" predicate="+watch.howMany.get"
+                                     sort-by="watchInfo.sortByExpressions">
+                        <span>occurrence</span>
+                    </sortable-column>
+                    <!--<span ng-click="watchSortByExpression('howMany.get', $event)">-->
+                    <!--occurrence <i class="fa fa-fw fa-unsorted"></i></span>-->
                 </th>
                 <th>
-                    <span ng-click="watchSortByExpression('get', $event)">
-                        time <i class="fa fa-fw fa-unsorted"></i></span>
+                    <sortable-column sort-type="numeric" predicate="+watch.get" sort-by="watchInfo.sortByExpressions">
+                        <span>time</span>
+                    </sortable-column>
+                    <!--<span ng-click="watchSortByExpression('get', $event)">-->
+                    <!--time <i class="fa fa-fw fa-unsorted"></i></span>-->
                 </th>
                 <th>
-                    <span ng-click="watchSortByExpression('howMany.fn', $event)">
-                        occurrence <i class="fa fa-fw fa-unsorted"></i></span>
+                    <sortable-column sort-type="numeric" predicate="+watch.howMany.fn"
+                                     sort-by="watchInfo.sortByExpressions">
+                        <span>occurrence</span>
+                    </sortable-column>
+                    <!--<span ng-click="watchSortByExpression('howMany.fn', $event)">-->
+                    <!--occurrence <i class="fa fa-fw fa-unsorted"></i></span>-->
                 </th>
                 <th>
-                    <span ng-click="watchSortByExpression('fn', $event)">
-                        time <i class="fa fa-fw fa-unsorted"></i></span>
+                    <sortable-column sort-type="numeric" predicate="+watch.fn" sort-by="watchInfo.sortByExpressions">
+                        <span>time</span>
+                    </sortable-column>
+                    <!--<span ng-click="watchSortByExpression('fn', $event)">-->
+                    <!--time <i class="fa fa-fw fa-unsorted"></i></span>-->
                 </th>
                 <th>&nbsp;</th>
             </tr>
             </thead>
             <tbody>
             <!--<tr ng-repeat="aMeasure in watchInfo.details | filter: watch.search.filterBy | filter: watch.search.filterByFn | orderBy: watchOrderExpression">-->
-            <tr ng-repeat="aMeasure in watchInfo.details | birbalSearchBy : watchInfo.activeFilterList">
+            <tr ng-repeat="aMeasure in watchInfo.details | birbalSearchBy : watchInfo.activeFilterList | orderBy: watchInfo.sortByExpressions">
                 <td>{{:: aMeasure.watch.exp}}</td>
                 <!--<td>{{:: aMeasure.watch.eq}}</td>-->
                 <td> {{ aMeasure.watch.howMany.get}}</td>
