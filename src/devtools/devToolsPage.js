@@ -2,8 +2,6 @@
 (function (chrome) {
     'use strict';
 
-    console.log('devtoolsPage.js is loading.');
-
     var getScopeContents = function (name) {
         if (!window.angular || !$0) {
             return {noAngular: 'Not angular Element'};
