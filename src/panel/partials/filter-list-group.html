@@ -1,0 +1,33 @@
+<div class="box filter-box box-success">
+    <div class="box-header">
+        <h3 class="box-title">
+            <button type="button"
+                    ng-click="clearFilters(info.filtersList, info.activeFilterList);"
+                    class="btn btn-primary">
+                Clear all Filters
+            </button>
+            <span style="padding-left: 140px;"> Pre-defined filters </span>
+        </h3>
+        <div class="box-tools pull-right">
+            <button class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+        </div>
+    </div>
+    <!-- /.box-header -->
+    <div class="box-body">
+        <div class="list-group">
+            <a href="#" class="list-group-item"
+               ng-click="toggleFilter(info.activeFilterList, filterItem, $event);"
+               ng-class="{'list-group-item-success selected':filterItem.isActive}"
+               ng-repeat="filterItem in info.filtersList">
+                            <span data-toggle="tooltip" data-original-title="{{::filterItem.tooltipTitle}}">
+                                <span>{{filterItem.label}}</span>
+                                <input class="list-item-input form-control" type="{{::filterItem.input.type}}"
+                                       ng-if="::filterItem.input"
+                                       ng-model="filterItem.input.value"
+                                       placeholder="{{::filterItem.input.placeholder}}">
+                                <span class="selection-mark glyphicon glyphicon-ok"></span>
+                            </span>
+            </a>
+        </div>
+    </div>
+</div>

@@ -110,13 +110,12 @@
                 $scope.watchInfo = {
                     details: watchMeasureLogFactory.getWatcherList(),
                     highlights: {},
-                    watchFilters: {},
                     activeFilterList: [],
                     sortByExpressions: []
                 };
                 watchMeasureLogFactory.prepareHighlights($scope.watchInfo.highlights);
                 birbalJS.logger.log(" digest groups ", digestView.getDigestGroups());
-                $scope.watchInfo.watchFilters.list = [
+                $scope.watchInfo.filtersList = [
                     {
                         label: 'Hide unused watchers',
                         checkCondition: function (watcher) {
@@ -155,7 +154,7 @@
                             value: ''
                         },
                         checkCondition: function (watcher) {
-                            return watcher.watch.exp.indexOf(this.input.value) !== -1;
+                            return watcher.watch.exp.search(new RegExp(this.input.value, 'i')) !== -1;
                         },
                         isActive: false
                     }
@@ -167,13 +166,12 @@
                 $scope.digestInfo = {
                     highlights: {},
                     details: digestView.getDigestGroups(),
-                    filters: {},
                     activeFilterList: [],
                     sortByExpressions: ['+startDate']
                 };
-                $scope.digestInfo.filters.list = [
+                $scope.digestInfo.filtersList = [
                     {
-                        label: 'Show me recent cycles of given seconds which is ',
+                        label: 'Show me cycles within last given seconds',
                         input: {
                             type: 'number',
                             placeholder: 'Enter seconds',
@@ -199,9 +197,10 @@
                         isActive: false
                     },
                     {
-                        label: 'Display groups consumed by watchers for 80% time',
+                        label: 'Display groups consumed by watchers for more than 65% time',
+                        tooltipTitle: 'tells us which cycles and DOM time consumed by watchers',
                         checkCondition: function (group) {
-                            return (group.watcherRunTime / group.runTime) >= 0.8;
+                            return (group.watcherRunTime / group.runTime) >= 0.65;
                         },
                         isActive: false
                     }

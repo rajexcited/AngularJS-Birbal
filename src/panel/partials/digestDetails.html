@@ -16,58 +16,10 @@
         </div>
     </div>
 
-    <!--<div class="row">-->
-    <!--<div class="box box-primary">-->
-    <!--<div class="box-header">-->
-    <!--<h3 class="box-title">Digest range Slider</h3>-->
-    <!--<span>select time range to filter digest result and inline chart shows the frequency of digest cycle over the time scale.</span>-->
-    <!--</div>&lt;!&ndash; /.box-header &ndash;&gt;-->
-    <!--<div class="box-body">-->
-    <!--<div class="row margin">-->
-    <!--<span id="digestRangeSlider" range-slider="" slider-config="rangeSlider.digest.config"-->
-    <!--on-range-change="rangeSlider.digest.onChange"-->
-    <!--measures="digestInfo.details"></span>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</div>-->
-
     <div class="row">
         <div class="col-sm-8">
-            <div class="box filter-box box-success">
-                <div class="box-header">
-                    <h3 class="box-title">
-                        <button type="button"
-                                ng-click="clearFilters(digestInfo.filters.list, digestInfo.activeFilterList);"
-                                class="btn btn-primary">
-                            Clear all Filters
-                        </button>
-                        <span style="padding-left: 140px;"> Pre-defined filters </span>
-                    </h3>
-                    <div class="box-tools pull-right">
-                        <button class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                    </div>
-                </div>
-                <!-- /.box-header -->
-                <div class="box-body">
-                    <!--<div class="margin-bottom-20">-->
-                    <!---->
-                    <!--</div>-->
-                    <div class="list-group">
-                        <a href="#" class="list-group-item"
-                           ng-click="toggleFilter(digestInfo.activeFilterList, digestFilterItem, $event);"
-                           ng-class="{'list-group-item-success selected':digestFilterItem.isActive}"
-                           ng-repeat="digestFilterItem in digestInfo.filters.list">
-                            <span>{{digestFilterItem.label}}</span>
-                            <input class="list-item-input form-control" type="{{::digestFilterItem.input.type}}"
-                                   ng-if="::digestFilterItem.input"
-                                   ng-model="digestFilterItem.input.value"
-                                   placeholder="{{::digestFilterItem.input.placeholder}}">
-                            <span class="selection-mark glyphicon glyphicon-ok"></span>
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <div ng-if="::digestInfo.filtersList" ng-include="" src="'filter-list-group.html'"
+                 onload="info=digestInfo;"></div>
         </div>
     </div>
 
