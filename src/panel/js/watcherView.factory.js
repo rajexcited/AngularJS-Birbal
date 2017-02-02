@@ -77,6 +77,52 @@
             }
 
             return ({
+                getPreDefiningFilters: function () {
+                    return ( [
+                        {
+                            label: 'Hide unused watchers',
+                            checkCondition: function (watcher) {
+                                return watcher.watch.howMany.fn > 0;
+                            },
+                            isActive: false
+                        },
+                        {
+                            label: 'Display unused watchers',
+                            checkCondition: function (watcher) {
+                                return watcher.watch.howMany.fn === 0;
+                            },
+                            isActive: false
+                        },
+                        {
+                            label: 'Display watchers without filter',
+                            checkCondition: function (watcher) {
+                                var regExForPipe = /\w\s*\|\s*\w/;
+                                return !regExForPipe.test(watcher.watch.exp);
+                            },
+                            isActive: false
+                        },
+                        {
+                            label: 'Display watchers using only filter',
+                            checkCondition: function (watcher) {
+                                var regExForPipe = /\w\s*\|\s*\w/;
+                                return regExForPipe.test(watcher.watch.exp);
+                            },
+                            isActive: false
+                        },
+                        {
+                            label: 'Search Expression: ',
+                            input: {
+                                type: 'text',
+                                placeholder: 'Enter Expression to search and select it',
+                                value: ''
+                            },
+                            checkCondition: function (watcher) {
+                                return watcher.watch.exp.search(new RegExp(this.input.value, 'i')) !== -1;
+                            },
+                            isActive: false
+                        }
+                    ]);
+                },
                 addWatchers: function (watchers) {
                     getUniqueWatchers(watchers, watcherList);
                     return updateHighlights(watchers);

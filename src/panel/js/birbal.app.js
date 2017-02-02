@@ -110,55 +110,12 @@
                 $scope.watchInfo = {
                     details: watchMeasureLogFactory.getWatcherList(),
                     highlights: {},
+                    filtersList: watchMeasureLogFactory.getPreDefiningFilters(),
                     activeFilterList: [],
                     sortByExpressions: []
                 };
                 watchMeasureLogFactory.prepareHighlights($scope.watchInfo.highlights);
                 birbalJS.logger.log(" digest groups ", digestView.getDigestGroups());
-                $scope.watchInfo.filtersList = [
-                    {
-                        label: 'Hide unused watchers',
-                        checkCondition: function (watcher) {
-                            return watcher.watch.howMany.fn > 0;
-                        },
-                        isActive: false
-                    },
-                    {
-                        label: 'Display unused watchers',
-                        checkCondition: function (watcher) {
-                            return watcher.watch.howMany.fn === 0;
-                        },
-                        isActive: false
-                    },
-                    {
-                        label: 'Display watchers without filter',
-                        checkCondition: function (watcher) {
-                            var regExForPipe = /\w\s*\|\s*\w/;
-                            return !regExForPipe.test(watcher.watch.exp);
-                        },
-                        isActive: false
-                    },
-                    {
-                        label: 'Display watchers using only filter',
-                        checkCondition: function (watcher) {
-                            var regExForPipe = /\w\s*\|\s*\w/;
-                            return regExForPipe.test(watcher.watch.exp);
-                        },
-                        isActive: false
-                    },
-                    {
-                        label: 'Search Expression: ',
-                        input: {
-                            type: 'text',
-                            placeholder: 'Enter Expression to search and select it',
-                            value: ''
-                        },
-                        checkCondition: function (watcher) {
-                            return watcher.watch.exp.search(new RegExp(this.input.value, 'i')) !== -1;
-                        },
-                        isActive: false
-                    }
-                ];
 
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            performance views - digest
@@ -166,45 +123,10 @@
                 $scope.digestInfo = {
                     highlights: {},
                     details: digestView.getDigestGroups(),
+                    filtersList: digestView.getPreDefiningFilters(),
                     activeFilterList: [],
                     sortByExpressions: ['+startDate']
                 };
-                $scope.digestInfo.filtersList = [
-                    {
-                        label: 'Show me cycles within last given seconds',
-                        input: {
-                            type: 'number',
-                            placeholder: 'Enter seconds',
-                            value: ''
-                        },
-                        checkCondition: function (group) {
-                            return group.startDate >= new Date(Date.now() - parseInt(this.input.value) * 1000);
-                        },
-                        isActive: false
-                    },
-                    {
-                        label: 'Display group having 1 or 2 cycles',
-                        checkCondition: function (group) {
-                            return group.list.length <= 2;
-                        },
-                        isActive: false
-                    },
-                    {
-                        label: 'Hide group having 1 or 2 cycles',
-                        checkCondition: function (group) {
-                            return group.list.length > 2;
-                        },
-                        isActive: false
-                    },
-                    {
-                        label: 'Display groups consumed by watchers for more than 65% time',
-                        tooltipTitle: 'tells us which cycles and DOM time consumed by watchers',
-                        checkCondition: function (group) {
-                            return (group.watcherRunTime / group.runTime) >= 0.65;
-                        },
-                        isActive: false
-                    }
-                ];
 
                 var viewChangeListenerRemover = $scope.$on("view-changed", function viewChangeListener(ignore, viewEvent) {
                     if (viewEvent.displayed === "dashboard") {

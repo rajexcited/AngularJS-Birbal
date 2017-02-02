@@ -166,6 +166,44 @@
             });
 
             return ({
+                getPreDefiningFilters: function () {
+                    return ([
+                        {
+                            label: 'Show me cycles within last given seconds',
+                            input: {
+                                type: 'number',
+                                placeholder: 'Enter seconds',
+                                value: ''
+                            },
+                            checkCondition: function (group) {
+                                return group.startDate >= new Date(Date.now() - parseInt(this.input.value) * 1000);
+                            },
+                            isActive: false
+                        },
+                        {
+                            label: 'Display group having 1 or 2 cycles',
+                            checkCondition: function (group) {
+                                return group.list.length <= 2;
+                            },
+                            isActive: false
+                        },
+                        {
+                            label: 'Hide group having 1 or 2 cycles',
+                            checkCondition: function (group) {
+                                return group.list.length > 2;
+                            },
+                            isActive: false
+                        },
+                        {
+                            label: 'Display groups consumed by watchers for more than 65% time',
+                            tooltipTitle: 'tells us which cycles and DOM time consumed by watchers',
+                            checkCondition: function (group) {
+                                return (group.watcherRunTime / group.runTime) >= 0.65;
+                            },
+                            isActive: false
+                        }
+                    ]);
+                },
                 getDebounceTime: function () {
                     var self = this;
                     return new Promise(function (resolve) {
