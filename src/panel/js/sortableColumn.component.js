@@ -11,7 +11,7 @@
                 predicate: '@',
                 sortBy: '='
             },
-            controller: function ($scope, $element) {
+            controller: ['$scope', '$element', function ($scope, $element) {
                 var $ctrl = this,
                     ALPHA_TYPE = 'alpha',
                     NUMERIC_TYPE = 'numeric';
@@ -93,15 +93,13 @@
                 }
 
                 $element.on('click', changeSortOrder);
-
                 $ctrl.$postLink = function () {
                     try {
                         changeSortOrder(true);
                     } catch (e) {
                     }
                 };
-
-            }
+            }]
         });
 
 }(angular));

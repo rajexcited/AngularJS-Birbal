@@ -197,7 +197,7 @@
         this.END_POINTS = endPoints;
         // true for development only
         // true - allows to log info and trace app behavior
-        this.debugMode = true;
+        this.debugMode = false;
         // call is used in sending message
         this.Message = MessageImpl;
         this.Receiver = ReceiverImpl;

@@ -1,8 +1,8 @@
 /**
  * Created by Raj on 1/12/2017.
  */
-/*global angular, localStorage*/
-(function (angular) {
+/*global angular, birbalJS*/
+(function (angular, birbalJS) {
     "use strict";
 
     angular.module('dashboardCharts', [])
@@ -401,8 +401,9 @@
             });
 
             function createChart(chartId, max) {
-
+                birbalJS.logger.log('createChart', chartId, max);
                 function createOnEnable(id, limit) {
+                    birbalJS.logger.log('createOnEnable', id, limit, $rootScope.csInfo.pause);
                     if ($rootScope.csInfo.pause) {
                         // verify on every half sec
                         $timeout(createOnEnable, 500, false, id, limit);
@@ -416,6 +417,7 @@
                 $timeout(function (id, limit) {
                     // allow to load the view before creating chart to avoid html error
                     var container = angular.element("#" + id + "-chart-container");
+                    birbalJS.logger.log('timeout createChart', id, limit, container.length);
                     if (container.length === 0) {
                         createChart(id, limit);
                     } else {
@@ -425,10 +427,13 @@
             }
 
             return ({
-                createCharts: function (limit, ...ids) {
-                    ids.forEach(function (id) {
-                        createChart(id, limit);
-                    });
+                createCharts: function (limit) {
+                    var i,
+                        len = arguments.length;
+                    birbalJS.logger.log('arguments ', arguments);
+                    for (i = 1; i < len; i++) {
+                        createChart(arguments[i], limit);
+                    }
                 },
                 updateAllCharts: function (info, reset) {
                     charts.created.forEach(function (chart) {
@@ -438,4 +443,4 @@
             });
         }]);
 
-}(angular));
+}(angular, birbalJS));

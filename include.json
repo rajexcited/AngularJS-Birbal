@@ -75,7 +75,6 @@
           "path": "/lib/jquery.min.js"
         },
         "/lib/angular.min.js",
-        "/lib/underscore-min.js",
         "/lib/ion-rangeslider/js/ion.rangeSlider.min.js",
         "/lib/admin-lte/js/bootstrap.min.js",
         "/lib/admin-lte/js/app.min.js",
