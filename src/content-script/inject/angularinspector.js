@@ -232,6 +232,46 @@ window.inspectorExecutor = function (window, document) {
                     }, 2);
                 }
 
+                var originalExp;
+                // $interpolate
+                $provide.decorator('$interpolate', ['$delegate', function ($delegate) {
+                    function $interpolateDecorator(text) {
+                        originalExp = '$interpolate: ' + text;
+                        var interpolateFn = $delegate.apply(this, arguments);
+                        originalExp = undefined;
+                        if (angular.isFunction(interpolateFn)) {
+                            interpolateFn.originalExp = '$interpolate: ' + text;
+                        }
+                        return interpolateFn;
+                    }
+
+                    Object.keys($delegate).forEach(function (prop) {
+                        $interpolateDecorator[prop] = $delegate[prop].bind($delegate);
+                    });
+                    return $interpolateDecorator;
+                }]);
+                // $parse
+                $provide.decorator('$parse', ['$delegate', function ($delegate) {
+                    function $parseDecorator(exp) {
+                        var parseFn = $delegate.apply(this, arguments);
+
+                        if (angular.isFunction(parseFn) && !parseFn.originalExp) {
+                            if (angular.isFunction(exp) && !!exp.originalExp) {
+                                parseFn.originalExp = exp.originalExp;
+                            }
+                            else if (originalExp) {
+                                parseFn.originalExp = originalExp;
+                            }
+                        }
+
+                        return parseFn;
+                    }
+
+                    Object.keys($delegate).forEach(function (prop) {
+                        $parseDecorator[prop] = $delegate[prop].bind($delegate);
+                    });
+                    return $parseDecorator;
+                }]);
                 // instrument scope/rootScope
                 $provide.decorator('$rootScope', ['$delegate', function ($delegate) {
                     var scopePrototype, ngWatch, ngWatchCollection, ngDigest, ngApply, ngEmit, ngBroadcast, ngEvalAsync,
@@ -258,7 +298,7 @@ window.inspectorExecutor = function (window, document) {
                             return ngWatcher.return;
                         }
                         addedWatcher.isBirbalInstrumented = true;
-                        watchExpStr = toStringForm(watchCollectionExp || prettyPrintExpression || watchExp.exp || watchExp);
+                        watchExpStr = toStringForm(watchCollectionExp || watchExp.originalExp || (prettyPrintExpression && prettyPrintExpression.originalExp) || prettyPrintExpression || watchExp.exp || watchExp);
                         // patch get and fn to trace
                         ngWatcher.get = addedWatcher.get;
                         ngWatcher.fn = addedWatcher.fn;
