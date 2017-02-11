@@ -4,6 +4,11 @@
 }
 
 /****/
+
+html {
+    overflow-y: scroll;
+}
+
 /*  overriding bootstrap styles  */
 .fixed .content-wrapper {
     padding-top: 10px;

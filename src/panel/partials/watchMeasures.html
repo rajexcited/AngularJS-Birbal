@@ -10,8 +10,7 @@
             <thead style="background-color: white;">
             <tr>
                 <th>
-                    <sortable-column sort-type="alpha" predicate="+watch.exp" sort-by="watchInfo.sortByExpressions"
-                                     data-toggle="tooltip" data-original-title="digest start time after page load">
+                    <sortable-column sort-type="alpha" predicate="+watch.exp" sort-by="watchInfo.sortByExpressions">
                         <span>watch expression</span>
                     </sortable-column>
                 </th>
@@ -30,7 +29,7 @@
                     <sortable-column sort-type="numeric" predicate="+watch.runTime"
                                      sort-by="watchInfo.sortByExpressions"
                                      data-toggle="tooltip"
-                                     data-original-title="total runtime of both watch expression and listener">
+                                     data-original-title="total runtime of both watch expression evaluation and action listener">
                         <span>total time</span>
                     </sortable-column>
                 </th>

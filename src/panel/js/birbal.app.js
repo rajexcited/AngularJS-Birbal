@@ -157,48 +157,6 @@
                     }
                 };
 
-
-                //////////////////////////////////////////////////////////////////////////////////////////
-                //          handle scroll bar
-                //////////////////////////////////////////////////////////////////////////////////////////
-                (function handleScrollBarGap() {
-                    var prevScrollbarGap,
-                        contentWrapper = $(".wrapper .content-wrapper"),
-                        $$document = $(document),
-                        $$window = $(window),
-                        $$HTMLBODY = $('html,body'),
-                        SCROLL_BAR_SPACE = '17px',
-                        NO_SPACE = '';
-
-
-                    function isThereScrollBar() {
-                        return ($$document.height() > $$window.height());
-                    }
-
-                    function changeScrollbarPadding(addPadding) {
-                        if (addPadding && prevScrollbarGap !== SCROLL_BAR_SPACE) {
-                            prevScrollbarGap = SCROLL_BAR_SPACE;
-                            contentWrapper.css('padding-right', prevScrollbarGap);
-                            $timeout(function () {
-                                $$HTMLBODY.css('overflow-y', 'hidden');
-                            }, 150);
-                        } else if (!addPadding && prevScrollbarGap !== NO_SPACE) {
-                            prevScrollbarGap = NO_SPACE;
-                            contentWrapper.css('padding-right', prevScrollbarGap);
-                            $timeout(function () {
-                                $$HTMLBODY.css('overflow-y', '');
-                            }, 150);
-                        }
-                    }
-
-                    $interval(function () {
-                        // yes - remove right scrollbar space
-                        // no - add right scrollbar space
-                        changeScrollbarPadding(!isThereScrollBar());
-                    }, 400);
-
-                })();
-
                 /////////////////////////////////////////////////////////////////////////////////////////
                 //            slider, filter, dashboard update, sort, configurations
                 /////////////////////////////////////////////////////////////////////////////////////////

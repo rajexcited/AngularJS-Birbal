@@ -170,10 +170,8 @@
         var tabInfo = tabs.getTabInfo(message.tabId),
             perfCallId;
         tabInfo.mockHttp = tabInfo.mockHttp || {list: [], isModified: true};
-        if (tabInfo.mockHttp.isModified) {
-            tabInfo.mockHttp.isModified = false;
-            informContentScript(message.tabId, tabInfo.mockHttp.list, 'httpMock.list');
-        }
+        tabInfo.mockHttp.isModified = false;
+        informContentScript(message.tabId, tabInfo.mockHttp.list, 'httpMock.list');
 
         perfCallId = 'performance.resumeAnalysis';
         if (tabInfo.pausePerformanceAnalysis !== false) {
