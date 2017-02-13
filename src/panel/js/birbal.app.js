@@ -133,7 +133,7 @@
                     //            performance views - digest
                     /////////////////////////////////////////////////////////////////////////////////////////
                     $scope.digestInfo = {
-                        fullListLength:0,
+                        fullListLength: 0,
                         highlights: {},
                         details: [],
                         filtersList: digestView.getPreDefiningFilters(),
@@ -179,7 +179,7 @@
                                 activeFilterList.push(item);
                                 item.isActive = true;
                             }
-                            dataNotifierPromise.notifyChangeFor(DATA_NAMES.ACTIVE_FILTERS_LIST, watcherList);
+                            dataNotifierPromise.notifyChangeFor(DATA_NAMES.ACTIVE_FILTERS_LIST, activeFilterList);
                         }
                     };
 
