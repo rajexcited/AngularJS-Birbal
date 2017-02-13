@@ -35,8 +35,9 @@
         .filter('birbalSearchBy', [function () {
             return function (list, conditionList) {
                 var len = conditionList.length,
+                    filteredList = list;
+                if (list && len) {
                     filteredList = [];
-                if (list) {
                     angular.forEach(list, function (item) {
                         var i,
                             shouldAdd = true;

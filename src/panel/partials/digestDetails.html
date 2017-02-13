@@ -27,7 +27,7 @@
         <div class="col-sm-12">
             <div class="panel panel-default">
                 <!-- Default panel contents -->
-                <div class="panel-heading">Digest Information</div>
+                <div class="panel-heading">Digest Information ({{digestInfo.details.length+'/'+digestInfo.fullListLength}}) </div>
                 <div class="panel-body">
                     <p>Digest cycles are grouped by debounce time provided in "settings". the bigger the worse. browser
                         can be freeze in this duration stopping/delaying all user actions.
@@ -64,7 +64,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="group in digestInfo.details | birbalSearchBy : digestInfo.activeFilterList | orderBy: digestInfo.sortByExpressions">
+                    <tr ng-repeat="group in digestInfo.details">
                         <th scope="row">{{group.list.length}}</th>
                         <td>{{group.startDate|date:'HH:mm:ss'}}</td>
                         <td>{{group.duration|number:0}} ms</td>

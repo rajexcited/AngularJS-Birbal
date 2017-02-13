@@ -11,7 +11,7 @@
                 predicate: '@',
                 sortBy: '='
             },
-            controller: ['$scope', '$element', function ($scope, $element) {
+            controller: ['$scope', '$element', 'DATA_NAMES', 'dataNotifierPromise', function ($scope, $element, DATA_NAMES, dataNotifierPromise) {
                 var $ctrl = this,
                     ALPHA_TYPE = 'alpha',
                     NUMERIC_TYPE = 'numeric';
@@ -90,6 +90,7 @@
                     } else {
                         $ctrl.sortBy.unshift(predicateDesc);
                     }
+                    dataNotifierPromise.notifyChangeFor(DATA_NAMES.SORTBY_SORTABLECOLUMN, $ctrl.sortBy);
                 }
 
                 $element.on('click', changeSortOrder);

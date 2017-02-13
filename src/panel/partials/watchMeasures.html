@@ -1,7 +1,7 @@
 <div class="box">
     <div class="box-header">
         <h3 class="box-title">
-            Watch Measure Table ({{watchInfo.details.length}})
+            Watch Measure Table ({{watchInfo.details.length+'/'+watchInfo.fullListLength}})
         </h3>
     </div>
     <!-- /.box-header -->
@@ -35,7 +35,11 @@
                 </th>
             </tr>
             <tr>
-                <th>&nbsp;</th>
+                <th>
+                    <button class="btn btn-primary" ng-click="watchInfo.toggleDisplayTotal();">
+                        Display Total
+                    </button>
+                </th>
                 <th>
                     <sortable-column sort-type="numeric" predicate="+watch.howMany.get"
                                      sort-by="watchInfo.sortByExpressions">
@@ -61,8 +65,18 @@
                 <th>&nbsp;</th>
             </tr>
             </thead>
+            <tbody ng-if="watchInfo.total">
+            <tr>
+                <td>Total (for all displayed expressions):</td>
+                <td>{{watchInfo.total.howMany.get}}</td>
+                <td>{{watchInfo.total.get|number:2}} ms</td>
+                <td>{{watchInfo.total.howMany.fn}}</td>
+                <td>{{watchInfo.total.fn|number:2}} ms</td>
+                <td>{{watchInfo.total.runTime|number:2}} ms</td>
+            </tr>
+            </tbody>
             <tbody>
-            <tr ng-repeat="aMeasure in watchInfo.details | birbalSearchBy : watchInfo.activeFilterList | orderBy: watchInfo.sortByExpressions">
+            <tr ng-repeat="aMeasure in watchInfo.details">
                 <td>{{:: aMeasure.watch.exp}}</td>
                 <td> {{ aMeasure.watch.howMany.get}}</td>
                 <td> {{ aMeasure.watch.get|number:2}} ms</td>

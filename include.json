@@ -46,7 +46,8 @@
         "../js/rangeSlider.directive.js",
         "../js/searchCriteria.watch.directive.js",
         "../js/watcherView.factory.js",
-        "../js/sortableColumn.component.js"
+        "../js/sortableColumn.component.js",
+        "../js/dataNotifier.promise.factory.js"
       ]
     }
   },

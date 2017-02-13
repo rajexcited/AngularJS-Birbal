@@ -5,10 +5,12 @@
 (function (angular) {
     "use strict";
 
-    angular.module('views.performance.watch', [])
-        .factory('watchMeasureLogFactory', [function () {
+    angular.module('views.performance.watch', ['dataNotifier.promise.factory'])
+        .factory('watchMeasureLogFactory', ['DATA_NAMES', 'dataNotifierPromise', function (DATA_NAMES, dataNotifierPromise) {
 
-            var watcherList = [], watchHighlights, digestCount = 0;
+            var watcherList = [],
+                watchHighlights,
+                digestCount = 0;
 
             function updateHighlights(digestWatcherList) {
                 var count = 0, dirty = 0, time_total = 0, time_dirty = 0;
@@ -125,10 +127,18 @@
                 },
                 addWatchers: function (watchers) {
                     getUniqueWatchers(watchers, watcherList);
+                    dataNotifierPromise.notifyChangeFor(DATA_NAMES.WATCHERS_FULL_LIST, watcherList);
                     return updateHighlights(watchers);
                 },
-                getWatcherList: function () {
-                    return watcherList;
+                mergeAndSumList: function (list) {
+                    return _.reduce(list, function (item1, item2) {
+                        item1.howMany.fn += item2.watch.howMany.fn;
+                        item1.fn += item2.watch.fn;
+                        item1.howMany.get += item2.watch.howMany.get;
+                        item1.get += item2.watch.get;
+                        item1.runTime += item2.watch.get + item2.watch.fn;
+                        return item1;
+                    }, {howMany: {get: 0, fn: 0}, fn: 0, get: 0, runTime: 0});
                 },
                 prepareHighlights: function (highlights) {
                     watchHighlights = highlights;
@@ -139,6 +149,7 @@
                     watchHighlights.max = undefined;
                     watchHighlights.dirty = undefined;
                     watchHighlights.avg = undefined;
+                    dataNotifierPromise.notifyChangeFor(DATA_NAMES.WATCHERS_FULL_LIST, watcherList);
                 }
             });
         }]);
