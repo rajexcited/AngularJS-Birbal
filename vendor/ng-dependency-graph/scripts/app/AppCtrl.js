@@ -12,7 +12,6 @@ angular.module('ngDependencyGraph')
 
         function init() {
             var appName = $rootScope.csInfo && $rootScope.csInfo.ngModule;
-            //if (appName) {
             // App enabled for this page.
             _this.appName = appName;
 
@@ -21,15 +20,6 @@ angular.module('ngDependencyGraph')
             } else {
                 $scope.$broadcast(Const.Events.INIT_MAIN);
             }
-
-            //}
-            /*else {
-             // Cookie not set yet, so check if Angular is present.
-             inspectedApp.getAppsInfo().then(function (data) {
-             _this.appsInfo = data;
-             _this.appTemplate = templates.ABOUT;
-             });
-             }*/
         }
 
         init();

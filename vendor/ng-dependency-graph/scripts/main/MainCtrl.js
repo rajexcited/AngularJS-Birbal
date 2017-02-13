@@ -24,8 +24,6 @@ angular.module('ngDependencyGraph')
 
 
         function init(isTheSameApp) {
-            //ga('send', 'event', 'flow', 'action', 'init ctrl');
-
             lastAppKey = inspectedApp.getKey();
             var rawData = inspectedApp.getData();
 

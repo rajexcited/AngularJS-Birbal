@@ -7,12 +7,27 @@
     <title>AngularJS Birbal</title>
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
+    <!-- css -->
     <link rel="stylesheet" href="/lib/ng-dependency-graph/styles/app.css">
     <link rel="stylesheet" href="/lib/ng-dependency-graph/styles/shepherd-theme-default.css">
-    <!-- css -->
-    <% _.forEach(files.css, function(cssFilePath) { var htmlComment=cssFilePath.comment; if(htmlComment) { cssFilePath= cssFilePath.path;%>  <%= htmlComment%> <%}%>
-    <link rel="stylesheet" href="<%= cssFilePath%>">
-    <% }); %>
+    <!-- adminLTE theme using bootstrap -->
+    <link rel="stylesheet" href="/lib/admin-lte/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/lib/admin-lte/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="/lib/admin-lte/css/skin-blue.min.css">
+    <link rel="stylesheet" href="/lib/admin-lte/css/font-awesome.min.css">
+
+    <%
+        _.forEach(files.css, function(cssFilePath) {
+            var htmlComment = cssFilePath.comment;
+            if(htmlComment) {
+                cssFilePath = cssFilePath.path;
+    %>  <%= htmlComment%>
+    <%  }
+        _.forEach([].concat(cssFilePath), function(path) {
+    %>
+    <link rel="stylesheet" href="<%= path%>">
+    <%      });
+        }); %>
 </head>
 
 <body class="hold-transition skin-blue sidebar-mini fixed" ng-app="birbal-app" ng-controller="panelViewController">
@@ -57,9 +72,27 @@
 <!-- ./wrapper -->
 
 <!-- scripts -->
-<% _.forEach(files.js,function(jsFilePath) { var htmlComment=jsFilePath.comment; if(htmlComment) { jsFilePath = jsFilePath.path;%> <%= htmlComment%> <%}%>
-<script src="<%= jsFilePath%>"></script>
-<% }); %>
+<!-- API jquery and Angular -->
+<script src="/lib/jquery.min.js"></script>
+<script src="/lib/angular.min.js"></script>
+<!-- AdminLTE theme with bootstrap and chart -->
+<script src="/lib/admin-lte/js/bootstrap.min.js"></script>
+<script src="/lib/admin-lte/js/app.min.js"></script>
+<script src="/lib/canvasjs.min.js"></script>
+
+<script src="/src/message.js"></script>
+<%
+    _.forEach(files.js, function(jsFilePath) {
+        var htmlComment = jsFilePath.comment;
+        if(htmlComment) {
+            jsFilePath = jsFilePath.path;
+%> <%= htmlComment%>
+<%  }
+    _.forEach([].concat(jsFilePath), function(path) {
+%>
+<script src="<%= path%>"></script>
+<%      });
+     }); %>
 
 <!-- graph -->
   <script src="/lib/typeahead.jquery.js"></script>
@@ -69,8 +102,10 @@
   <script src="/lib/tether.min.js"></script>
   <script src="/lib/shepherd.min.js"></script>
 <!-- inject graph -->
-  <script src="/lib/ng-dependency-graph/scripts/app.module.js"></script>
+<script src="/lib/ng-dependency-graph/ng-dependency-graph.js"></script>
 
+<!--
+  <script src="/lib/ng-dependency-graph/scripts/app.module.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/util/util.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/tour/tour.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/models/Node.js"></script>
@@ -92,6 +127,7 @@
   <script src="/lib/ng-dependency-graph/scripts/controls/dgSearchNode.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/controls/controls.module.js"></script>
   <script src="/lib/ng-dependency-graph/scripts/app/AppCtrl.js"></script>
+-->
 
 </body>
 </html>

@@ -27,6 +27,13 @@ module.exports = function (grunt) {
                 src: ['src/**/panel/js/**/*.js'],
                 // the location of the resulting JS file
                 dest: 'dist/panel/panel.js'
+            },
+            ngDependencyGraph: {
+                src: [
+                    'vendor/ng-dependency-graph/scripts/**/*.js',
+                    '!**/*.spec.js'
+                ],
+                dest: 'lib/ng-dependency-graph/ng-dependency-graph.js'
             }
         },
         uglify: {
@@ -83,6 +90,15 @@ module.exports = function (grunt) {
                 dest: 'lib/angular-mocks.js'
             },
             // compile and generate lib folder
+            ngDependencyGraph: {
+                files: [
+                    {
+                        expand: true,
+                        cwd: 'vendor/ng-dependency-graph/',
+                        src: ['**/*.html', '**/*.css'],
+                        dest: 'lib/ng-dependency-graph/'
+                    }]
+            },
             lib: {
                 files: [
                     // angular
@@ -90,8 +106,6 @@ module.exports = function (grunt) {
                     {src: 'node_modules/angular-animate/angular-animate.min.js', dest: 'lib/angular-animate.min.js'},
                     // jquery
                     {src: 'node_modules/jquery/dist/jquery.min.js', dest: 'lib/jquery.min.js'},
-                    // underscore
-                    {src: 'node_modules/underscore/underscore-min.js', dest: 'lib/underscore-min.js'},
                     // admin-lte, bootstrap and font-awesome
                     {
                         expand: true,
@@ -122,24 +136,11 @@ module.exports = function (grunt) {
                         src: 'node_modules/font-awesome/fonts/fontawesome-webfont.woff2',
                         dest: 'lib/admin-lte/fonts/fontawesome-webfont.woff2'
                     },
-                    // ion-rangeslider
-                    {
-                        expand: true,
-                        cwd: 'node_modules/ion-rangeslider/',
-                        src: [
-                            // js
-                            'js/ion.rangeSlider.min.js',
-                            // css
-                            'css/ion.rangeSlider.skinNice.css', 'css/ion.rangeSlider.css', 'css/normalize.css',
-                            'img/sprite-skin-nice.png'
-                        ],
-                        dest: 'lib/ion-rangeslider/'
-                    },
                     // react
                     {src: 'node_modules/react/dist/react.min.js', dest: 'lib/react.min.js'},
                     {src: 'node_modules/react-dom/dist/react-dom.min.js', dest: 'lib/react-dom.min.js'},
                     // other vendor files
-                    {expand: true, cwd: 'vendor/', src: '**', dest: 'lib/'}
+                    {expand: true, cwd: 'vendor/', src: ['**','!**/ng-dependency-graph/**'], dest: 'lib/'}
                 ]
             }
         },
@@ -200,8 +201,10 @@ module.exports = function (grunt) {
     grunt.registerTask('default', ['jshint']);
     // generate injector script
     grunt.registerTask('build-inject', ['clean:inject', 'uglify:inject']);
+    // copy ng-dependency-graph files to lib
+    grunt.registerTask('build-ng-dependency-graph', ['concat:ngDependencyGraph', 'copy:ngDependencyGraph']);
     // creating zip file for distribution
     grunt.registerTask('build-extension', ['jshint', 'template', 'concat', 'uglify', 'copy', 'compress']);
     // for development
-    grunt.registerTask('build', ['jshint', 'build-inject', 'copy:lib', 'copy:lib-angular-mock', 'template']);
+    grunt.registerTask('build', ['jshint', 'build-inject', 'build-ng-dependency-graph', 'copy:lib', 'copy:lib-angular-mock', 'template']);
 };

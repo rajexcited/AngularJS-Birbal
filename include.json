@@ -3,51 +3,31 @@
     "files": {
       "css": [
         {
-          "comment": "<!--bootstrap-->",
-          "path": "/lib/admin-lte/css/bootstrap.min.css"
-        },
-        "/lib/admin-lte/css/AdminLTE.min.css",
-        "/lib/admin-lte/css/skin-blue.min.css",
-        "/lib/admin-lte/css/font-awesome.min.css",
-        "/lib/ionicons.min.css",
-        "/lib/ion-rangeslider/css/ion.rangeSlider.skinNice.css",
-        "/lib/ion-rangeslider/css/ion.rangeSlider.css",
-        "/lib/ion-rangeslider/css/normalize.css",
-        {
           "comment": "<!--  Custom styles  -->",
           "path": "../css/panel.css"
         }
       ],
       "js": [
         {
-          "comment": "<!-- REQUIRED VENDOR LIB -->",
-          "path": "/lib/jquery.min.js"
-        },
-        "/lib/angular.min.js",
-        "/lib/ion-rangeslider/js/ion.rangeSlider.min.js",
-        "/lib/admin-lte/js/bootstrap.min.js",
-        "/lib/admin-lte/js/app.min.js",
-        "/lib/jquery.sparkline.min.js",
-        "/lib/canvasjs.min.js",
-        {
           "comment": "<!-- Birbal scripts -->",
-          "path": "/src/message.js"
-        },
-        "../js/birbalJSInit.js",
-        "../js/birbal.app.js",
-        "../js/background.service.js",
-        "../js/panel-view.directive.js",
-        "../js/birbalFilters.filter.js",
-        "../js/dashboardCharts.factory.js",
-        "../js/digestMeasureLog.factory.js",
-        "../js/digestView.factory.js",
-        "../js/httpRecordFactory.factory.js",
-        "../js/dependencyTree.factory.js",
-        "../js/rangeSlider.directive.js",
-        "../js/searchCriteria.watch.directive.js",
-        "../js/watcherView.factory.js",
-        "../js/sortableColumn.component.js",
-        "../js/dataNotifier.promise.factory.js"
+          "path": [
+            "../js/birbalJSInit.js",
+            "../js/birbal.app.js",
+            "../js/background.service.js",
+            "../js/panel-view.directive.js",
+            "../js/birbalFilters.filter.js",
+            "../js/dashboardCharts.factory.js",
+            "../js/digestMeasureLog.factory.js",
+            "../js/digestView.factory.js",
+            "../js/httpRecordFactory.factory.js",
+            "../js/dependencyTree.factory.js",
+            "../js/rangeSlider.directive.js",
+            "../js/searchCriteria.watch.directive.js",
+            "../js/watcherView.factory.js",
+            "../js/sortableColumn.component.js",
+            "../js/dataNotifier.promise.factory.js"
+          ]
+        }
       ]
     }
   },
@@ -55,37 +35,17 @@
     "files": {
       "css": [
         {
-          "comment": "<!--bootstrap-->",
-          "path": "/lib/admin-lte/css/bootstrap.min.css"
-        },
-        "/lib/admin-lte/css/AdminLTE.min.css",
-        "/lib/admin-lte/css/skin-blue.min.css",
-        "/lib/admin-lte/css/font-awesome.min.css",
-        "/lib/ionicons.min.css",
-        "/lib/ion-rangeslider/css/ion.rangeSlider.skinNice.css",
-        "/lib/ion-rangeslider/css/ion.rangeSlider.css",
-        "/lib/ion-rangeslider/css/normalize.css",
-        {
           "comment": "<!--  Custom styles  -->",
           "path": "/src/panel/panel.css"
         }
       ],
       "js": [
         {
-          "comment": "<!-- REQUIRED VENDOR LIB -->",
-          "path": "/lib/jquery.min.js"
-        },
-        "/lib/angular.min.js",
-        "/lib/ion-rangeslider/js/ion.rangeSlider.min.js",
-        "/lib/admin-lte/js/bootstrap.min.js",
-        "/lib/admin-lte/js/app.min.js",
-        "/lib/jquery.sparkline.min.js",
-        "/lib/canvasjs.min.js",
-        {
           "comment": "<!-- Birbal scripts -->",
-          "path": "/src/message.js"
-        },
-        "/src/panel/panel.js"
+          "path": [
+            "/src/panel/panel.js"
+          ]
+        }
       ]
     }
   }

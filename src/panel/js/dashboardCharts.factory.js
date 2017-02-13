@@ -165,11 +165,11 @@
                     this.render();
                 };
 
-                this.render = function () {
+                this.render = _.throttle(function () {
                     if (charts.doRender) {
                         chart.render();
                     }
-                };
+                }, 300);
 
                 chart = new CanvasJS.Chart(id, chartOptions);
 
@@ -234,11 +234,12 @@
                     this.render();
                 };
 
-                this.render = function () {
+                this.render = _.throttle(function () {
                     if (charts.doRender) {
                         chart.render();
                     }
-                };
+                }, 300);
+
                 chart = new CanvasJS.Chart(id, chartOptions);
 
                 this.update(null, true);
@@ -380,11 +381,11 @@
                     this.render();
                 };
 
-                this.render = function () {
+                this.render = _.throttle(function () {
                     if (charts.doRender) {
                         chart.render();
                     }
-                };
+                }, 300);
 
                 chart = new CanvasJS.Chart(id, chartOptions);
 

@@ -115,7 +115,7 @@
 
                     watchMeasureLogFactory.prepareHighlights($scope.watchInfo.highlights);
                     dataNotifierPromise.getNotifyFor(
-                        [DATA_NAMES.WATCHERS_FULL_LIST, DATA_NAMES.SORTBY_SORTABLECOLUMN, DATA_NAMES.ACTIVE_FILTERS_LIST], function (data) {
+                        [DATA_NAMES.WATCHERS_FULL_LIST, DATA_NAMES.SORTBY_SORTABLECOLUMN, DATA_NAMES.ACTIVE_FILTERS_LIST], _.throttle(function (data) {
                             var list = data[DATA_NAMES.WATCHERS_FULL_LIST];
                             if (list) {
                                 $scope.watchInfo.fullListLength = list.length;
@@ -127,7 +127,7 @@
                             if ($scope.watchInfo.total) {
                                 $scope.watchInfo.total = watchMeasureLogFactory.mergeAndSumList($scope.watchInfo.details);
                             }
-                        });
+                        }, 300));
 
                     /////////////////////////////////////////////////////////////////////////////////////////
                     //            performance views - digest
@@ -142,7 +142,7 @@
                     };
 
                     dataNotifierPromise.getNotifyFor(
-                        [DATA_NAMES.DIGEST_GROUP, DATA_NAMES.SORTBY_SORTABLECOLUMN, DATA_NAMES.ACTIVE_FILTERS_LIST], function (data) {
+                        [DATA_NAMES.DIGEST_GROUP, DATA_NAMES.SORTBY_SORTABLECOLUMN, DATA_NAMES.ACTIVE_FILTERS_LIST], _.throttle(function (data) {
                             var list = data[DATA_NAMES.DIGEST_GROUP];
                             if (list) {
                                 $scope.digestInfo.fullListLength = list.length;
@@ -151,7 +151,7 @@
                             }
                             list = $filter('birbalSearchBy')(list, $scope.digestInfo.activeFilterList);
                             $scope.digestInfo.details = $filter('orderBy')(list, $scope.digestInfo.sortByExpressions);
-                        });
+                        }, 300));
 
                     var viewChangeListenerRemover = $scope.$on("view-changed", function viewChangeListener(ignore, viewEvent) {
                         if (viewEvent.displayed === "dashboard") {
