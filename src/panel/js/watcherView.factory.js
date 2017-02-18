@@ -130,6 +130,9 @@
                     dataNotifierPromise.notifyChangeFor(DATA_NAMES.WATCHERS_FULL_LIST, watcherList);
                     return updateHighlights(watchers);
                 },
+                getWatchersList: function () {
+                    return watcherList;
+                },
                 mergeAndSumList: function (list) {
                     return _.reduce(list, function (item1, item2) {
                         item1.howMany.fn += item2.watch.howMany.fn;

@@ -2,7 +2,7 @@
 (function (angular, birbalJS) {
     "use strict";
 
-    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'views.performance.digest', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph', 'measure.digest.app', 'sortable-column.component', 'dataNotifier.promise.factory'])
+    angular.module('birbal-app', ['background-service-app', 'panel-view-app', 'views.performance.digest', 'birbalFilters.app', 'rangeSlider.app', 'searchCriteria.watch.app', 'ngDependencyGraph', 'measure.digest.app', 'sortable-column.component', 'dataNotifier.promise.factory', 'digest-group-detail.component'])
         .controller('panelViewController',
             ['$scope', 'backgroundService', '$rootScope', 'digestView', '$interval', 'watchMeasureLogFactory', '$filter', 'DATA_NAMES', 'dataNotifierPromise',
                 function ($scope, backgroundService, $rootScope, digestView, $interval, watchMeasureLogFactory, $filter, DATA_NAMES, dataNotifierPromise) {
@@ -116,12 +116,8 @@
                     watchMeasureLogFactory.prepareHighlights($scope.watchInfo.highlights);
                     dataNotifierPromise.getNotifyFor(
                         [DATA_NAMES.WATCHERS_FULL_LIST, DATA_NAMES.SORTBY_SORTABLECOLUMN, DATA_NAMES.ACTIVE_FILTERS_LIST], _.throttle(function (data) {
-                            var list = data[DATA_NAMES.WATCHERS_FULL_LIST];
-                            if (list) {
-                                $scope.watchInfo.fullListLength = list.length;
-                            } else {
-                                list = $scope.watchInfo.details;
-                            }
+                            var list = watchMeasureLogFactory.getWatchersList();
+                            $scope.watchInfo.fullListLength = list.length;
                             list = $filter('birbalSearchBy')(list, $scope.watchInfo.activeFilterList);
                             $scope.watchInfo.details = $filter('orderBy')(list, $scope.watchInfo.sortByExpressions);
                             if ($scope.watchInfo.total) {
@@ -143,14 +139,11 @@
 
                     dataNotifierPromise.getNotifyFor(
                         [DATA_NAMES.DIGEST_GROUP, DATA_NAMES.SORTBY_SORTABLECOLUMN, DATA_NAMES.ACTIVE_FILTERS_LIST], _.throttle(function (data) {
-                            var list = data[DATA_NAMES.DIGEST_GROUP];
-                            if (list) {
-                                $scope.digestInfo.fullListLength = list.length;
-                            } else {
-                                list = $scope.digestInfo.details;
-                            }
+                            var list = digestView.getDigestGroups();
+                            $scope.digestInfo.fullListLength = list.length;
                             list = $filter('birbalSearchBy')(list, $scope.digestInfo.activeFilterList);
                             $scope.digestInfo.details = $filter('orderBy')(list, $scope.digestInfo.sortByExpressions);
+                            dataNotifierPromise.notifyChangeFor(DATA_NAMES.DIGEST_GROUP_DETAIL_TOGGLE, [2, undefined, undefined, $scope.digestInfo.details]);
                         }, 300));
 
                     var viewChangeListenerRemover = $scope.$on("view-changed", function viewChangeListener(ignore, viewEvent) {
@@ -183,6 +176,21 @@
                         }
                     };
 
+                    $scope.toggleDigestGroupDetail = function (event, ind, group) {
+                        // default hide
+                        var openState = 0,
+                            detailedRow = $('tr.group-row.add-detail-panel'),
+                            targetingRow = $(event.target).parents('tr.group-row');
+
+                        if (detailedRow[0] === undefined) {
+                            // show
+                            openState = 1;
+                        } else if (detailedRow[0] !== targetingRow[0]) {
+                            // move
+                            openState = 2;
+                        }
+                        dataNotifierPromise.notifyChangeFor(DATA_NAMES.DIGEST_GROUP_DETAIL_TOGGLE, [openState, ind, group]);
+                    };
                     /////////////////////////////////////////////////////////////////////////////////////////
                     //            slider, filter, dashboard update, sort, configurations
                     /////////////////////////////////////////////////////////////////////////////////////////

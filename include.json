@@ -25,7 +25,8 @@
             "../js/searchCriteria.watch.directive.js",
             "../js/watcherView.factory.js",
             "../js/sortableColumn.component.js",
-            "../js/dataNotifier.promise.factory.js"
+            "../js/dataNotifier.promise.factory.js",
+            "../js/digestGroupDetail.component.js"
           ]
         }
       ]

@@ -232,6 +232,9 @@
                             });
                         });
                     },
+                    getDigestGroups: function () {
+                        return digestGroups;
+                    },
                     digestHighlightsWithChart: function (digestHighlights) {
                         // monitor by polling
                         var dataLimit = 200, pollTime = 1000,
@@ -262,6 +265,7 @@
                     },
                     resetView: function () {
                         digestMeasureLogFactory.resetView();
+                        dataNotifierPromise.notifyChangeFor(DATA_NAMES.DIGEST_GROUP, digestGroups);
                         digestGroups.length = 0;
                         reset = true;
                     }

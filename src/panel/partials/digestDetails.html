@@ -27,7 +27,9 @@
         <div class="col-sm-12">
             <div class="panel panel-default">
                 <!-- Default panel contents -->
-                <div class="panel-heading">Digest Information ({{digestInfo.details.length+'/'+digestInfo.fullListLength}}) </div>
+                <div class="panel-heading">Digest Information
+                    ({{digestInfo.details.length+'/'+digestInfo.fullListLength}})
+                </div>
                 <div class="panel-body">
                     <p>Digest cycles are grouped by debounce time provided in "settings". the bigger the worse. browser
                         can be freeze in this duration stopping/delaying all user actions.
@@ -35,43 +37,53 @@
                 </div>
 
                 <!-- Table -->
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th>
-                            <sortable-column sort-type="numeric" predicate="+list.length"
-                                             sort-by="digestInfo.sortByExpressions">
-                                <span>n in group</span>
-                            </sortable-column>
-                        </th>
-                        <th>
-                            <sortable-column predicate="+startDate" sort-by="digestInfo.sortByExpressions">
-                                <span>Start time (HH:mm:ss)</span>
-                            </sortable-column>
-                        </th>
-                        <th>
-                            <sortable-column sort-type="numeric" predicate="+duration"
-                                             sort-by="digestInfo.sortByExpressions">
-                                <span>Duration</span>
-                            </sortable-column>
-                        </th>
-                        <th>
-                            <sortable-column sort-type="numeric" predicate="+domRenderTime"
-                                             sort-by="digestInfo.sortByExpressions">
-                                <span>HTML rendering & repainting</span>
-                            </sortable-column>
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr ng-repeat="group in digestInfo.details">
-                        <th scope="row">{{group.list.length}}</th>
-                        <td>{{group.startDate|date:'HH:mm:ss'}}</td>
-                        <td>{{group.duration|number:0}} ms</td>
-                        <td>{{group.domRenderTime|number:0}} ms</td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div class="digest-summary-details">
+                    <digest-group-detail></digest-group-detail>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>
+                                <sortable-column sort-type="numeric" predicate="+list.length"
+                                                 sort-by="digestInfo.sortByExpressions">
+                                    <span>n in group</span>
+                                </sortable-column>
+                            </th>
+                            <th>
+                                <sortable-column predicate="+startDate" sort-by="digestInfo.sortByExpressions">
+                                    <span>Start time (HH:mm:ss)</span>
+                                </sortable-column>
+                            </th>
+                            <th>
+                                <sortable-column sort-type="numeric" predicate="+duration"
+                                                 sort-by="digestInfo.sortByExpressions">
+                                    <span>Duration</span>
+                                </sortable-column>
+                            </th>
+                            <th colspan="2">
+                                <sortable-column sort-type="numeric" predicate="+domRenderTime"
+                                                 sort-by="digestInfo.sortByExpressions">
+                                    <span>HTML rendering & repainting</span>
+                                </sortable-column>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="group in digestInfo.details" class="group-row">
+                            <td>{{group.list.length}}</td>
+                            <td>{{group.startDate|date:'HH:mm:ss'}}</td>
+                            <td>{{group.duration|number:0}} ms</td>
+                            <td>{{group.domRenderTime|number:0}} ms</td>
+                            <td>
+                                <button class="btn btn-xs btn-primary btn-for-detail"
+                                        ng-click="toggleDigestGroupDetail($event,$index, group);">
+                                    <span class="more-d">More Details</span>
+                                    <span class="less-d">Less Details</span>
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

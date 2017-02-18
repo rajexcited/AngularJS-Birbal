@@ -4,10 +4,11 @@
 
     angular.module('dataNotifier.promise.factory', [])
         .constant('DATA_NAMES', {
-            'WATCHERS_FULL_LIST': 'watcherList',
+            'WATCHERS_FULL_LIST': 'watcher-list',
             'DIGEST_GROUP': 'digest-group-list',
             'ACTIVE_FILTERS_LIST': 'active-filters-list',
-            'SORTBY_SORTABLECOLUMN': 'sortableColumn-sortBy'
+            'DIGEST_GROUP_DETAIL_TOGGLE': 'digest-group-detail-toggle',
+            'SORTBY_SORTABLECOLUMN': 'sortable-column-sortBy'
         })
         .factory('dataNotifierPromise', ['$q', '$rootScope', function ($q, $rootScope) {
 
@@ -36,7 +37,7 @@
                 var defer = $q.defer();
 
                 if (names.length === 1) {
-                    return getPromiseNameValue(name);
+                    return getPromiseNameValue(names[0]);
                 }
                 angular.forEach(names, function (name) {
                     getPromiseNameValue(name).then(undefined, undefined, function (v) {

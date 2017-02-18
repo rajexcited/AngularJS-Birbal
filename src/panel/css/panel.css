@@ -247,6 +247,31 @@ input.list-item-input:focus {
     margin-bottom: 20px;
 }
 
+.digest-summary-details {
+    position: relative;
+}
+
+digest-group-detail {
+    position: absolute;
+}
+
+.add-detail-panel .btn-for-detail .more-d {
+    display: none;
+}
+
+.group-row:not(.add-detail-panel) .btn-for-detail .less-d {
+    display: none;
+}
+
+.add-detail-panel td {
+    -webkit-transition-timing-function: ease;
+    transition-timing-function: ease;
+    -webkit-transition-duration: .35s;
+    transition-duration: .35s;
+    -webkit-transition-property: padding-bottom;
+    transition-property: padding-bottom;
+}
+
 @-webkit-keyframes spin {
     0% {
         -webkit-transform: rotate(0deg);
