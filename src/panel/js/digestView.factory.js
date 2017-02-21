@@ -121,6 +121,7 @@
                     det1 = (dOfPrevGrp && dOfPrevGrp.domRenderEndTime) || 0;
                     digestGroup.domRenderTime = 0;
                     digestGroup.watcherRunTime = 0;
+                    digestGroup.watcherCount = 0;
                     _.forEach(digestGroup.list, function (d2, i) {
                         var dr1Remaining = det1 - d2.endTime;
                         if (dr1Remaining <= d2.domRenderTime) {
@@ -135,6 +136,7 @@
                         }
                         // watchers runTime
                         digestGroup.watcherRunTime += d2.watchers.runTime.total;
+                        digestGroup.watcherCount += d2.watchers.count;
                     });
                 }
 

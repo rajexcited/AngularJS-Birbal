@@ -6,6 +6,9 @@
 (function (angular) {
     "use strict";
 
+    /**
+     * @deprecated
+     */
     angular.module('measure.digest.app', [])
         .factory('digestDataFactory', [function () {
 

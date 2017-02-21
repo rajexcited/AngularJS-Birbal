@@ -67,7 +67,6 @@
                 });
 
                 digestMeasure.watchers = watchMeasureLogFactory.addWatchers(watcherList);
-                //console.log('digestMeasure.watchers', digestMeasure.watchers);
             }
 
             function getEventNames(digestMeasure) {

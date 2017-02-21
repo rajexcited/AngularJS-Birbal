@@ -13,15 +13,13 @@
                                 <div class="box-body">
                                     <div>
                                         <label>total time: </label>
-                                        <span>2.13 ms (12.65 %)</span>
+                                        <span>{{$ctrl.detail.watcherRunTime|number:2}} ms ( {{ (100*$ctrl.detail.watcherRunTime/$ctrl.detail.runTime) | number:2}} %)</span>
                                     </div>
                                     <div>
                                         <label>count: </label>
-                                        <!-- if max, red font -->
-                                        <span>23</span>
+                                        <span>{{$ctrl.detail.watcherCount}}</span>
                                     </div>
                                 </div>
-                                <!-- /.box-body -->
                             </div>
                         </div>
                     </div>
