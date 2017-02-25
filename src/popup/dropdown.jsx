@@ -15,7 +15,7 @@ class Dropdown extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {selected: props.selectedItem || props.items[0]};
         this.selectItem = this.selectItem.bind(this);
     }
 
@@ -31,6 +31,9 @@ class Dropdown extends React.Component {
 
     selectItem(value) {
         this.setState({selected: value});
+        if (this.props.onSelect) {
+            this.props.onSelect(value);
+        }
     }
 
     getValue() {

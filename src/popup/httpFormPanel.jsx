@@ -1,20 +1,104 @@
+class DroppableArea extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.eventHandlers = {};
+    }
+
+    componentWillReceiveProps(nextProps) {
+        // any updates from parent
+        this.isOpen = !!nextProps.isOpening;
+    }
+
+    componentDidMount() {
+        // Setup the dnd listeners.
+        var droppableElement = $(this.self),
+            dropEffect;
+        var triggerHandler = function (handlerCallback) {
+            var THIS = this;
+            return function (evt) {
+                evt.dataTransfer.dropEffect = dropEffect;
+                if (THIS.isOpen) {
+                    handlerCallback(evt);
+                } else {
+                    evt.preventDefault();
+                }
+            };
+        }.bind(this);
+
+        this.eventHandlers.dragenter = triggerHandler(function handleDragEnter(evt) {
+            console.log('handleDragEnter', evt);
+            if (droppableElement.is(evt.target) || droppableElement.find(evt.target)[0]) {
+                evt.dataTransfer.dropEffect = 'copy';
+            } else {
+                evt.dataTransfer.dropEffect = 'none';
+            }
+            dropEffect = evt.dataTransfer.dropEffect;
+            droppableElement.find('.dragover').removeClass('hide-me-imp');
+            evt.preventDefault();
+        });
+
+        this.eventHandlers.dragover = triggerHandler(_.debounce(function handleDragOver(evt) {
+            console.log('handleDragOver', evt.target);
+            droppableElement.find('.dragover').addClass('hide-me-imp');
+            evt.preventDefault();
+        }, 200));
+
+        this.eventHandlers.drop = triggerHandler(function handleFileSelect(evt) {
+            // dropped on itself or one of its children
+            if (droppableElement.is(evt.target) || droppableElement.find(evt.target)[0]) {
+                console.log('handleFileSelect', evt.target, evt);
+                var files = evt.dataTransfer.files; // FileList object.
+                var reader = new FileReader();
+                droppableElement.find('.dragover:not(.hide-me-imp)').addClass('hide-me-imp');
+                reader.onload = function (event) {
+                    droppableElement[0].children[0].value = event.target.result;
+                };
+                reader.readAsText(files[0], "UTF-8");
+            }
+            evt.preventDefault();
+        });
+
+        document.addEventListener('dragenter', this.eventHandlers.dragenter, false);
+        document.addEventListener('dragover', this.eventHandlers.dragover, false);
+        document.addEventListener('drop', this.eventHandlers.drop, false);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('dragenter', this.eventHandlers.dragenter);
+        document.removeEventListener('dragover', this.eventHandlers.dragover);
+        document.removeEventListener('drop', this.eventHandlers.drop);
+    }
+
+    render() {
+        return (
+            <div className="droppable-area" ref={(self) => { this.self= self; }}>
+                {this.props.children}
+                <div className="dragover hide-me-imp">
+                    <div className="border-dragover">
+                        <span className="content">DROP File</span>
+                    </div>
+                </div>
+            </div> );
+    }
+}
+
 class HttpFormPanel extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            httpMethod: props.method,
-            headerList: props.headerList
-        };
         this.elm = {};
         this.HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "JSONP", "PATCH", "HEAD"];
+        this.HTTP_RESPONSE_TYPES = ["Response text", "Response through file"];
+        this.state = this.getDefaultStateValues(props);
+        this.state.isOpening = false;
         this.handleSubmit = this.handleSubmit.bind(this);
         this.resetForm = this.resetForm.bind(this);
         // init or reset the form
         var THIS = this;
         this.resetForm(()=> {
             if (THIS.props.updateInitErrorState) {
-                var httpErrorState = THIS.getState();
+                var httpErrorState = THIS.getErrorState();
                 birbalJS.logger.log(THIS.props);
                 THIS.props.updateInitErrorState(httpErrorState);
             }
@@ -41,6 +125,9 @@ class HttpFormPanel extends React.Component {
         var THIS = this;
         $("#collapse-" + this.props.name).on("openingForm", function () {
             THIS.showHelpPanel("method");
+        });
+        $("#collapse-" + this.props.name).on("show.bs.collapse  hide.bs.collapse", function (evt) {
+            THIS.setState({isOpening: (evt.type === 'show')});
         });
     }
 
@@ -90,11 +177,14 @@ class HttpFormPanel extends React.Component {
         }
     }
 
-    getState() {
+    getErrorState() {
         var errorState = {}, elm;
         // required state
         for (var name in this.elm) {
             elm = this.elm[name];
+            if (!elm) {
+                continue;
+            }
             // initialize
             errorState[name] = "";
             if (elm.dataset && elm.dataset.httpRequired === 'true' && !(elm.value || elm.getValue && elm.getValue())) {
@@ -109,16 +199,26 @@ class HttpFormPanel extends React.Component {
         e.preventDefault();
         var httpMock = {
             status: this.elm.status.value,
-            response: this.elm.responseData.value,
             headers: this.elm.headers.getValue(),
             method: this.elm.httpMethod.getValue()
         };
+        if (this.state.httpResponseType === this.HTTP_RESPONSE_TYPES[0]) {
+            httpMock.response = this.elm.responseData.value;
+        } else {
+            httpMock.fileResponse = this.elm.fileResponse.value;
+            if (httpMock.fileResponse) {
+                if (httpMock.fileResponse.indexOf('http') !== 0) {
+                    httpMock.fileResponse = 'http://' + httpMock.fileResponse;
+                }
+            }
+        }
+
         try {
             httpMock.url = birbalJS.toURL(this.getRegExpArgs(this.elm.url.value));
         } finally {
             httpMock.url = httpMock.url || this.elm.url.value;
         }
-        var httpErrorState = this.getState();
+        var httpErrorState = this.getErrorState();
         this.hideHelpPanel();
         this.props.save(httpMock, httpErrorState);
         // reset the form
@@ -126,7 +226,7 @@ class HttpFormPanel extends React.Component {
     }
 
     validateForm() {
-        var httpErrorState = this.getState(),
+        var httpErrorState = this.getErrorState(),
             classList;
         for (var name in httpErrorState) {
             classList = ReactDOM.findDOMNode(this.elm[name]).parentElement.classList;
@@ -138,17 +238,38 @@ class HttpFormPanel extends React.Component {
         }
     }
 
+    // generate from properties
+    getDefaultStateValues(props) {
+        if (!props) {
+            props = this.props;
+        }
+        var stateValues = {
+            httpMethod: props.method || this.HTTP_METHODS[0],
+            headerList: props.headerList || []
+        };
+        if (props.responseData === undefined && props.fileResponse) {
+            stateValues.httpResponseType = this.HTTP_RESPONSE_TYPES[1];
+        } else {
+            stateValues.httpResponseType = this.HTTP_RESPONSE_TYPES[0];
+        }
+        return stateValues;
+    }
+
     resetForm(callback) {
         var THIS = this;
         this.hideHelpPanel();
+        var defaultState = this.getDefaultStateValues();
+        this.setState(defaultState);
         window.setTimeout(function () {
-            THIS.setState({
-                httpMethod: THIS.props.method || THIS.HTTP_METHODS[0],
-                headerList: THIS.props.headerList || []
-            });
+            if (THIS.state.httpResponseType === THIS.HTTP_RESPONSE_TYPES[1]) {
+                // its file reference
+                THIS.elm.fileResponse.value = THIS.props.fileResponse;
+            } else {
+                // default response data
+                THIS.elm.responseData.value = THIS.props.responseData || "";
+            }
             THIS.elm.url.value = (THIS.props.url && THIS.props.url.toString()) || "";
-            THIS.elm.responseData.value = THIS.props.responseData || "";
-            THIS.elm.status.value = THIS.props.status || "";
+            THIS.elm.status.value = THIS.props.status || "200";
             if (typeof callback === 'function') {
                 callback();
             }
@@ -162,14 +283,47 @@ class HttpFormPanel extends React.Component {
         var panelList = panelName ? [panelName] : panelName;
         $(".http-input-help").trigger("help-panel:hide");
         $(".http-input-help").trigger("help-panel:show", panelList);
+        if (panelName === 'response') {
+            $('.nav.nav-pills li .btn.dropdown-toggle').addClass('btn-primary');
+        } else {
+            $('.nav.nav-pills li .btn.dropdown-toggle').removeClass('btn-primary');
+        }
     }
 
     hideHelpPanel(panelName) {
         var panelList = panelName ? [panelName] : panelName;
         $(".http-input-help").trigger("help-panel:hide", panelList);
+        if (panelName === 'response') {
+            $('.nav.nav-pills li .btn.dropdown-toggle').addClass('btn-primary');
+        } else {
+            $('.nav.nav-pills li .btn.dropdown-toggle').removeClass('btn-primary');
+        }
+    }
+
+    selectResponseType(value) {
+        this.setState({httpResponseType: value});
     }
 
     render() {
+        function responseBody() {
+            if (this.state.httpResponseType === this.HTTP_RESPONSE_TYPES[0]) {
+                return (
+                    <DroppableArea isOpening={this.state.isOpening}>
+                    <textarea placeholder="Write your response output or drag and drop a file to it"
+                              onFocus={this.showHelpPanel.bind(this,"response")}
+                              ref={(textarea) => { this.elm.responseData= textarea; }}/>
+                    </DroppableArea>);
+            } else {
+                return (
+                    <div>
+                        <input type="text" placeholder="Please Enter full file location http or local"
+                               data-http-required="true" onFocus={this.showHelpPanel.bind(this,"response")}
+                               defaultValue={this.props.fileResponse} className="form-control"
+                               ref={(input) => { this.elm.fileResponse= input; }}/>
+                    </div>);
+            }
+        }
+
         return (
             <form name={"collapse-form-"+this.props.name} onSubmit={this.handleSubmit}>
                 <div className="panel panel-default collapse" role="http-mock-panel"
@@ -209,7 +363,7 @@ class HttpFormPanel extends React.Component {
                                        data-target={"#status-"+this.props.name}>Status</a>
                                 </li>
                                 <li role="presentation">
-                                    <a aria-controls="response" role="tab" data-toggle="tab"
+                                    <a className="dropdown" aria-controls="response" role="tab" data-toggle="tab"
                                        onClick={this.showHelpPanel.bind(this,"response")}
                                        data-target={"#response-"+this.props.name}>Response</a>
                                 </li>
@@ -232,13 +386,19 @@ class HttpFormPanel extends React.Component {
                                         />
                                     </div>
                                     <div role="tabpanel" className="tab-pane fade" id={"response-"+this.props.name}>
-                                        <textarea placeholder="Write your response output"
-                                                  onFocus={this.showHelpPanel.bind(this,"response")}
-                                                  ref={(textarea) => { this.elm.responseData= textarea; }}></textarea>
+                                        <div className="response-container">
+                                            <Dropdown className="dropdown paddingBottom10px"
+                                                      items={this.HTTP_RESPONSE_TYPES}
+                                                      selectedItem={this.state.httpResponseType}
+                                                      onSelect={this.selectResponseType.bind(this)}/>
+                                            <div className="data">
+                                                {responseBody.bind(this).call()}
+                                            </div>
+                                        </div>
                                     </div>
                                     <div role="tabpanel" className="tab-pane fade" id={"headers-"+this.props.name}>
                                         <HeaderInputList headerList={this.state.headerList}
-                                                         onClick={this.showHelpPanel.bind(this,"response")}
+                                                         onClick={this.showHelpPanel.bind(this,"headers")}
                                                          ref={(headers) => { this.elm.headers= headers; }}/>
                                     </div>
                                 </div>

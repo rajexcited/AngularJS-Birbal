@@ -9,6 +9,10 @@ h3 {
     padding-bottom: 5px;
 }
 
+.paddingBottom10px {
+    padding-bottom: 10px;
+}
+
 .list-group-item-label {
     display: inline-block;
     white-space: nowrap;
@@ -48,8 +52,53 @@ a {
 
 textarea {
     resize: none;
-    width: 100%;
+}
+
+.response-container {
+    display: flex;
+    flex-direction: column;
     height: 100%;
+}
+
+.response-container .data, .response-container .data *:not(input) {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.droppable-area {
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+.droppable-area:first-child {
+    flex-basis: auto;
+}
+
+.droppable-area .dragover {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
+    opacity: 0.5;
+    background-color: white;
+    padding: 10px;
+}
+
+.border-dragover {
+    position: relative;
+    border: 4px dashed #888;
+}
+
+.dragover .border-dragover .content {
+    display: inline;
+    position: absolute;
+    top: 40%;
+    left: 45%;
+    font-size: 150%;
+    user-select: none;
 }
 
 .nav-container {
@@ -219,6 +268,10 @@ input[type=number]::-webkit-outer-spin-button {
 
 .hide-me {
     display: none;
+}
+
+.hide-me-imp {
+    display: none !important;
 }
 
 .http-input-help .glyphicon-info-sign {

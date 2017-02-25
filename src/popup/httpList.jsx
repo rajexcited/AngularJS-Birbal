@@ -22,7 +22,6 @@ class HttpList extends React.Component {
         this.setState({httpList: newList, listErrorIndicator: newErrors}, function () {
             // store http to storage
             birbalJS.requestBackGround(newList.filter((item)=>(!!item)), 'httpMock.updateList');
-            //updateHttpList(newList.filter((item)=>(!!item)));
         });
     }
 
@@ -36,7 +35,6 @@ class HttpList extends React.Component {
         this.setState({httpList: aList, listErrorIndicator: newErrors}, function () {
             // store http to storage
             birbalJS.requestBackGround(aList.filter((item)=>(!!item)), 'httpMock.updateList');
-            //updateHttpList(aList.filter((item)=>(!!item)));
         });
     }
 
@@ -107,8 +105,9 @@ class HttpList extends React.Component {
                                     </span>
                                         <span className="badge">{http.method}</span>
                                     </button>
-                                    <HttpFormPanel name={"url"+ind} responseData={http.response} url={http.url}
-                                                   status={http.status} method={http.method} headerList={http.headers}
+                                    <HttpFormPanel name={"url"+ind} responseData={http.response}
+                                                   fileResponse={http.fileResponse} url={http.url} status={http.status}
+                                                   method={http.method} headerList={http.headers}
                                                    save={THIS.updateExistingHttp.bind(THIS,ind)} saveBtnText="Update"
                                                    updateInitErrorState={THIS.initErrorState.bind(THIS,ind)}></HttpFormPanel>
                                 </div>
@@ -183,16 +182,3 @@ function showEditHttpPanel(event) {
         }, 300);
     }, 100);
 }
-
-//function getHttpMockFromStorage() {
-//    return new Promise(function (resolve) {
-//        //birbalJS.informBackground(null, 'httpMock.getMeList');
-//        birbalJS.requestBackGround(null, 'httpMock.getMeList',
-//            {name: 'httpMock.hereIsList', listener: resolve});
-//    });
-//}
-
-//function updateHttpList(list) {
-//    list = list || [];
-//
-//}

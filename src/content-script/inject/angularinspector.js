@@ -823,15 +823,47 @@ window.inspectorExecutor = function (window, document) {
     function handleHttpInjector() {
         var oldList, backend;
         logger.log('register birbal app to http backend mock service');
+        console.log('register birbal app to http backend mock service');
         // register birbalApp to do specific task or action
         angular.module('birbalApp', ['ngMockE2E'])
             .config(['$provide', function ($provide) {
                 logger.log('initializing decorator');
-                $provide.decorator('$httpBackend', [function () {
+                $provide.decorator('$httpBackend', ['$timeout', function ($timeout) {
                     logger.log('skinning mock version of httpbackend with backend? ' + !!backend);
 
                     function myBackend() {
-                        backend.apply(null, arguments);
+
+                        function myCallback(args) {
+                            var newArgs = Array.prototype.map.call(args, function (v) {
+                                return v;
+                            });
+
+                            var oldCallback = newArgs[3];
+                            newArgs[3] = function (ignore1, url, headerString) {
+                                $timeout(function (doneArgs) {
+                                    var oldUrl,
+                                        args,
+                                        regex = /redirecting-from:([^\r\n]+)/;
+                                    console.log('in my callback');
+                                    if (regex.test(headerString)) {
+                                        oldUrl = regex.exec(headerString)[1].trim();
+                                        args = [].concat(newArgs);
+                                        args[3] = oldCallback;
+                                        args[0] = 'GET';
+                                        args[1] = url;
+                                        args[4] = args[4] || {};
+                                        args[4]['redirecting-from'] = oldUrl;
+                                        backend.apply(null, args);
+                                    } else {
+                                        oldCallback.apply(this, doneArgs);
+                                    }
+                                }, 10, false, arguments);
+                            };
+                            return newArgs;
+                        }
+
+
+                        backend.apply(null, myCallback(arguments));
                     }
 
                     Object.getOwnPropertyNames(backend).forEach(function (prop) {
@@ -850,7 +882,6 @@ window.inspectorExecutor = function (window, document) {
                     return myBackend;
                 }]);
             }]);
-
 
         function isModified(list) {
             var len = list.length;
@@ -910,8 +941,13 @@ window.inspectorExecutor = function (window, document) {
                 oldList = list;
                 useNewBackend();
                 list.forEach(function (httpItem) {
+                    var headers;
+                    if (httpItem.hasOwnProperty('fileResponse')) {
+                        headers = {'redirecting-from': httpItem.fileResponse};
+                        httpItem.response = httpItem.fileResponse;
+                    }
                     backend.when(httpItem.method.toUpperCase(), toURLStringOrRegExp(httpItem.url), toHeaderObject(httpItem.headers))
-                        .respond(Number(httpItem.status), httpItem.response);
+                        .respond(Number(httpItem.status), httpItem.response, headers);
                 });
                 backend.whenGET(/.*/).passThrough();
                 backend.whenPOST(/.*/).passThrough();
