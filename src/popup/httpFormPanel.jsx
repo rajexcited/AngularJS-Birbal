@@ -12,16 +12,14 @@ class DroppableArea extends React.Component {
 
     componentDidMount() {
         // Setup the dnd listeners.
-        var droppableElement = $(this.self),
-            dropEffect;
+        var droppableElement = $(this.self);
         var triggerHandler = function (handlerCallback) {
             var THIS = this;
             return function (evt) {
-                evt.dataTransfer.dropEffect = dropEffect;
+                evt.preventDefault();
+                evt.dataTransfer.dropEffect = window.dropEffect;
                 if (THIS.isOpen) {
                     handlerCallback(evt);
-                } else {
-                    evt.preventDefault();
                 }
             };
         }.bind(this);
@@ -29,19 +27,17 @@ class DroppableArea extends React.Component {
         this.eventHandlers.dragenter = triggerHandler(function handleDragEnter(evt) {
             console.log('handleDragEnter', evt);
             if (droppableElement.is(evt.target) || droppableElement.find(evt.target)[0]) {
-                evt.dataTransfer.dropEffect = 'copy';
+                window.dropEffect = 'copy';
             } else {
-                evt.dataTransfer.dropEffect = 'none';
+                window.dropEffect = 'none';
             }
-            dropEffect = evt.dataTransfer.dropEffect;
+            evt.dataTransfer.dropEffect = window.dropEffect;
             droppableElement.find('.dragover').removeClass('hide-me-imp');
-            evt.preventDefault();
         });
 
         this.eventHandlers.dragover = triggerHandler(_.debounce(function handleDragOver(evt) {
             console.log('handleDragOver', evt.target);
             droppableElement.find('.dragover').addClass('hide-me-imp');
-            evt.preventDefault();
         }, 200));
 
         this.eventHandlers.drop = triggerHandler(function handleFileSelect(evt) {
@@ -56,7 +52,6 @@ class DroppableArea extends React.Component {
                 };
                 reader.readAsText(files[0], "UTF-8");
             }
-            evt.preventDefault();
         });
 
         document.addEventListener('dragenter', this.eventHandlers.dragenter, false);

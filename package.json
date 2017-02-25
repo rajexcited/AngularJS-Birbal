@@ -27,7 +27,7 @@
     "ion-rangeslider": "^2.1.2",
     "jquery": "^2.1.4",
     "react": "^15.4.1",
-    "react-dom": "^15.4.1",
+    "react-dom": "^15.4.1"
   },
   "scripts": {
     "clean": "npm prune & npm update & grunt clean",
