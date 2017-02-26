@@ -104,7 +104,7 @@
                         activeFilterList: [],
                         sortByExpressions: []
                     };
-                    // ??? NEEL
+                    // ????
                     $scope.watchInfo.toggleDisplayTotal = function () {
                         if ($scope.watchInfo.total) {
                             delete $scope.watchInfo.total;
@@ -112,6 +112,24 @@
                             $scope.watchInfo.total = watchMeasureLogFactory.mergeAndSumList($scope.watchInfo.details);
                         }
                     };
+
+                    function anyInputChange(filtersList) {
+                        var inputList = filtersList.filter(function (item) {
+                            return !!item.input;
+                        }).map(function (item) {
+                            return item.input;
+                        });
+
+                        return function changeDetector() {
+                            return inputList.map(function (input) {
+                                return input.value;
+                            }).join(' ');
+                        }
+                    }
+
+                    $scope.$watch(anyInputChange($scope.watchInfo.filtersList), function () {
+                        dataNotifierPromise.notifyChangeFor(DATA_NAMES.ACTIVE_FILTERS_LIST, $scope.watchInfo.activeFilterList);
+                    });
 
                     watchMeasureLogFactory.prepareHighlights($scope.watchInfo.highlights);
                     dataNotifierPromise.getNotifyFor(
@@ -136,6 +154,10 @@
                         activeFilterList: [],
                         sortByExpressions: ['+startDate']
                     };
+
+                    $scope.$watch(anyInputChange($scope.digestInfo.filtersList), function () {
+                        dataNotifierPromise.notifyChangeFor(DATA_NAMES.ACTIVE_FILTERS_LIST, $scope.digestInfo.activeFilterList);
+                    });
 
                     dataNotifierPromise.getNotifyFor(
                         [DATA_NAMES.DIGEST_GROUP, DATA_NAMES.SORTBY_SORTABLECOLUMN, DATA_NAMES.ACTIVE_FILTERS_LIST], _.throttle(function (data) {

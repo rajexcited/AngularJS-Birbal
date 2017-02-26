@@ -823,7 +823,6 @@ window.inspectorExecutor = function (window, document) {
     function handleHttpInjector() {
         var oldList, backend;
         logger.log('register birbal app to http backend mock service');
-        console.log('register birbal app to http backend mock service');
         // register birbalApp to do specific task or action
         angular.module('birbalApp', ['ngMockE2E'])
             .config(['$provide', function ($provide) {
@@ -844,7 +843,7 @@ window.inspectorExecutor = function (window, document) {
                                     var oldUrl,
                                         args,
                                         regex = /redirecting-from:([^\r\n]+)/;
-                                    console.log('in my callback');
+
                                     if (regex.test(headerString)) {
                                         oldUrl = regex.exec(headerString)[1].trim();
                                         args = [].concat(newArgs);
