@@ -15,19 +15,13 @@
     <link rel="stylesheet" href="/lib/admin-lte/css/AdminLTE.min.css">
     <link rel="stylesheet" href="/lib/admin-lte/css/skin-blue.min.css">
     <link rel="stylesheet" href="/lib/admin-lte/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/src/panel/panel.css">
+<% if(env === "prod") {  %>
+<!-- Production -->
+<% } else {  %>
+<!-- Development -->
+<% } %>
 
-    <%
-        _.forEach(files.css, function(cssFilePath) {
-            var htmlComment = cssFilePath.comment;
-            if(htmlComment) {
-                cssFilePath = cssFilePath.path;
-    %>  <%= htmlComment%>
-    <%  }
-        _.forEach([].concat(cssFilePath), function(path) {
-    %>
-    <link rel="stylesheet" href="<%= path%>">
-    <%      });
-        }); %>
 </head>
 
 <body class="hold-transition skin-blue sidebar-mini fixed" ng-app="birbal-app" ng-controller="panelViewController">
@@ -81,19 +75,6 @@
 <script src="/lib/canvasjs.min.js"></script>
 
 <script src="/src/message.js"></script>
-<%
-    _.forEach(files.js, function(jsFilePath) {
-        var htmlComment = jsFilePath.comment;
-        if(htmlComment) {
-            jsFilePath = jsFilePath.path;
-%> <%= htmlComment%>
-<%  }
-    _.forEach([].concat(jsFilePath), function(path) {
-%>
-<script src="<%= path%>"></script>
-<%      });
-     }); %>
-
 <!-- graph -->
   <script src="/lib/typeahead.jquery.js"></script>
   <script src="/lib/angular-animate.min.js"></script>
@@ -104,30 +85,27 @@
 <!-- inject graph -->
 <script src="/lib/ng-dependency-graph/ng-dependency-graph.js"></script>
 
-<!--
-  <script src="/lib/ng-dependency-graph/scripts/app.module.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/util/util.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/tour/tour.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/models/Node.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/models/ModuleStats.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/models/Module.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/models/models.module.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/models/Component.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/models/App.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/main/MainCtrl.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/infoPanel/infoPanel.module.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/infoPanel/dgInfoPanelList.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/graph/dgGraph.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/core/storage.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/core/nodeFactory.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/core/inspectedApp.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/core/Graph.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/core/currentView.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/core/Const.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/controls/dgSearchNode.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/controls/controls.module.js"></script>
-  <script src="/lib/ng-dependency-graph/scripts/app/AppCtrl.js"></script>
--->
+<!-- source -->
+<% if(env === "prod") {  %>
+<script src="/src/panel/panel.js"></script>  
+<% } else {  %>
+  <script src="../js/birbalJSInit.js"></script>  
+  <script src="../js/birbal.app.js"></script>  
+  <script src="../js/background.service.js"></script>  
+  <script src="../js/panel-view.directive.js"></script>  
+  <script src="../js/birbalFilters.filter.js"></script>  
+  <script src="../js/dashboardCharts.factory.js"></script>
+  <script src="../js/digestMeasureLog.factory.js"></script>
+  <script src="../js/digestView.factory.js"></script>
+  <script src="../js/httpRecordFactory.factory.js"></script>
+  <script src="../js/dependencyTree.factory.js"></script>
+  <script src="../js/rangeSlider.directive.js"></script>
+  <script src="../js/searchCriteria.watch.directive.js"></script>
+  <script src="../js/watcherView.factory.js"></script>
+  <script src="../js/sortableColumn.component.js"></script>
+  <script src="../js/dataNotifier.promise.factory.js"></script>
+  <script src="../js/digestGroupDetail.component.js"></script>
+<%  } %>
 
 </body>
 </html>

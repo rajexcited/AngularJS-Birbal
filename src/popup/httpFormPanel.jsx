@@ -25,7 +25,7 @@ class DroppableArea extends React.Component {
         }.bind(this);
 
         this.eventHandlers.dragenter = triggerHandler(function handleDragEnter(evt) {
-            console.log('handleDragEnter', evt);
+            //console.log('handleDragEnter', evt);
             if (droppableElement.is(evt.target) || droppableElement.find(evt.target)[0]) {
                 window.dropEffect = 'copy';
             } else {
@@ -36,14 +36,14 @@ class DroppableArea extends React.Component {
         });
 
         this.eventHandlers.dragover = triggerHandler(_.debounce(function handleDragOver(evt) {
-            console.log('handleDragOver', evt.target);
+            //console.log('handleDragOver', evt.target);
             droppableElement.find('.dragover').addClass('hide-me-imp');
         }, 200));
 
         this.eventHandlers.drop = triggerHandler(function handleFileSelect(evt) {
             // dropped on itself or one of its children
             if (droppableElement.is(evt.target) || droppableElement.find(evt.target)[0]) {
-                console.log('handleFileSelect', evt.target, evt);
+                //console.log('handleFileSelect', evt.target, evt);
                 var files = evt.dataTransfer.files; // FileList object.
                 var reader = new FileReader();
                 droppableElement.find('.dragover:not(.hide-me-imp)').addClass('hide-me-imp');
@@ -217,7 +217,7 @@ class HttpFormPanel extends React.Component {
         this.hideHelpPanel();
         this.props.save(httpMock, httpErrorState);
         // reset the form
-        this.resetForm();
+        //this.resetForm();
     }
 
     validateForm() {
@@ -299,6 +299,10 @@ class HttpFormPanel extends React.Component {
         this.setState({httpResponseType: value});
     }
 
+    selectMethod(method) {
+        this.setState({httpMethod: method});
+    }
+
     render() {
         function responseBody() {
             if (this.state.httpResponseType === this.HTTP_RESPONSE_TYPES[0]) {
@@ -340,7 +344,7 @@ class HttpFormPanel extends React.Component {
                         <div>
                             <div className="input-group">
                                 <Dropdown className="input-group-btn" items={this.HTTP_METHODS}
-                                          selectedItem={this.state.httpMethod}
+                                          selectedItem={this.state.httpMethod} onSelect={this.selectMethod.bind(this)}
                                           ref={(dropdown) => { this.elm.httpMethod = dropdown; }}/>
                                 <input className="form-control" type="text" aria-label="request URL or RegExp"
                                        onFocus={this.showHelpPanel.bind(this,"url")}

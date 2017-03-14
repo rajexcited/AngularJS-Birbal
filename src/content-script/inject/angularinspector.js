@@ -812,9 +812,11 @@ window.inspectorExecutor = function (window, document) {
             msg.ngRootNode = generateXPath(document.querySelector('.ng-scope'));
             sendDependencyTree(msg.ngModule.split(','));
             msg.datePerfGapTime = Date.now() - performance.now();
-        } else {
+        } 
+        window.setTimeout(function() {
+            // angular should be bootstrapped within 5 sec of page load
             window.name = window.name.replace(/^NG_DEFER_BOOTSTRAP!/, '').replace(/NG_ENABLE_DEBUG_INFO!/, '');
-        }
+        },5*1000);
         // send inspection data
         broadcastMessage(msg, 'ngDetect');
         logger.log('ngDetect message or cleanup');
@@ -838,25 +840,27 @@ window.inspectorExecutor = function (window, document) {
                             });
 
                             var oldCallback = newArgs[3];
-                            newArgs[3] = function (ignore1, url, headerString) {
-                                $timeout(function (doneArgs) {
-                                    var oldUrl,
-                                        args,
-                                        regex = /redirecting-from:([^\r\n]+)/;
+                            newArgs[3] = function (ignore1, ignore2, headerString) {
+                                var doneArgs=arguments;
+                                $timeout(function () {
+                                    var args,
+                                        regex = /redirecting-to:([^\r\n]+)/;
 
                                     if (regex.test(headerString)) {
-                                        oldUrl = regex.exec(headerString)[1].trim();
+                                        url = regex.exec(headerString)[1].trim();
                                         args = [].concat(newArgs);
                                         args[3] = oldCallback;
                                         args[0] = 'GET';
                                         args[1] = url;
                                         args[4] = args[4] || {};
-                                        args[4]['redirecting-from'] = oldUrl;
+                                        args[4]['redirecting-from'] = newArgs[1];
+                                        delete args[4]['redirecting-to'];
+                                        
                                         backend.apply(null, args);
                                     } else {
                                         oldCallback.apply(this, doneArgs);
                                     }
-                                }, 10, false, arguments);
+                                }, 10);
                             };
                             return newArgs;
                         }
@@ -942,8 +946,7 @@ window.inspectorExecutor = function (window, document) {
                 list.forEach(function (httpItem) {
                     var headers;
                     if (httpItem.hasOwnProperty('fileResponse')) {
-                        headers = {'redirecting-from': httpItem.fileResponse};
-                        httpItem.response = httpItem.fileResponse;
+                        headers = {'redirecting-to': httpItem.fileResponse};
                     }
                     backend.when(httpItem.method.toUpperCase(), toURLStringOrRegExp(httpItem.url), toHeaderObject(httpItem.headers))
                         .respond(Number(httpItem.status), httpItem.response, headers);
@@ -982,10 +985,13 @@ window.inspectorExecutor = function (window, document) {
 
         function initMock() {
             try {
+                logger.log('mock injection initiating..');
                 window.injectMock(window, window.angular);
                 window.injectMock = undefined;
+                logger.log('mock injection completed.');
                 handleHttpInjector();
             } catch (e) {
+                logger.error('init mock err:  ',e);
                 // retry until successful
                 window.setTimeout(initMock, 30);
             }

@@ -180,6 +180,7 @@
                         filterList.forEach(function (item) {
                             item.isActive = false;
                         });
+                        dataNotifierPromise.notifyChangeFor(DATA_NAMES.ACTIVE_FILTERS_LIST, []);
                     };
 
                     $scope.toggleFilter = function (activeFilterList, item, event) {
@@ -213,30 +214,6 @@
                         }
                         dataNotifierPromise.notifyChangeFor(DATA_NAMES.DIGEST_GROUP_DETAIL_TOGGLE, [openState, ind, group]);
                     };
-                    /////////////////////////////////////////////////////////////////////////////////////////
-                    //            slider, filter, dashboard update, sort, configurations
-                    /////////////////////////////////////////////////////////////////////////////////////////
-                    /* ION SLIDER */
-                    //$scope.rangeSlider = {
-                    //    digest: {
-                    //        config: {
-                    //            min: 0,
-                    //            max: 200,
-                    //            //from: 0,
-                    //            //to: 4000,
-                    //            type: 'double',
-                    //            //step: 1,
-                    //            //prefix: "$",
-                    //            postfix: " sec",
-                    //            prettify: false,
-                    //            grid: true
-                    //        }
-                    //    }
-                    //};
-
-                    //$scope.rangeSlider.digest.onChange = function (from, to) {
-                    //$scope.selectedDigestRange = digestDataFactory.getDigestHighlightsForRange(from, to);
-                    //};
 
                     // end of controller
                 }]);

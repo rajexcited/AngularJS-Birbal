@@ -190,6 +190,7 @@
     function setPageAction(tabId) {
         var tabInfo = tabs.getTabInfo(tabId);
         if (tabInfo && tabInfo.ngDetect && tabInfo.ngDetect.ngDetected) {
+        	chrome.pageAction.setTitle({tabId:tabId,title:'Open to mock $Http calls.'})
             chrome.pageAction.show(tabId);
             chrome.pageAction.setPopup({"tabId": tabId, "popup": "src/popup/popup.html"});
         }

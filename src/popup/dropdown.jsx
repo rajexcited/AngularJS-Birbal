@@ -25,6 +25,7 @@ class Dropdown extends React.Component {
             // no change
             return;
         }
+        //console.log('component will receive props');
         var selectedItem = nextProps.selectedItem || nextProps.items[0];
         this.setState({selected: selectedItem});
     }

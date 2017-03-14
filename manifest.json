@@ -1,6 +1,6 @@
 {
   "name": "AngularJS Birbal",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Angular app analysis - performance and structure dependency through Birbal eye. Allow to mock Http calls for ongoing development.",
   "content_scripts": [
     {
@@ -33,7 +33,7 @@
     "persistent": false
   },
   "page_action": {
-    "default_title": "AngularJS Birbal",
+    "default_title": "Not an Angular page",
     "default_icon": "img/angular-icon.png"
   },
   "web_accessible_resources": [

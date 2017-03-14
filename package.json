@@ -1,6 +1,6 @@
 {
   "name": "angularjs-birbal",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "chrome extension to analyze Angular app - performance and structure dependency. AddOn features: Dependency graph, http mocks(Allow to mock Http calls for ongoing development).",
   "devDependencies": {
     "grunt": "^0.4.5",
@@ -21,7 +21,7 @@
     "admin-lte": "~2.3.0",
     "angular": "^1.4.7",
     "angular-animate": "^1.4.7",
-    "angular-mocks": "^1.4.7",
+    "angular-mocks": "1.5.11",
     "floatthead": "^1.4.0",
     "font-awesome": "^4.3.0",
     "ion-rangeslider": "^2.1.2",
@@ -29,12 +29,24 @@
     "react": "^15.4.1",
     "react-dom": "^15.4.1"
   },
+  
   "scripts": {
-    "clean": "npm prune & npm update & grunt clean",
-    "babel": "grunt clean:popup & babel src/popup/*.jsx --out-file src/popup/react-components.generated.js --presets=react",
-    "build": "npm run clean & npm run babel & grunt build --dev",
-    "package": "npm run clean & npm run babel & grunt build-extension --prod"
+    "preclean": "npm prune",
+    "clean": "grunt clean",
+    "postclean": "npm update",
+
+    "prebabel": "grunt clean:popup",
+    "babel": "babel src/popup/*.jsx --out-file src/popup/react-components.generated.js --presets=react",
+
+    "prebuild": "npm run clean",
+    "build": "npm run babel & grunt build --dev",
+    "postbuild": "grunt clean:dist",
+
+    "prepackage": "npm run clean",
+    "package": "npm run babel & grunt build-extension --prod",
+    "postpackage": "grunt clean:dist"
   },
+
   "repository": {
     "type": "git",
     "url": "https://github.com/rajexcited/AngularJS-Birbal.git"

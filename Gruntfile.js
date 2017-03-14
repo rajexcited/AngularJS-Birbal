@@ -167,8 +167,7 @@ module.exports = function (grunt) {
             index: {
                 options: {
                     data: function () {
-                        var allIncludes = grunt.file.readJSON('include.json');
-                        return allIncludes[ENV];
+                        return {env: ENV};
                     }
                 },
                 files: {
@@ -180,7 +179,8 @@ module.exports = function (grunt) {
             compress: ['zip/**'],
             'build-local': ['dist/**', 'lib/**', 'src/panel/partials/index.html', 'src/**/*.min.js', 'src/**/*.generated.js'],
             popup: ['src/popup/*.generated.js'],
-            inject: ['src/content-script/inject/*.min.js']
+            inject: ['src/content-script/inject/*.min.js'],
+            dist: ['dist/**']
         },
         connect: {
             example: {
